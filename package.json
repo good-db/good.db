@@ -1,0 +1,34 @@
+{
+  "name": "good.db",
+  "version": "1.5.0",
+  "description": "JSON file local database manipulation in Node.js.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/good-db/good.db.git"
+  },
+  "bugs": {
+		"url": "https://github.com/good-db/good.db/issues"
+	},
+  "homepage": "https://gooddb.github.io",
+  "keywords": [
+    "database",
+    "good.db",
+    "json",
+    "best.db",
+    "wio.db",
+    "pro.db",
+    "db"
+  ],
+  "author": "Discord username: \"u.si\"",
+  "license": "ISC",
+  "dependencies": {
+    "fs": "^0.0.1-security"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.1"
+  }
+}
