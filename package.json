@@ -1,7 +1,7 @@
 {
   "name": "good.db",
-  "version": "1.5.0",
-  "description": "JSON file local database manipulation in Node.js.",
+  "version": "1.6.0-dev-1693012730",
+  "description": " file local database manipulation in Node.js.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,9 +11,9 @@
     "url": "https://github.com/good-db/good.db.git"
   },
   "bugs": {
-		"url": "https://github.com/good-db/good.db/issues"
-	},
-  "homepage": "https://gooddb.github.io",
+    "url": "https://github.com/good-db/good.db/issues"
+  },
+  "homepage": "https://good-db.github.io/",
   "keywords": [
     "database",
     "good.db",
@@ -21,14 +21,25 @@
     "best.db",
     "wio.db",
     "pro.db",
-    "db"
+    "db",
+    "yaml",
+    "sqlite3",
+    "better-sqlite3",
+    "sqlite",
+    "sql"
   ],
   "author": "Discord username: \"u.si\"",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "fs": "^0.0.1-security"
+    "better-sqlite3": "^8.5.2",
+    "crypto": "^1.0.1",
+    "fs": "^0.0.1-security",
+    "good.db": "^1.6.0-dev-1693012730",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.4",
+    "@types/js-yaml": "^4.0.5",
     "@types/node": "^20.5.1"
   }
 }

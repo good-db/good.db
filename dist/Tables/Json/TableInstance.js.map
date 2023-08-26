@@ -1,0 +1,1 @@
+{"version":3,"file":"TableInstance.js","sourceRoot":"","sources":["../../../src/Tables/Json/TableInstance.ts"],"names":[],"mappings":";;;;;AAAA,2FAAmE;AAEnE,MAAqB,aAAc,SAAQ,0BAAgB;IACvD,YAAY,QAAgB,EAAE,SAAiB,EAAE,gBAAyB,IAAI,EAAE,YAAoB,IAAI;QACpG,KAAK,CAAC,GAAG,QAAQ,IAAI,SAAS,OAAO,EAAE,aAAa,EAAE,SAAS,CAAC,CAAC;IACrE,CAAC;CACJ;AAJD,gCAIC"}

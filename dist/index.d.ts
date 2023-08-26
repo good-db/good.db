@@ -1,3 +1,6 @@
-import DataBaseJSON from "./Manager/JSON/JSON";
-import JSONTable from "./Manager/JSON/Table/JsonTable";
-export { DataBaseJSON, JSONTable };
+import DataBaseJSON from "./drivers/JSON/DataBaseJSON";
+import DataBaseYAML from "./drivers/YAML/DataBaseYAML";
+import DataBaseSQLITE from './drivers/SQLITE/DataBaseSQLITE';
+import JSONTable from "./Tables/Json/Main";
+import YAMLTable from "./Tables/Yaml/Main";
+export { DataBaseJSON, JSONTable, DataBaseYAML, YAMLTable, DataBaseSQLITE };
