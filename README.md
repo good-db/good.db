@@ -14,10 +14,10 @@ npm install good.db
 
 All notable changes to this project will be documented in this section.
 
-| Version | Release Date | Changes |
-| ------- | ------------ | ------- |
+| Version | Release Date | Changes                                         |
+| ------- | ------------ | ----------------------------------------------- |
 | 1.5.0   | 2023-08-24   | Add table system & Creating and Using Snapshots |
-| 1.6.0   | 2023-08-26   | Add Yaml, Sqlite And fix bugs. |
+| 1.6.0   | 2023-08-26   | Add Yaml, Sqlite And fix bugs.                  |
 
 ## How To Use
 
@@ -28,11 +28,11 @@ You can create a new database instance using the `DataBaseJSON` class:
 ```js
 const { DataBaseJSON, DataBaseSQLITE, DataBaseYAML } = require("good.db");
 
-let db = new DataBaseJSON();
+let db = new DataBaseJSON('database.json', true, '..');
 
-db = new DataBaseSQLITE()
+db = new DataBaseYAML('database.yaml', true, '..')
 
-db = new DataBaseYAML();
+db = new DataBaseSQLITE('database.sqlite', 'tableName', true, '..');
 ```
 
 
@@ -43,14 +43,13 @@ Alternatively, you can use tables with the `JSONTable` class:
 ```js
 const { JSONTable, YAMLTable } = require("good.db");
 
-let db = new JSONTable('folderPath');
+let db = new JSONTable('folderName');
 
-let table = db.table('database', true, '..');
+let table = db.table('file', true, '..');
 
-db = new YAMLTable('folderPath')
+db = new YAMLTable('folderName')
 
-table = db.table('database', true, '..');
-
+table = db.table('file', true, '..');
 ```
 
 - The third parameter `true` in the constructor enables nested data.
