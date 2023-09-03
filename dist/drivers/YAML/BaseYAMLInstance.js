@@ -28,7 +28,7 @@ class BaseYAMLInstance {
         if (!fs_1.default.existsSync(databaseDir) && databaseDir)
             fs_1.default.mkdirSync(databaseDir, { recursive: true });
         if (!fs_1.default.existsSync(this.#fileName))
-            fs_1.default.writeFileSync(this.#fileName, "{}");
+            fs_1.default.writeFileSync(this.#fileName, "");
     }
     /**
      * Loads YAML content from the file.
@@ -342,10 +342,10 @@ class BaseYAMLInstance {
             return traverseAndPull(data, keyParts, 0);
         }
         else {
-            if (!data.hasOwnProperty(key) || !Array.isArray(data[key])) {
+            if (!Array.isArray(data)) {
                 throw new Error_1.default(`Cannot pull from a non-array value at key '${key}'`);
             }
-            const array = data[key];
+            const array = data;
             let removed = false;
             if (pullAll) {
                 const indexesToRemove = [];
@@ -371,11 +371,24 @@ class BaseYAMLInstance {
                 }
             }
             else {
-                const index = array.indexOf(callbackOrValue);
-                if (index !== -1) {
-                    array.splice(index, 1);
-                    removed = true;
-                }
+                array.forEach((element, index) => {
+                    if (!removed) {
+                        if (typeof callbackOrValue === 'function') {
+                            const callback = callbackOrValue;
+                            if (callback(element, index, array)) {
+                                array.splice(index, 1);
+                                removed = true;
+                            }
+                        }
+                        else {
+                            const value = callbackOrValue;
+                            if (element === value) {
+                                array.splice(index, 1);
+                                removed = true;
+                            }
+                        }
+                    }
+                });
             }
             if (removed) {
                 this.saveYamlToFile(data);
@@ -402,7 +415,7 @@ class BaseYAMLInstance {
      * @example db.reset();
      */
     reset() {
-        this.saveYamlToFile({});
+        this.saveYamlToFile('');
     }
     /**
      * Create a snapshot of the current database state and store it in a separate YAML file.

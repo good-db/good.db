@@ -47,8 +47,8 @@ export default class BaseJSONInstance {
 
             const lastPart = keyParts[keyParts.length - 1];
             currentObject[lastPart] = value;
-            
-            
+
+
         } else {
             file[key] = value;
         }
@@ -343,7 +343,7 @@ export default class BaseJSONInstance {
             const keyParts = key.split(separator);
             return traverseAndPull(file, keyParts, 0);
         } else {
-            if (!file.hasOwnProperty(key) || !Array.isArray(file[key])) {
+            if (!Array.isArray(file[key])) {
                 throw new DatabaseError(`Cannot pull from a non-array value at key '${key}'`);
             }
 
@@ -373,11 +373,23 @@ export default class BaseJSONInstance {
                     removed = true;
                 }
             } else {
-                const index = array.indexOf(callbackOrValue);
-                if (index !== -1) {
-                    array.splice(index, 1);
-                    removed = true;
-                }
+                array.forEach((element: any, index: number) => {
+                    if (!removed) {
+                        if (typeof callbackOrValue === 'function') {
+                            const callback = callbackOrValue as (element: any, index: number, array: any[]) => boolean;
+                            if (callback(element, index, array)) {
+                                array.splice(index, 1);
+                                removed = true;
+                            }
+                        } else {
+                            const value = callbackOrValue;
+                            if (element === value) {
+                                array.splice(index, 1);
+                                removed = true;
+                            }
+                        }
+                    }
+                });
             }
 
             if (removed) {

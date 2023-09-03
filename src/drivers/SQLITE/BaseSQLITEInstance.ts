@@ -20,7 +20,6 @@ export default class BaseSQLITEInstance {
     }
 
     async getAllRows(table: string): Promise<{ id: string; value: any }[]> {
-        
         const prep = this._database.prepare(`SELECT * FROM ${table}`);
         const data: { id: string; value: any }[] = [];
         for (const row of prep.iterate()) {
@@ -35,7 +34,7 @@ export default class BaseSQLITEInstance {
 
     async getRowByKey(table: string, key: string): Promise<[any | null, boolean]> {
         const value: any = await this._database
-            .prepare(`SELECT json FROM ${table} WHERE ID = ?`)
+            .prepare(`SELECT * FROM ${table} WHERE ID = (?)`)
             .get(key);
         return value != null ? [JSON.parse(value.json), true] : [null, false];
     }

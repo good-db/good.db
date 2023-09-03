@@ -33,7 +33,7 @@ class BaseSQLITEInstance {
     }
     async getRowByKey(table, key) {
         const value = await this._database
-            .prepare(`SELECT json FROM ${table} WHERE ID = ?`)
+            .prepare(`SELECT * FROM ${table} WHERE ID = (?)`)
             .get(key);
         return value != null ? [JSON.parse(value.json), true] : [null, false];
     }

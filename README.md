@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this section.
 | ------- | ------------ | ----------------------------------------------- |
 | 1.5.0   | 2023-08-24   | Add table system & Creating and Using Snapshots |
 | 1.6.0   | 2023-08-26   | Add Yaml, Sqlite And fix bugs.                  |
+| 1.6.1   | 2023-09-03   | Fix pull without Nested and other bugs.         |
 
 ## How To Use
 

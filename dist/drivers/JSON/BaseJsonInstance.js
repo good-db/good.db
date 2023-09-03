@@ -343,7 +343,7 @@ class BaseJSONInstance {
             return traverseAndPull(file, keyParts, 0);
         }
         else {
-            if (!file.hasOwnProperty(key) || !Array.isArray(file[key])) {
+            if (!Array.isArray(file[key])) {
                 throw new Error_1.default(`Cannot pull from a non-array value at key '${key}'`);
             }
             const array = file[key];
@@ -372,11 +372,24 @@ class BaseJSONInstance {
                 }
             }
             else {
-                const index = array.indexOf(callbackOrValue);
-                if (index !== -1) {
-                    array.splice(index, 1);
-                    removed = true;
-                }
+                array.forEach((element, index) => {
+                    if (!removed) {
+                        if (typeof callbackOrValue === 'function') {
+                            const callback = callbackOrValue;
+                            if (callback(element, index, array)) {
+                                array.splice(index, 1);
+                                removed = true;
+                            }
+                        }
+                        else {
+                            const value = callbackOrValue;
+                            if (element === value) {
+                                array.splice(index, 1);
+                                removed = true;
+                            }
+                        }
+                    }
+                });
             }
             if (removed) {
                 fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));

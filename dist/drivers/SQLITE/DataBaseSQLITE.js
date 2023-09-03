@@ -319,7 +319,7 @@ class DataBaseSQLITE {
             }
             else {
                 if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
-                    throw new Error_1.default(`Cannot pull from a non-array value at key '${key}'`);
+                    throw new Error_1.default(`Cannot pull from a non-object include array value at key '${key}'`);
                 }
                 const updated = await traverseAndPull(currentObject[part], keyParts, depth + 1);
                 if (updated)
@@ -332,17 +332,16 @@ class DataBaseSQLITE {
             return await traverseAndPull(data, keyParts, 0);
         }
         else {
-            if (!data.hasOwnProperty(key) || !Array.isArray(data[key])) {
+            if (!Array.isArray(data)) {
                 throw new Error_1.default(`Cannot pull from a non-array value at key '${key}'`);
             }
-            const array = data[key];
             let removed = false;
             if (pullAll) {
                 const indexesToRemove = [];
-                array.forEach((element, index) => {
+                data.forEach((element, index) => {
                     if (typeof callbackOrValue === 'function') {
                         const callback = callbackOrValue;
-                        if (callback(element, index, array)) {
+                        if (callback(element, index, data)) {
                             indexesToRemove.push(index);
                         }
                     }
@@ -355,17 +354,30 @@ class DataBaseSQLITE {
                 });
                 if (indexesToRemove.length > 0) {
                     for (let i = indexesToRemove.length - 1; i >= 0; i--) {
-                        array.splice(indexesToRemove[i], 1);
+                        data.splice(indexesToRemove[i], 1);
                     }
                     removed = true;
                 }
             }
             else {
-                const index = array.indexOf(callbackOrValue);
-                if (index !== -1) {
-                    array.splice(index, 1);
-                    removed = true;
-                }
+                data.forEach((element, index) => {
+                    if (!removed) {
+                        if (typeof callbackOrValue === 'function') {
+                            const callback = callbackOrValue;
+                            if (callback(element, index, data)) {
+                                data.splice(index, 1);
+                                removed = true;
+                            }
+                        }
+                        else {
+                            const value = callbackOrValue;
+                            if (element === value) {
+                                data.splice(index, 1);
+                                removed = true;
+                            }
+                        }
+                    }
+                });
             }
             if (removed) {
                 await this.set(key, data, nestedEnabled, separator);
