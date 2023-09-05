@@ -1,6 +1,6 @@
 {
   "name": "good.db",
-  "version": "1.6.1",
+  "version": "1.6.3",
   "description": "A powerful and user-friendly database library for Node.js applications, supporting JSON, YAML and SQLite storage.",
   "main": "dist/index.js",
   "scripts": {

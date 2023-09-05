@@ -125,8 +125,8 @@ export default class BaseJSONInstance {
                 if (!currentValue.hasOwnProperty(part)) return false;
                 currentValue = currentValue[part];
             }
-
             const lastPart = keyParts[keyParts.length - 1];
+
             if (currentValue.hasOwnProperty(lastPart)) {
                 delete currentValue[lastPart];
                 fs.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
@@ -401,22 +401,41 @@ export default class BaseJSONInstance {
 
 
     /**
-     * Retrieves all key-value pairs from the database.
-    * @returns {Array} - An array containing objects with the ID (key) and data (value).
-    * @example db.all();
-    */
-    all() {
-        const fileContent = fs.readFileSync(this.#fileName, "utf8");
-        const file = fileContent ? JSON.parse(fileContent) : {};
+     * Retrieves the number of key-value pairs from the database.
+     * @param {number} [type=0] - Determines what to retrieve:
+     *   - 0: Returns an array of objects containing ID and data for each key-value pair.
+     *   - 1: Returns an array containing all keys.
+     * @returns {Promise<any[]>} - An array of key-value pairs or keys based on the specified type.
+     * @throws {DatabaseError} Throws an error if the type is not 0 or 1.
+     * @example
+     * // Retrieve an array of key-value pairs.
+     * await db.all(0);
+     *
+     * // Retrieve an array of keys.
+     * await db.all(1);
+     */
+    all(type: number = 0) {
+        if (type === 0) {
+            const fileContent = fs.readFileSync(this.#fileName, "utf8");
+            const file = fileContent ? JSON.parse(fileContent) : {};
 
-        const keys = Object.keys(file);
-        const result = [];
+            const keys = Object.keys(file);
+            const result = [];
 
-        for (const key of keys) {
-            result.push({ ID: key, data: file[key] });
+            for (const key of keys) {
+                result.push({ ID: key, data: file[key] });
+            }
+
+            return result;
+        } else if (type == 1) {
+            const fileContent = fs.readFileSync(this.#fileName, "utf8");
+            const file = fileContent ? JSON.parse(fileContent) : {};
+            let result = [];
+            result.push(file)
+            return result;
+        } else {
+            throw new DatabaseError("Invalid type, type must be 0 or 1");
         }
-
-        return result;
     }
 
     /**

@@ -40,7 +40,7 @@ export default class DataBaseSQLITE {
      * @returns {boolean} - Returns true if the value was successfully deleted, otherwise false.
      * @example await db.delete("name");
      */
-    delete(key: string, nestedEnabled?: boolean, separator?: string): Promise<boolean>;
+    delete(key: string, nestedEnabled?: Boolean, separator?: string): Promise<boolean>;
     /**
      * Checks if a key exists in the database.
      * @param {string} key - Key to check.
@@ -89,14 +89,20 @@ export default class DataBaseSQLITE {
     */
     pull(key: string, callbackOrValue: any, pullAll?: boolean, nestedEnabled?: boolean, separator?: string): Promise<boolean>;
     /**
-     * Retrieves all key-value pairs from the database.
-    * @returns {Array} - An array containing objects with the ID (key) and data (value).
-    * @example await db.all();
-    */
-    all(): Promise<{
-        ID: any;
-        data: any;
-    }[]>;
+     * Retrieves the number of key-value pairs from the database.
+     * @param {number} [type=0] - Determines what to retrieve:
+     *   - 0: Returns an array of objects containing ID and data for each key-value pair.
+     *   - 1: Returns an array containing all keys.
+     * @returns {Promise<any[]>} - An array of key-value pairs or keys based on the specified type.
+     * @throws {DatabaseError} Throws an error if the type is not 0 or 1.
+     * @example
+     * // Retrieve an array of key-value pairs.
+     * await db.all(0);
+     *
+     * // Retrieve an array of keys.
+     * await db.all(1);
+     */
+    all(type?: number): Promise<any[]>;
     /**
      * Resets the entire database, removing all key-value pairs.
     * @example await db.reset();

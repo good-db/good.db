@@ -116,53 +116,19 @@ class DataBaseSQLITE {
             throw new Error_1.default("The key must be a string!");
         if (nestedEnabled) {
             const keyParts = key.split(separator);
-            let [result, exist] = await this.driver.getRowByKey(this.tableName, keyParts[0]) ?? [null, false];
-            if (!result) {
-                return false; // Key doesn't exist, no need to delete
-            }
-            let currentObject = result;
-            for (let i = 0; i < keyParts.slice(1).length - 1; i++) {
-                const part = keyParts[i];
-                if (!currentObject.hasOwnProperty(part))
-                    return false;
-                currentObject = currentObject[part];
-            }
+            let currentValue = await this.get(keyParts[0]);
             const lastPart = keyParts[keyParts.length - 1];
-            if (!currentObject.hasOwnProperty(lastPart))
+            if (currentValue.hasOwnProperty(lastPart)) {
+                delete currentValue[lastPart];
+                this.driver.setRowByKey(this.tableName, keyParts[0], currentValue, true);
+                return true;
+            }
+            else
                 return false;
-            delete currentObject[lastPart];
-            // Remove empty nested objects
-            while (Object.keys(result).length === 1 && typeof result === 'object') {
-                const soleKey = Object.keys(result)[0];
-                if (Object.keys(result[soleKey]).length === 0) {
-                    delete result[soleKey];
-                    keyParts.pop();
-                    [result, exist] = await this.driver.getRowByKey(this.tableName, keyParts.join(separator)) ?? [null, false];
-                    currentObject = result;
-                    for (let i = 0; i < keyParts.length - 1; i++) {
-                        const part = keyParts[i];
-                        currentObject = currentObject[part];
-                    }
-                }
-                else {
-                    break;
-                }
-            }
-            if (Object.keys(result).length === 0) {
-                await this.driver.deleteRowByKey(this.tableName, keyParts[0]);
-                return true;
-            }
-            else {
-                await this.driver.setRowByKey(this.tableName, keyParts[0], result, exist);
-                return true;
-            }
         }
         else {
-            const [result, exist] = await this.driver.getRowByKey(this.tableName, key) ?? [null, false];
-            if (!result)
-                return false;
-            delete result[key];
-            return await this.driver.setRowByKey(this.tableName, key, result, exist);
+            this.driver.deleteRowByKey(this.tableName, key);
+            return true;
         }
     }
     /**
@@ -386,18 +352,40 @@ class DataBaseSQLITE {
         }
     }
     /**
-     * Retrieves all key-value pairs from the database.
-    * @returns {Array} - An array containing objects with the ID (key) and data (value).
-    * @example await db.all();
-    */
-    async all() {
-        const data = await this.driver.getAllRows(this.tableName);
-        const keys = Object.keys(data);
-        const result = [];
-        for (const key of keys) {
-            result.push({ ID: data[key].id, data: data[key].value });
+     * Retrieves the number of key-value pairs from the database.
+     * @param {number} [type=0] - Determines what to retrieve:
+     *   - 0: Returns an array of objects containing ID and data for each key-value pair.
+     *   - 1: Returns an array containing all keys.
+     * @returns {Promise<any[]>} - An array of key-value pairs or keys based on the specified type.
+     * @throws {DatabaseError} Throws an error if the type is not 0 or 1.
+     * @example
+     * // Retrieve an array of key-value pairs.
+     * await db.all(0);
+     *
+     * // Retrieve an array of keys.
+     * await db.all(1);
+     */
+    async all(type = 0) {
+        if (typeof type !== 'number')
+            throw new Error_1.default("The type must be a number!");
+        if (type === 0) {
+            const data = await this.driver.getAllRows(this.tableName);
+            const keys = Object.keys(data);
+            const result = [];
+            for (const key of keys) {
+                result.push({ ID: data[key].id, data: data[key].value });
+            }
+            return result;
         }
-        return result;
+        else if (type === 1) {
+            const data = await this.driver.getAllRows(this.tableName);
+            const result = [];
+            result.push(data);
+            return result;
+        }
+        else {
+            throw new Error_1.default("Invalid type, type must be 0 or 1");
+        }
     }
     /**
      * Resets the entire database, removing all key-value pairs.

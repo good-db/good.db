@@ -121,68 +121,32 @@ export default class DataBaseSQLITE {
      * @returns {boolean} - Returns true if the value was successfully deleted, otherwise false.
      * @example await db.delete("name");
      */
-    async delete(key: string, nestedEnabled: boolean = this.nestedEnabled, separator: string = this.separator): Promise<boolean> {
+    async delete(key: string, nestedEnabled: Boolean = this.nestedEnabled, separator: string = this.separator) {
         if (!key) throw new DatabaseError("The key is not defined!");
         if (typeof key !== 'string') throw new DatabaseError("The key must be a string!");
 
         if (nestedEnabled) {
             const keyParts = key.split(separator);
 
-            let [result, exist] = await this.driver.getRowByKey(
-                this.tableName,
-                keyParts[0]
-            ) ?? [null, false];
-
-            if (!result) {
-                return false; // Key doesn't exist, no need to delete
-            }
-
-            let currentObject = result;
-
-            for (let i = 0; i < keyParts.slice(1).length - 1; i++) {
-                const part = keyParts[i];
-                if (!currentObject.hasOwnProperty(part)) return false;
-                currentObject = currentObject[part];
-            }
+            let currentValue = await this.get(keyParts[0]);
 
             const lastPart = keyParts[keyParts.length - 1];
 
-            if (!currentObject.hasOwnProperty(lastPart)) return false;
-            delete currentObject[lastPart];
+            if (currentValue.hasOwnProperty(lastPart)) {
+                delete currentValue[lastPart];
 
-            // Remove empty nested objects
-            while (Object.keys(result).length === 1 && typeof result === 'object') {
-                const soleKey = Object.keys(result)[0];
-                if (Object.keys(result[soleKey]).length === 0) {
-                    delete result[soleKey];
-                    keyParts.pop();
-                    [result, exist] = await this.driver.getRowByKey(this.tableName, keyParts.join(separator)) ?? [null, false];
-                    currentObject = result;
-                    for (let i = 0; i < keyParts.length - 1; i++) {
-                        const part = keyParts[i];
-                        currentObject = currentObject[part];
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            if (Object.keys(result).length === 0) {
-                await this.driver.deleteRowByKey(this.tableName, keyParts[0]);
-                return true
-            } else {
-                await this.driver.setRowByKey(this.tableName, keyParts[0], result, exist);
-                return true
-            }
+                this.driver.setRowByKey(this.tableName, keyParts[0], currentValue, true);
+                return true;
+            } else return false;
         } else {
-            const [result, exist] = await this.driver.getRowByKey(this.tableName, key) ?? [null, false];
-
-            if (!result) return false;
-
-            delete result[key];
-            return await this.driver.setRowByKey(this.tableName, key, result, exist);
+            this.driver.deleteRowByKey(this.tableName, key);
+            return true;
         }
     }
+
+
+
+
 
 
     /**
@@ -390,7 +354,7 @@ export default class DataBaseSQLITE {
                 }
             } else {
                 data.forEach((element: any, index: number) => {
-                    if (!removed) { 
+                    if (!removed) {
                         if (typeof callbackOrValue === 'function') {
                             const callback = callbackOrValue as (element: any, index: number, array: any[]) => boolean;
                             if (callback(element, index, data)) {
@@ -416,21 +380,40 @@ export default class DataBaseSQLITE {
     }
 
     /**
-     * Retrieves all key-value pairs from the database.
-    * @returns {Array} - An array containing objects with the ID (key) and data (value).
-    * @example await db.all();
-    */
-    async all() {
-        const data: any = await this.driver.getAllRows(this.tableName);
-        const keys = Object.keys(data);
-        const result = [];
+     * Retrieves the number of key-value pairs from the database.
+     * @param {number} [type=0] - Determines what to retrieve:
+     *   - 0: Returns an array of objects containing ID and data for each key-value pair.
+     *   - 1: Returns an array containing all keys.
+     * @returns {Promise<any[]>} - An array of key-value pairs or keys based on the specified type.
+     * @throws {DatabaseError} Throws an error if the type is not 0 or 1.
+     * @example
+     * // Retrieve an array of key-value pairs.
+     * await db.all(0);
+     *
+     * // Retrieve an array of keys.
+     * await db.all(1);
+     */
+    async all(type: number = 0): Promise<any[]> {
+        if (typeof type !== 'number') throw new DatabaseError("The type must be a number!");
 
-        
-        for (const key of keys) {
-            result.push({ ID: data[key].id, data: data[key].value });
+        if (type === 0) {
+            const data: any = await this.driver.getAllRows(this.tableName);
+            const keys = Object.keys(data);
+            const result = [];
+
+            for (const key of keys) {
+                result.push({ ID: data[key].id, data: data[key].value });
+            }
+
+            return result;
+        } else if (type === 1) {
+            const data: any = await this.driver.getAllRows(this.tableName);
+            const result = [];
+            result.push(data);
+            return result;
+        } else {
+            throw new DatabaseError("Invalid type, type must be 0 or 1");
         }
-
-        return result;
     }
 
     /**
@@ -450,19 +433,19 @@ export default class DataBaseSQLITE {
      */
     async createSnapshot(snapshotName: string): Promise<void> {
         if (!snapshotName) throw new DatabaseError("The snapshotName is required!");
-    
-        
+
+
         const data = await this.driver.getAllRows(this.tableName);
         const snapshotsTableName = "snapshots"; // Name of the snapshots table
-        
+
         await this.driver.prepare(snapshotsTableName)
-    
+
         const newSnapshotData = {
             name: snapshotName,
             timestamp: new Date().toISOString(),
             data: data
         };
-    
+
         const exist = (await this.driver.getRowByKey(snapshotsTableName, snapshotName))[1];
         await this.driver.setRowByKey(snapshotsTableName, snapshotName, newSnapshotData, exist);
 
@@ -477,17 +460,17 @@ export default class DataBaseSQLITE {
      */
     async rollbackToSnapshot(snapshotName: string): Promise<void> {
         if (!snapshotName) throw new DatabaseError("The snapshotName is required!");
-    
+
         const snapshotsTableName = "snapshots"; // Name of the snapshots table
         const [result] = await this.driver.getRowByKey(snapshotsTableName, snapshotName);
-        
+
         if (result) {
 
             await this.driver.deleteAllRows(this.tableName)
             result.data.forEach(async (data: { id: string, value: any }) => {
                 await this.driver.setRowByKey(this.tableName, data.id, data.value)
             })
-            
+
         } else {
             throw new DatabaseError("Snapshot not found.");
         }
@@ -506,9 +489,9 @@ export default class DataBaseSQLITE {
      * await newTable.set('key', 'value');
      * ```
      */
-    async table(table: string, nestedEnabled: boolean = true, separate: string = '..'){
+    async table(table: string, nestedEnabled: boolean = true, separate: string = '..'): Promise<DataBaseSQLITE> {
         await this.driver.prepare(table);
         return new DataBaseSQLITE(this.path, table, nestedEnabled, separate);
     }
-    
+
 }

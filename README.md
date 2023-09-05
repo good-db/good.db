@@ -14,11 +14,12 @@ npm install good.db
 
 All notable changes to this project will be documented in this section.
 
-| Version | Release Date | Changes                                         |
-| ------- | ------------ | ----------------------------------------------- |
-| 1.5.0   | 2023-08-24   | Add table system & Creating and Using Snapshots |
-| 1.6.0   | 2023-08-26   | Add Yaml, Sqlite And fix bugs.                  |
-| 1.6.1   | 2023-09-03   | Fix pull without Nested and other bugs.         |
+| Version | Release Date | Changes                                                                    |
+| ------- | ------------ | -----------------------------------------------------------------------    |
+| 1.5.0   | 2023-08-24   | - Introduced the table system for efficient data management.               |
+| 1.6.0   | 2023-08-26   | - Expanded database support to include Yaml and Sqlite formats.            |
+| 1.6.1   | 2023-09-03   | - Addressed issues related to nested data retrieval.                       |
+| 1.6.3   | 2023-09-05   | - Fixed a critical bug in SQLite related to data deletion, Enhanced data manipulation with the addition of versatile 'all' options. |
 
 ## How To Use
 
@@ -198,7 +199,7 @@ db.set(`key..other..work`, 'Programmer'); // Result: "key": { "age": 5, "name": 
 
 ### Adding and Subtracting Numbers
 
-For numerical operations, you can use db.add and db.subtract:
+For numerical operations, you can use `db.add` and `db.subtract`:
 
 #### Method Signature
 
@@ -238,7 +239,7 @@ db.subtract(`key..new_num`, 1); // Result: -1
 
 ### Pushing and Pulling Elements
 
-Manipulate arrays using db.push and db.pull:
+Manipulate arrays using db.push and `db.pull`:
 
 #### Method Signature
 
@@ -283,7 +284,7 @@ db.pull('key..array', (element, index, array) => element.array.includes("Push"),
 
 ### Checking Data Existence
 
-Check if a key exists using db.has:
+Check if a key exists using `db.has`:
 
 #### Method Signature
 
@@ -313,9 +314,10 @@ db.has(`key..other..work`); // Returns: true
 
 ---
 
+
 ### Deleting Data
 
-Delete data by key using db.delete:
+Delete data by key using `db.delete`:
 
 #### Method Signature
 
@@ -346,18 +348,35 @@ db.delete(`key..other..work`); // Result: true
 
 ### Retrieving All Data
 
-To retrieve all data in the database, use db.all():
+To retrieve all data in the database, use `db.all()`:
+
+#### Method Signature
 
 ```js
-const allData = db.all();
-// Result: Returns an array containing all data entries in the database
+db.all(type?: number = 0);
+```
+
+- `type` (optional): Determines what to retrieve:
+  - 0: Returns an array of objects containing ID and data for each key-value pair.
+  - 1: Returns an array containing all keys.
+
+#### Example
+
+```javascript
+// Retrieve an array of key-value pairs.
+const allData = await db.all(0);
+// Result: Returns an array of objects containing ID and data for each key-value pair.
+
+// Retrieve an array of keys.
+const allKeys = await db.all(1);
+// Result: Returns an array containing all keys.
 ```
 
 ---
 
 ### Resetting the Database
 
-You can reset the entire database using db.reset():
+You can reset the entire database using `db.reset()`:
 
 ```js
 db.reset();

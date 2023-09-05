@@ -85,14 +85,20 @@ export default class BaseJSONInstance {
     */
     pull(key: string, callbackOrValue: any, pullAll?: boolean, nestedEnabled?: boolean, separator?: string): boolean;
     /**
-     * Retrieves all key-value pairs from the database.
-    * @returns {Array} - An array containing objects with the ID (key) and data (value).
-    * @example db.all();
-    */
-    all(): {
-        ID: string;
-        data: any;
-    }[];
+     * Retrieves the number of key-value pairs from the database.
+     * @param {number} [type=0] - Determines what to retrieve:
+     *   - 0: Returns an array of objects containing ID and data for each key-value pair.
+     *   - 1: Returns an array containing all keys.
+     * @returns {Promise<any[]>} - An array of key-value pairs or keys based on the specified type.
+     * @throws {DatabaseError} Throws an error if the type is not 0 or 1.
+     * @example
+     * // Retrieve an array of key-value pairs.
+     * await db.all(0);
+     *
+     * // Retrieve an array of keys.
+     * await db.all(1);
+     */
+    all(type?: number): any[];
     /**
      * Resets the entire database, removing all key-value pairs.
     * @example db.reset();
