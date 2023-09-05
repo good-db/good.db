@@ -40,7 +40,7 @@ export default class DataBaseSQLITE {
      * @returns {boolean} - Returns true if the value was successfully deleted, otherwise false.
      * @example await db.delete("name");
      */
-    delete(key: string, nestedEnabled?: Boolean, separator?: string): Promise<boolean>;
+    delete(key: string, nestedEnabled?: Boolean, separator?: string): Promise<true | undefined>;
     /**
      * Checks if a key exists in the database.
      * @param {string} key - Key to check.

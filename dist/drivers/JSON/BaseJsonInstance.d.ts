@@ -1,5 +1,7 @@
 export default class BaseJSONInstance {
-    #private;
+    readonly fileName: string;
+    readonly nestedEnabled: boolean;
+    readonly separator: string;
     constructor(filePath: string, nestedEnabled?: boolean, separator?: string);
     /**
      * Sets a key-value pair in the database.

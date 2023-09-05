@@ -137,7 +137,10 @@ export default class DataBaseSQLITE {
 
                 this.driver.setRowByKey(this.tableName, keyParts[0], currentValue, true);
                 return true;
-            } else return false;
+            } else if (keyParts.length == 1) {
+                this.driver.deleteRowByKey(this.tableName, keyParts[0]);
+                return true;
+            } else false
         } else {
             this.driver.deleteRowByKey(this.tableName, key);
             return true;

@@ -10,9 +10,9 @@ const Error_1 = __importDefault(require("../Error/Error"));
  * Represents a YAML-based database instance.
  */
 class BaseYAMLInstance {
-    #fileName;
-    #nestedEnabled;
-    #separator;
+    fileName;
+    nestedEnabled;
+    separator;
     /**
      * Creates a new instance of the BaseYAMLInstance class.
      * @param {string} filePath - Path to the YAML file.
@@ -20,15 +20,15 @@ class BaseYAMLInstance {
      * @param {string} [separator='..'] - Separator for nested keys.
      */
     constructor(filePath, nestedEnabled = true, separator = '..') {
-        this.#fileName = filePath;
-        this.#nestedEnabled = nestedEnabled;
-        this.#separator = separator;
-        const lastIndex = this.#fileName.lastIndexOf('/');
-        const databaseDir = this.#fileName.substring(0, lastIndex);
+        this.fileName = filePath;
+        this.nestedEnabled = nestedEnabled;
+        this.separator = separator;
+        const lastIndex = this.fileName.lastIndexOf('/');
+        const databaseDir = this.fileName.substring(0, lastIndex);
         if (!fs_1.default.existsSync(databaseDir) && databaseDir)
             fs_1.default.mkdirSync(databaseDir, { recursive: true });
-        if (!fs_1.default.existsSync(this.#fileName))
-            fs_1.default.writeFileSync(this.#fileName, "");
+        if (!fs_1.default.existsSync(this.fileName))
+            fs_1.default.writeFileSync(this.fileName, "");
     }
     /**
      * Loads YAML content from the file.
@@ -36,7 +36,7 @@ class BaseYAMLInstance {
      */
     loadYamlFromFile() {
         try {
-            const fileContent = fs_1.default.readFileSync(this.#fileName, 'utf8');
+            const fileContent = fs_1.default.readFileSync(this.fileName, 'utf8');
             return js_yaml_1.default.load(fileContent);
         }
         catch (error) {
@@ -51,7 +51,7 @@ class BaseYAMLInstance {
     saveYamlToFile(data) {
         try {
             const yamlContent = js_yaml_1.default.dump(data);
-            fs_1.default.writeFileSync(this.#fileName, yamlContent, 'utf8');
+            fs_1.default.writeFileSync(this.fileName, yamlContent, 'utf8');
         }
         catch (error) {
             console.error('Error saving YAML file:', error);
@@ -64,7 +64,7 @@ class BaseYAMLInstance {
      * @param {boolean} [nestedEnabled] - Enable nested keys.
      * @param {string} [separator] - Separator for nested keys.
      */
-    set(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    set(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         const data = this.loadYamlFromFile() || {};
@@ -95,7 +95,7 @@ class BaseYAMLInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @returns {any} - Retrieved value.
      */
-    get(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    get(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         const data = this.loadYamlFromFile();
@@ -122,7 +122,7 @@ class BaseYAMLInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @returns {any} - Fetched value.
      */
-    fetch(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    fetch(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
@@ -136,7 +136,7 @@ class BaseYAMLInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @returns {boolean} - True if deleted, false if not found.
      */
-    delete(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    delete(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         const data = this.loadYamlFromFile();
@@ -179,7 +179,7 @@ class BaseYAMLInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @returns {boolean} - True if exists, false otherwise.
      */
-    has(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    has(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         const data = this.loadYamlFromFile();
@@ -206,7 +206,7 @@ class BaseYAMLInstance {
      * @param {boolean} [nestedEnabled] - Enable nested keys.
      * @param {string} [separator] - Separator for nested keys.
      */
-    add(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    add(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
@@ -226,7 +226,7 @@ class BaseYAMLInstance {
      * @param {boolean} [nestedEnabled] - Enable nested keys.
      * @param {string} [separator] - Separator for nested keys.
      */
-    subtract(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    subtract(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
@@ -246,7 +246,7 @@ class BaseYAMLInstance {
      * @param {boolean} [nestedEnabled] - Enable nested keys.
      * @param {string} [separator] - Separator for nested keys.
      */
-    push(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    push(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         const array = this.get(key, nestedEnabled, separator) || [];
@@ -264,7 +264,7 @@ class BaseYAMLInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @returns {boolean} - True if pulled, false if not found.
      */
-    pull(key, callbackOrValue, pullAll = false, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    pull(key, callbackOrValue, pullAll = false, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         const data = this.loadYamlFromFile();

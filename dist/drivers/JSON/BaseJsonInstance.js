@@ -6,19 +6,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const Error_1 = __importDefault(require("../Error/Error"));
 class BaseJSONInstance {
-    #fileName;
-    #nestedEnabled;
-    #separator;
+    fileName;
+    nestedEnabled;
+    separator;
     constructor(filePath, nestedEnabled = true, separator = '..') {
-        this.#fileName = filePath;
-        this.#nestedEnabled = nestedEnabled;
-        this.#separator = separator;
-        const lastIndex = this.#fileName.lastIndexOf('/');
-        const databaseDir = this.#fileName.substring(0, lastIndex);
+        this.fileName = filePath;
+        this.nestedEnabled = nestedEnabled;
+        this.separator = separator;
+        const lastIndex = this.fileName.lastIndexOf('/');
+        const databaseDir = this.fileName.substring(0, lastIndex);
         if (!fs_1.default.existsSync(databaseDir) && databaseDir)
             fs_1.default.mkdirSync(databaseDir, { recursive: true });
-        if (!fs_1.default.existsSync(this.#fileName))
-            fs_1.default.writeFileSync(this.#fileName, "{}");
+        if (!fs_1.default.existsSync(this.fileName))
+            fs_1.default.writeFileSync(this.fileName, "{}");
     }
     /**
      * Sets a key-value pair in the database.
@@ -28,12 +28,12 @@ class BaseJSONInstance {
      * @param {string} [separator] Separator for nested keys.
      * @example db.set("name", "John Doe");
      */
-    set(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    set(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
             throw new Error_1.default("The key must be a string!");
-        const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+        const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
         if (nestedEnabled) {
             const keyParts = key.split(separator);
@@ -52,7 +52,7 @@ class BaseJSONInstance {
         else {
             file[key] = value;
         }
-        fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
+        fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
     }
     /**
      * Gets the value associated with the provided key from the database.
@@ -62,12 +62,12 @@ class BaseJSONInstance {
     * @returns {any} - The value associated with the key.
     * @example db.get("name");
     */
-    get(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    get(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
             throw new Error_1.default("The key must be a string!");
-        const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+        const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
         if (nestedEnabled) {
             const keyParts = key.split(separator);
@@ -91,7 +91,7 @@ class BaseJSONInstance {
     * @returns {any} - The value associated with the key.
     * @example db.fetch("name");
     */
-    fetch(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    fetch(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
@@ -106,12 +106,12 @@ class BaseJSONInstance {
      * @returns {boolean} - Returns true if the value was successfully deleted, otherwise false.
      * @example db.delete("name");
      */
-    delete(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    delete(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
             throw new Error_1.default("The key must be a string!");
-        const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+        const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
         if (nestedEnabled) {
             const keyParts = key.split(separator);
@@ -125,7 +125,7 @@ class BaseJSONInstance {
             const lastPart = keyParts[keyParts.length - 1];
             if (currentValue.hasOwnProperty(lastPart)) {
                 delete currentValue[lastPart];
-                fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
+                fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 return true;
             }
             else
@@ -134,7 +134,7 @@ class BaseJSONInstance {
         else {
             if (file.hasOwnProperty(key)) {
                 delete file[key];
-                fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
+                fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 return true;
             }
             else
@@ -149,7 +149,7 @@ class BaseJSONInstance {
      * @returns {boolean} - Returns true if the key exists, otherwise false.
      * @example db.has("name");
      */
-    has(key, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    has(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
@@ -167,7 +167,7 @@ class BaseJSONInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @example db.add("score", 10);
      */
-    add(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    add(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
@@ -188,7 +188,7 @@ class BaseJSONInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @example db.subtract("score", 5);
      */
-    subtract(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    subtract(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
@@ -209,12 +209,12 @@ class BaseJSONInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @example db.push("myArray", "new element");
      */
-    push(key, value, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    push(key, value, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
             throw new Error_1.default("The key must be a string!");
-        const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+        const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
         if (nestedEnabled) {
             const keyParts = key.split(separator);
@@ -252,7 +252,7 @@ class BaseJSONInstance {
                 file[key].push(value);
             }
         }
-        fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
+        fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
     }
     /**
      * Removes elements from an array associated with the provided key in the database based on a callback function or a specific value.
@@ -264,12 +264,12 @@ class BaseJSONInstance {
     * @returns {boolean} - Returns true if any elements were removed, otherwise false.
     * @example db.pull("myArray", (element) => element > 10);
     */
-    pull(key, callbackOrValue, pullAll = false, nestedEnabled = this.#nestedEnabled, separator = this.#separator) {
+    pull(key, callbackOrValue, pullAll = false, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
             throw new Error_1.default("The key must be a string!");
-        const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+        const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
         const traverseAndPull = (currentObject, keyParts, depth) => {
             const part = keyParts[depth];
@@ -324,7 +324,7 @@ class BaseJSONInstance {
                     }
                 }
                 if (removed) {
-                    fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
+                    fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 }
                 return removed;
             }
@@ -334,7 +334,7 @@ class BaseJSONInstance {
                 }
                 const updated = traverseAndPull(currentObject[part], keyParts, depth + 1);
                 if (updated)
-                    fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
+                    fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 return updated;
             }
         };
@@ -392,7 +392,7 @@ class BaseJSONInstance {
                 });
             }
             if (removed) {
-                fs_1.default.writeFileSync(this.#fileName, JSON.stringify(file, null, 2));
+                fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
             }
             return removed;
         }
@@ -413,7 +413,7 @@ class BaseJSONInstance {
      */
     all(type = 0) {
         if (type === 0) {
-            const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+            const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
             const file = fileContent ? JSON.parse(fileContent) : {};
             const keys = Object.keys(file);
             const result = [];
@@ -423,7 +423,7 @@ class BaseJSONInstance {
             return result;
         }
         else if (type == 1) {
-            const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+            const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
             const file = fileContent ? JSON.parse(fileContent) : {};
             let result = [];
             result.push(file);
@@ -438,7 +438,7 @@ class BaseJSONInstance {
     * @example db.reset();
     */
     reset() {
-        return fs_1.default.writeFileSync(this.#fileName, JSON.stringify({}, null, 2));
+        return fs_1.default.writeFileSync(this.fileName, JSON.stringify({}, null, 2));
     }
     /**
      * Create a snapshot of the current database state and store it in a separate JSON file.
@@ -448,7 +448,7 @@ class BaseJSONInstance {
      * db.createSnapshot('backup1');
      */
     createSnapshot(snapshotName) {
-        const fileContent = fs_1.default.readFileSync(this.#fileName, "utf8");
+        const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const fileData = fileContent ? JSON.parse(fileContent) : {};
         const snapshotsFile = 'snapshots.json'; // Name of the snapshot file
         const snapshotsData = fs_1.default.existsSync(snapshotsFile)
@@ -474,7 +474,7 @@ class BaseJSONInstance {
             : [];
         const snapshot = snapshotsData.find((snapshot) => snapshot.name === snapshotName);
         if (snapshot)
-            fs_1.default.writeFileSync(this.#fileName, JSON.stringify(snapshot.data, null, 2));
+            fs_1.default.writeFileSync(this.fileName, JSON.stringify(snapshot.data, null, 2));
         else
             throw new Error_1.default("Snapshot not found.");
     }

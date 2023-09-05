@@ -2,7 +2,9 @@
  * Represents a YAML-based database instance.
  */
 export default class BaseYAMLInstance {
-    #private;
+    readonly fileName: string;
+    readonly nestedEnabled: boolean;
+    readonly separator: string;
     /**
      * Creates a new instance of the BaseYAMLInstance class.
      * @param {string} filePath - Path to the YAML file.

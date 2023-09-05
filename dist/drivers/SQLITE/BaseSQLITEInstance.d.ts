@@ -1,7 +1,7 @@
 import sqlite3 from 'better-sqlite3';
 export default class BaseSQLITEInstance {
-    private instance;
-    private _database;
+    readonly instance: BaseSQLITEInstance | null | any;
+    readonly _database: sqlite3.Database | undefined | null | any;
     get database(): sqlite3.Database;
     constructor(path: string);
     prepare(table: string): Promise<void>;

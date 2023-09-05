@@ -123,8 +123,12 @@ class DataBaseSQLITE {
                 this.driver.setRowByKey(this.tableName, keyParts[0], currentValue, true);
                 return true;
             }
+            else if (keyParts.length == 1) {
+                this.driver.deleteRowByKey(this.tableName, keyParts[0]);
+                return true;
+            }
             else
-                return false;
+                false;
         }
         else {
             this.driver.deleteRowByKey(this.tableName, key);
