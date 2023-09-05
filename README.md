@@ -20,7 +20,10 @@ All notable changes to this project will be documented in this section.
 | 1.6.0   | 2023-08-26   | - Expanded database support to include Yaml and Sqlite formats.            |
 | 1.6.1   | 2023-09-03   | - Addressed issues related to nested data retrieval.                       |
 | 1.6.4   | 2023-09-05   | - Fixed a critical bug in SQLite related to data deletion, Enhanced data manipulation with the addition of versatile 'all' options. |
+<<<<<<< HEAD
 | 1.6.5   | 2023-09-06   | - Fixed a critical bug in SQLite related to data deletion.                 |
+=======
+>>>>>>> 0aa5abe0aa6138853ad62048722a118526dcb259
 
 ## How To Use
 
@@ -532,4 +535,8 @@ The SQLite implementation of the database provides a powerful way to store and m
 
 - Developed By: [Joe](https://discord.com/users/833340407130882068)
 
+<<<<<<< HEAD
 This version of `good.db` is 1.6.5.
+=======
+This version of `good.db` is 1.6.4.
+>>>>>>> 0aa5abe0aa6138853ad62048722a118526dcb259
