@@ -425,8 +425,7 @@ class BaseJSONInstance {
         else if (type == 1) {
             const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
             const file = fileContent ? JSON.parse(fileContent) : {};
-            let result = [];
-            result.push(file);
+            const result = [file];
             return result;
         }
         else {

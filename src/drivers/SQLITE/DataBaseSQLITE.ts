@@ -411,9 +411,7 @@ export default class DataBaseSQLITE {
             return result;
         } else if (type === 1) {
             const data: any = await this.driver.getAllRows(this.tableName);
-            const result = [];
-            result.push(data);
-            return result;
+            return data;
         } else {
             throw new DatabaseError("Invalid type, type must be 0 or 1");
         }

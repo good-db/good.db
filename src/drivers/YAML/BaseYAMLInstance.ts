@@ -181,25 +181,12 @@ export default class BaseYAMLInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @returns {boolean} - True if exists, false otherwise.
      */
-    has(key: string, nestedEnabled: Boolean = this.nestedEnabled, separator: string = this.separator) {
+    has(key: string, nestedEnabled: boolean = this.nestedEnabled, separator: string = this.separator): boolean {
         if (!key) throw new DatabaseError("The key is not defined!");
+        if (typeof key !== 'string') throw new DatabaseError("The key must be a string!");
 
-        const data: any = this.loadYamlFromFile();
-        if (!data) return false;
-
-        if (nestedEnabled) {
-            const keyParts = key.split(separator);
-            let currentValue: any = data;
-
-            for (const part of keyParts) {
-                if (!currentValue.hasOwnProperty(part)) return false;
-                currentValue = currentValue[part];
-            }
-
-            return true;
-        } else {
-            return key in data;
-        }
+        if (this.get(key, nestedEnabled, separator)) return true;
+        else return false;
     }
 
     /**
@@ -422,16 +409,23 @@ export default class BaseYAMLInstance {
      * // Retrieve an array of keys.
      * await db.all(1);
      */
-    all() {
-        const data: any = this.loadYamlFromFile();
-        const keys = Object.keys(data);
-        const result = [];
+    all(type: number = 0) {
+        if (type == 0) {
+            const data: any = this.loadYamlFromFile();
+            const keys = Object.keys(data);
+            const result = [];
 
-        for (const key of keys) {
-            result.push({ ID: key, data: data[key] });
+            for (const key of keys) {
+                result.push({ ID: key, data: data[key] });
+            }
+
+            return result;
+        } else if (type == 1) {
+            const data: any = this.loadYamlFromFile();
+            return data;
+        }else {
+            throw new DatabaseError("Invalid type, type must be 0 or 1");
         }
-
-        return result;
     }
 
     /**

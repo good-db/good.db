@@ -61,7 +61,7 @@ export default class BaseYAMLInstance {
      * @param {string} [separator] - Separator for nested keys.
      * @returns {boolean} - True if exists, false otherwise.
      */
-    has(key: string, nestedEnabled?: Boolean, separator?: string): boolean;
+    has(key: string, nestedEnabled?: boolean, separator?: string): boolean;
     /**
      * Adds a value to the existing value in the database.
      * @param {string} key - Key to add to.
@@ -110,10 +110,7 @@ export default class BaseYAMLInstance {
      * // Retrieve an array of keys.
      * await db.all(1);
      */
-    all(): {
-        ID: string;
-        data: any;
-    }[];
+    all(type?: number): any;
     /**
      * Resets the entire database, removing all key-value pairs.
      * @example db.reset();

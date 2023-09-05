@@ -182,22 +182,12 @@ class BaseYAMLInstance {
     has(key, nestedEnabled = this.nestedEnabled, separator = this.separator) {
         if (!key)
             throw new Error_1.default("The key is not defined!");
-        const data = this.loadYamlFromFile();
-        if (!data)
-            return false;
-        if (nestedEnabled) {
-            const keyParts = key.split(separator);
-            let currentValue = data;
-            for (const part of keyParts) {
-                if (!currentValue.hasOwnProperty(part))
-                    return false;
-                currentValue = currentValue[part];
-            }
+        if (typeof key !== 'string')
+            throw new Error_1.default("The key must be a string!");
+        if (this.get(key, nestedEnabled, separator))
             return true;
-        }
-        else {
-            return key in data;
-        }
+        else
+            return false;
     }
     /**
      * Adds a value to the existing value in the database.
@@ -410,14 +400,23 @@ class BaseYAMLInstance {
      * // Retrieve an array of keys.
      * await db.all(1);
      */
-    all() {
-        const data = this.loadYamlFromFile();
-        const keys = Object.keys(data);
-        const result = [];
-        for (const key of keys) {
-            result.push({ ID: key, data: data[key] });
+    all(type = 0) {
+        if (type == 0) {
+            const data = this.loadYamlFromFile();
+            const keys = Object.keys(data);
+            const result = [];
+            for (const key of keys) {
+                result.push({ ID: key, data: data[key] });
+            }
+            return result;
         }
-        return result;
+        else if (type == 1) {
+            const data = this.loadYamlFromFile();
+            return data;
+        }
+        else {
+            throw new Error_1.default("Invalid type, type must be 0 or 1");
+        }
     }
     /**
      * Resets the entire database, removing all key-value pairs.
