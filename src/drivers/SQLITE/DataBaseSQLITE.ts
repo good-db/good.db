@@ -47,7 +47,7 @@ export default class DataBaseSQLITE {
 
             let currentObject = result;
 
-            for (let i = 0; i < keyParts.slice(1).length - 1; i++) {
+            for (let i = 0; i < keyParts.length - 1; i++) {
                 const part = keyParts[i];
                 if (!currentObject[part]) currentObject[part] = {};
                 else if (typeof currentObject[part] !== 'object') {
@@ -86,7 +86,7 @@ export default class DataBaseSQLITE {
             if (!value) return null;
 
             let currentValue = value;
-            for (const part of keyParts.slice(1)) {
+            for (const part of keyParts) {
                 if (!currentValue[part]) return null;
                 currentValue = currentValue[part];
             }

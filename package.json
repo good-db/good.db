@@ -1,6 +1,6 @@
 {
   "name": "good.db",
-  "version": "1.6.7",
+  "version": "1.6.9",
   "description": "A powerful and user-friendly database library for Node.js applications, supporting JSON, YAML and SQLite storage.",
   "main": "dist/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "storage",
     "yml"
   ],
-  "author": "Discord username: \"u.si\"",
+  "author": "discord: u.si",
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^8.5.2",

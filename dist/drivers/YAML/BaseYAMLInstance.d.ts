@@ -110,7 +110,7 @@ export default class BaseYAMLInstance {
      * // Retrieve an array of keys.
      * await db.all(1);
      */
-    all(type?: number): any;
+    all(type?: number): any[];
     /**
      * Resets the entire database, removing all key-value pairs.
      * @example db.reset();

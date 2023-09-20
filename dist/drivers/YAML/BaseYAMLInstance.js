@@ -412,7 +412,8 @@ class BaseYAMLInstance {
         }
         else if (type == 1) {
             const data = this.loadYamlFromFile();
-            return data;
+            let file = [data];
+            return file;
         }
         else {
             throw new Error_1.default("Invalid type, type must be 0 or 1");

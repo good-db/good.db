@@ -422,7 +422,8 @@ export default class BaseYAMLInstance {
             return result;
         } else if (type == 1) {
             const data: any = this.loadYamlFromFile();
-            return data;
+            let file = [data];
+            return file;
         }else {
             throw new DatabaseError("Invalid type, type must be 0 or 1");
         }

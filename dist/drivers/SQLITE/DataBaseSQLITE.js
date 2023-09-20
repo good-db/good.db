@@ -39,7 +39,7 @@ class DataBaseSQLITE {
                 exist = false;
             }
             let currentObject = result;
-            for (let i = 0; i < keyParts.slice(1).length - 1; i++) {
+            for (let i = 0; i < keyParts.length - 1; i++) {
                 const part = keyParts[i];
                 if (!currentObject[part])
                     currentObject[part] = {};
@@ -74,7 +74,7 @@ class DataBaseSQLITE {
             if (!value)
                 return null;
             let currentValue = value;
-            for (const part of keyParts.slice(1)) {
+            for (const part of keyParts) {
                 if (!currentValue[part])
                     return null;
                 currentValue = currentValue[part];
