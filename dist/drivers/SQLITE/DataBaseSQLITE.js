@@ -68,13 +68,13 @@ class DataBaseSQLITE {
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
             throw new Error_1.default("The key must be a string!");
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             const [value] = await this.driver.getRowByKey(this.tableName, keyParts[0]);
             if (!value)
                 return null;
             let currentValue = value;
-            for (const part of keyParts) {
+            for (const part of keyParts.slice(1)) {
                 if (!currentValue[part])
                     return null;
                 currentValue = currentValue[part];
@@ -114,16 +114,9 @@ class DataBaseSQLITE {
             throw new Error_1.default("The key is not defined!");
         if (typeof key !== 'string')
             throw new Error_1.default("The key must be a string!");
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
-            let currentValue = await this.get(keyParts[0]);
-            const lastPart = keyParts[keyParts.length - 1];
-            if (currentValue.hasOwnProperty(lastPart)) {
-                delete currentValue[lastPart];
-                this.driver.setRowByKey(this.tableName, keyParts[0], currentValue, true);
-                return true;
-            }
-            else if (keyParts.length == 1) {
+            if (await this.get(key)) {
                 this.driver.deleteRowByKey(this.tableName, keyParts[0]);
                 return true;
             }
@@ -297,7 +290,7 @@ class DataBaseSQLITE {
                 return updated;
             }
         };
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             return await traverseAndPull(data, keyParts, 0);
         }
