@@ -6,9 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const Error_1 = __importDefault(require("../Error/Error"));
 class BaseJSONInstance {
-    fileName;
-    nestedEnabled;
-    separator;
     constructor(filePath, nestedEnabled = true, separator = '..') {
         this.fileName = filePath;
         this.nestedEnabled = nestedEnabled;
@@ -35,7 +32,7 @@ class BaseJSONInstance {
             throw new Error_1.default("The key must be a string!");
         const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
-        if (nestedEnabled && key.includes(separator)) {
+        if (nestedEnabled) {
             const keyParts = key.split(separator);
             let currentObject = file;
             for (let i = 0; i < keyParts.length - 1; i++) {
@@ -69,7 +66,7 @@ class BaseJSONInstance {
             throw new Error_1.default("The key must be a string!");
         const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
-        if (nestedEnabled && key.includes(separator)) {
+        if (nestedEnabled) {
             const keyParts = key.split(separator);
             let currentValue = file;
             for (const part of keyParts) {
@@ -113,7 +110,7 @@ class BaseJSONInstance {
             throw new Error_1.default("The key must be a string!");
         const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
-        if (nestedEnabled && key.includes(separator)) {
+        if (nestedEnabled) {
             const keyParts = key.split(separator);
             let currentValue = file;
             for (let i = 0; i < keyParts.length - 1; i++) {
@@ -124,8 +121,6 @@ class BaseJSONInstance {
             }
             const lastPart = keyParts[keyParts.length - 1];
             if (currentValue.hasOwnProperty(lastPart)) {
-                if (!currentValue[lastPart])
-                    return false;
                 delete currentValue[lastPart];
                 fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 return true;
@@ -135,8 +130,6 @@ class BaseJSONInstance {
         }
         else {
             if (file.hasOwnProperty(key)) {
-                if (!file[key])
-                    return false;
                 delete file[key];
                 fs_1.default.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 return true;
@@ -220,7 +213,7 @@ class BaseJSONInstance {
             throw new Error_1.default("The key must be a string!");
         const fileContent = fs_1.default.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
-        if (nestedEnabled && key.includes(separator)) {
+        if (nestedEnabled) {
             const keyParts = key.split(separator);
             let currentObject = file;
             for (let i = 0; i < keyParts.length - 1; i++) {
@@ -342,7 +335,7 @@ class BaseJSONInstance {
                 return updated;
             }
         };
-        if (nestedEnabled && key.includes(separator)) {
+        if (nestedEnabled) {
             const keyParts = key.split(separator);
             return traverseAndPull(file, keyParts, 0);
         }
@@ -483,4 +476,3 @@ class BaseJSONInstance {
     }
 }
 exports.default = BaseJSONInstance;
-//# sourceMappingURL=BaseJsonInstance.js.map

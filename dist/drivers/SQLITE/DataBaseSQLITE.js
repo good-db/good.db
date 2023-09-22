@@ -39,17 +39,18 @@ class DataBaseSQLITE {
                 exist = false;
             }
             let currentObject = result;
-            for (let i = 0; i < keyParts.length - 1; i++) {
-                const part = keyParts[i];
+            let currentKey = keyParts.slice(1);
+            for (let i = 0; i < currentKey.length; i++) {
+                const part = currentKey[i];
                 if (!currentObject[part])
                     currentObject[part] = {};
-                else if (typeof currentObject[part] !== 'object') {
+                if (typeof currentObject[part] !== 'object' && i !== currentKey.length - 1) {
                     throw new Error_1.default(`Cannot create property '${part}' on ${typeof currentObject[part]}`);
                 }
+                if (i === currentKey.length - 1)
+                    currentObject[part] = value;
                 currentObject = currentObject[part];
             }
-            const lastPart = keyParts[keyParts.length - 1];
-            currentObject[lastPart] = value;
             return await this.driver.setRowByKey(this.tableName, keyParts[0], result, exist);
         }
         const exist = (await this.driver.getRowByKey(this.tableName, key))[1];
@@ -225,7 +226,7 @@ class DataBaseSQLITE {
             return false;
         const traverseAndPull = async (currentObject, keyParts, depth) => {
             const part = keyParts[depth];
-            if (depth === keyParts.length - 1) {
+            if (depth === keyParts.slice(1).length) {
                 if (!Array.isArray(currentObject)) {
                     throw new Error_1.default(`Cannot pull from a non-array value at key '${key}'`);
                 }
@@ -376,7 +377,11 @@ class DataBaseSQLITE {
         }
         else if (type === 1) {
             const data = await this.driver.getAllRows(this.tableName);
-            return data;
+            const result = [];
+            for (let i = 0; i < data.length; i++) {
+                result[data[i].id] = data[i].value;
+            }
+            return result;
         }
         else {
             throw new Error_1.default("Invalid type, type must be 0 or 1");

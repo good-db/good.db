@@ -68,7 +68,7 @@ class BaseYAMLInstance {
         if (!key)
             throw new Error_1.default("The key is not defined!");
         const data = this.loadYamlFromFile() || {};
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             let currentObject = data;
             for (let i = 0; i < keyParts.length - 1; i++) {
@@ -101,7 +101,7 @@ class BaseYAMLInstance {
         const data = this.loadYamlFromFile();
         if (!data)
             return undefined;
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             let currentValue = data;
             for (const part of keyParts) {
@@ -142,7 +142,7 @@ class BaseYAMLInstance {
         const data = this.loadYamlFromFile();
         if (!data)
             return false;
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             let currentObject = data;
             for (let i = 0; i < keyParts.length - 1; i++) {
@@ -153,6 +153,8 @@ class BaseYAMLInstance {
             }
             const lastPart = keyParts[keyParts.length - 1];
             if (lastPart in currentObject) {
+                if (!currentObject[lastPart])
+                    return false;
                 delete currentObject[lastPart];
                 this.saveYamlToFile(data);
                 return true;
@@ -327,7 +329,7 @@ class BaseYAMLInstance {
                 return updated;
             }
         };
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             return traverseAndPull(data, keyParts, 0);
         }

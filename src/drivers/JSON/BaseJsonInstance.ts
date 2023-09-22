@@ -33,7 +33,7 @@ export default class BaseJSONInstance {
         const fileContent = fs.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
 
 
@@ -71,7 +71,7 @@ export default class BaseJSONInstance {
         const fileContent = fs.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
 
             let currentValue = file;
@@ -116,7 +116,7 @@ export default class BaseJSONInstance {
         const fileContent = fs.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
 
             let currentValue = file;
@@ -128,12 +128,14 @@ export default class BaseJSONInstance {
             const lastPart = keyParts[keyParts.length - 1];
 
             if (currentValue.hasOwnProperty(lastPart)) {
+                if (!currentValue[lastPart]) return false;
                 delete currentValue[lastPart];
                 fs.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 return true;
             } else return false;
         } else {
             if (file.hasOwnProperty(key)) {
+                if (!file[key]) return false;
                 delete file[key];
                 fs.writeFileSync(this.fileName, JSON.stringify(file, null, 2));
                 return true;
@@ -211,7 +213,7 @@ export default class BaseJSONInstance {
         const fileContent = fs.readFileSync(this.fileName, "utf8");
         const file = fileContent ? JSON.parse(fileContent) : {};
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
 
             let currentObject = file;
@@ -339,7 +341,7 @@ export default class BaseJSONInstance {
             }
         };
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             return traverseAndPull(file, keyParts, 0);
         } else {

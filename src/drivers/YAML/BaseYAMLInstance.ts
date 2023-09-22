@@ -67,7 +67,7 @@ export default class BaseYAMLInstance {
 
         const data: any = this.loadYamlFromFile() || {};
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             let currentObject: any = data;
 
@@ -103,7 +103,7 @@ export default class BaseYAMLInstance {
 
         if (!data) return undefined;
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             let currentValue: any = data;
 
@@ -145,7 +145,7 @@ export default class BaseYAMLInstance {
         const data: any = this.loadYamlFromFile();
         if (!data) return false;
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             let currentObject: any = data;
 
@@ -157,6 +157,7 @@ export default class BaseYAMLInstance {
 
             const lastPart = keyParts[keyParts.length - 1];
             if (lastPart in currentObject) {
+                if (!currentObject[lastPart]) return false;
                 delete currentObject[lastPart];
                 this.saveYamlToFile(data);
                 return true;
@@ -332,7 +333,7 @@ export default class BaseYAMLInstance {
             }
         };
 
-        if (nestedEnabled) {
+        if (nestedEnabled && key.includes(separator)) {
             const keyParts = key.split(separator);
             return traverseAndPull(data, keyParts, 0);
         } else {

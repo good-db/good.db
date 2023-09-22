@@ -1,13 +1,14 @@
 {
   "name": "good.db",
-  "version": "1.6.15",
+  "version": "1.7.0",
   "description": "A powerful and user-friendly database library for Node.js applications, supporting JSON, YAML and SQLite storage.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "docs": "npx typedoc src/index.ts",
     "tsc": "tsc",
-    "publish": "npm run tsc && npm publish"
+    "publish": "npm run tsc && npm publish",
+    "publishdev": "npm run tsc && npm publish --tag dev"
   },
   "repository": {
     "type": "git",
