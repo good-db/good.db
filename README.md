@@ -1,548 +1,357 @@
-# What is good.db ?
+# GoodDB
 
-- good.db is a lightweight and easy-to-use Node.js library that enables developers to work with JSON files as a simple local database. It allows you to perform various database-like operations, such as setting, getting, adding, deleting, pushing, and pulling data from a JSON file.
+GoodDB is a lightweight and versatile database package for Node.js, offering support for various storage drivers including JSON, SQLite, YML, Cache, and MongoDB. It provides simple and intuitive methods to interact with your data, making it easy to integrate into your Node.js applications.
 
 ## Installation
 
-To use `good.db` in your project, you need to install the package via npm:
+You can install GoodDB via npm:
 
-```shell
+```bash
 npm install good.db
 ```
 
-## Changelog
+## Usage
 
-All notable changes to this project will be documented in this section.
+### Basic Usage
 
-| Version | Release Date | Changes                                                                   |
-| ------- | ------------ | -----------------------------------------------------------------------   |
-| 1.5.0   | 2023-08-24   | - Introduced the table system for efficient data management.              |
-| 1.6.0   | 2023-08-26   | - Expanded database support to include Yaml and Sqlite formats.           |
-| 1.6.1   | 2023-09-03   | - Addressed issues related to nested data retrieval.                      |
-| 1.6.4   | 2023-09-05   | - Fixed a critical bug in SQLite related to data deletion.                |
-|         |              | - Enhanced data manipulation with the addition of versatile 'all' options. |
-| 1.6.5   | 2023-09-06   | - Fixed a critical bug in SQLite related to data deletion.                |
-| 1.6.7   | 2023-09-06   | - Resolved issues in JSON ("all method") and SQLite ("all method").       |
-|         |              | - Fixed 'has' in YAML.                                                    |
-|         |              | - This release is the stable version.                                     |
-| 1.6.9   | 2023-09-21   | - Fixed an issue in SQLite driver where the `nestedEnabled` parameter was not functioning correctly in 'get' and 'set' methods.       |
-| 1.6.15   | 2023-09-21   | - Fixed an issue in SQLite driver where the `nestedEnabled` parameter was not functioning correctly in 'delete', 'delete' and 'pull' method.       |
-| 1.6.15   | 2023-09-21   | - Fixed an issue in SQLite, JSON, YAML driver where the `nestedEnabled` parameter was not functioning correctly in 'set', 'get' methods.       |
+Initialize GoodDB with a driver:
 
-## How To Use
+```typescript
+import GoodDB, { JSONDriver } from "good.db";
 
-### Creating a Database Instance
-
-You can create a new database instance using the `DataBaseJSON` class:
-
-```js
-const { DataBaseJSON, DataBaseSQLITE, DataBaseYAML } = require("good.db");
-
-let db = new DataBaseJSON('database.json', true, '..');
-
-db = new DataBaseYAML('database.yaml', true, '..')
-
-db = new DataBaseSQLITE('database.sqlite', 'tableName', true, '..');
+// Initialize GoodDB with a JSON driver
+const db = new GoodDB(new JSONDriver());
 ```
 
+Set and get data:
 
-### Using Tables
+```typescript
+// Set data
+db.set("key", "value");
 
-Alternatively, you can use tables with the `JSONTable` class:
+// Get data
+const value = db.get("key");
 
-```js
-const { JSONTable, YAMLTable, DataBaseSQLITE } = require("good.db");
-
-let db = new JSONTable('folderName');
-
-let table = db.table('file', true, '..');
-
-db = new YAMLTable('folderName')
-
-table = db.table('file', true, '..');
-
-db = new DataBaseSQLITE('database.sqlite', 'tableName', true, '..');
-
-table = db.table('tableName', true, '..');
-
-```
+console.log(value); // Output: value
 ```
 
-- The third parameter `true` in the constructor enables nested data.
-- The fourth parameter `'..'` specifies the separator to use for nesting.
+### Advanced Usage
 
-### Nested Data and Separator
+You can use different drivers based on your requirements. Here's how to use each driver:
 
-`Nested data` refers to the ability to store objects within objects, creating a hierarchical structure. The `separator` is used to indicate the separation between levels of nested data. For example, let's consider the following operations:
+#### JSON Driver
 
-```js
-db.set(`user..profile..name`, 'John', true, '..');
-// This creates a nested structure: { user: { profile: { name: 'John' } } }
+A driver that stores data in a JSON file.
+
+```typescript
+import { JSONDriver } from "good.db";
+
+// Initialize GoodDB with a JSON driver
+const db = new GoodDB(new JSONDriver({ path: "./data.json" }));
 ```
 
-## Performing Operations
+#### SQLite Driver
 
-In this section, you'll learn how to perform various operations on the `good.db` database.
+A driver that stores data in an SQLite database file.
 
-### Fetching Data
+```typescript
+import { SQLiteDriver } from "good.db";
 
-The `db.fetch` method is used to retrieve data from the database. Here's how to use it:
-
-#### Method Signature
-
-```js
-db.fetch(key: string, nested?: boolean = true, separator?: string = '..');
+// Initialize GoodDB with an SQLite driver
+const db = new GoodDB(new SQLiteDriver({ path: "./data.db" }));
 ```
 
-- `key` (required): The key or path to the data you want to fetch.
-- `nested` (optional): Boolean indicating whether nested properties should be considered.
-- `separator` (optional): The separator used for nested properties.
+#### YML Driver
 
-#### Examples
+A driver that stores data in a YAML file.
 
-```javascript
-// Example 1
-db.fetch('user.name', true, '..');
-// Returns: 'John'
+```typescript
+import { YMLDriver } from "good.db";
 
-// Example 2
-db.fetch('user.age', true, '.');
-// Returns: 25
-
-// Example 3
-db.fetch('user.skills');
-// Returns: []
-
-// Example 4
-db.fetch('user.work', true, '..');
-// Returns: 'Programmer'
-
-// Additional Examples
-db.fetch(`key..number`, false); // Returns: 10
-db.fetch(`key.age`, true, '.'); // Returns: 5
-db.fetch(`key..name`); // Returns: 'joe'
-db.fetch(`key..array`); // Returns: []
-db.fetch(`key..other..work`); // Returns: 'Programmer'
+// Initialize GoodDB with a YML driver
+const db = new GoodDB(new YMLDriver({ path: "./data.yml" }));
 ```
 
----
+#### MongoDB Driver
 
-### Getting Data
+A driver that connects to a MongoDB database.
 
-The `db.get` method is used to get data from the database. Here's how to use it:
+```typescript
+import { MongoDBDriver } from "good.db";
 
-#### Method Signature
-
-```js
-db.get(key: string, nested?: boolean = true, separator?: string = '..');
+// Initialize GoodDB with a MongoDB driver
+const db = new GoodDB(new MongoDBDriver({ uri: "mongodb://localhost:27017", database: "mydb" }));
 ```
 
-- `key` (required): The key or path to the data you want to get.
-- `nested` (optional): Boolean indicating whether nested properties should be considered.
-- `separator` (optional): The separator used for nested properties.
+## API
 
-#### Examples
+### `set(key: string, value: any, options?: methodOptions): Promise<boolean> | boolean`
 
-```javascript
-// Example 1
-db.get('user.name', true, '..');
-// Returns: 'John'
+Sets a value for the specified key.
 
-// Example 2
-db.get('user.age', true, '.');
-// Returns: 25
+#### Parameters
 
-// Example 3
-db.get('user.skills');
-// Returns: []
+- `key`: The key to set.
+- `value`: The value to set.
+- `options`: Optional options for setting the value.
 
-// Example 4
-db.get('user.work', true, '..');
-// Returns: 'Programmer'
+#### Returns
 
-// Additional Examples
-db.get(`key..number`, false); // Returns: 10
-db.get(`key.age`, true, '.'); // Returns: 5
-db.get(`key..name`); // Returns: 'joe'
-db.get(`key..array`); // Returns: []
-db.get(`key..other..work`); // Returns: 'Programmer'
-```
-
----
-
-### Setting Data
-
-The `db.set` method is used to set data in the database. Here's how to use it:
-
-#### Method Signature
-
-```js
-db.set(key: string, value: any, nested?: boolean = true, separator?: string = '..');
-```
-
-- `key` (required): The key or path where you want to set the data.
-- `value` (required): The value you want to set.
-- `nested` (optional): Boolean indicating whether nested properties should be considered.
-- `separator` (optional): The separator used for nested properties.
-
-#### Examples
-
-```javascript
-// Example 1
-db.set('user.name', 'John', true, '..');
-// Result: { user: { name: 'John' } }
-
-// Example 2
-db.set('user.age', 25);
-// Result: { user: { name: 'John', age: 25 } }
-
-// Example 3
-db.set('user.work', 'Programmer', true, '.');
-// Result: { user: { name: 'John', age: 25, work: 'Programmer' } }
-
-// Additional Examples
-db.set(`key`, value); // Example: To Set a Data
-db.set(`key..number`, 10, false); // Result: "key..number": 10
-db.set(`key.age`, 5, true, '.'); // Result: "key": { "age": 5 }
-db.set(`key..name`, 'joe'); // Result: "key": { "age": 5, "name": "joe" }
-db.set(`key..array`, []); // Result: "key": { "age": 5, "name": "joe", "array": [] }
-db.set(`key..other..work`, 'Programmer'); // Result: "key": { "age": 5, "name": "joe", "array": [] , "other": { "work": "Programmer" } }
-```
-
----
-
-### Adding and Subtracting Numbers
-
-For numerical operations, you can use `db.add` and `db.subtract`:
-
-#### Method Signature
-
-```js
-db.add(key: string, value: number, nested?: boolean = true, separator?: string = '..');
-db.subtract(key: string, value: number, nested?: boolean = true, separator?: string = '..');
-```
-
-- `key` (required): The key or path where you want to perform the operation.
-- `value` (required): The value you want to add or subtract.
-- `nested` (optional): Boolean indicating whether nested properties should be considered.
-- `separator` (optional): The separator used for nested properties.
-
-#### Examples
-
-```javascript
-// Example 1
-db.add('key', value);
-// Result: Addition operation on the value
-
- in 'key'
-
-// Example 2
-db.subtract('key', value);
-// Result: Subtraction operation on the value in 'key'
-
-// Additional Examples
-db.add('key..number', 5); // Result: 15
-db.add(`key.age`, 5, true, '.'); // Result: 10
-db.add(`key..newnum`, 1); // Result: 1
-db.subtract('key..number', 5); // Result: 10
-db.subtract(`key.age`, 5, true, '.'); // Result: 5
-db.subtract(`key..new_num`, 1); // Result: -1
-```
-
----
-
-### Pushing and Pulling Elements
-
-Manipulate arrays using db.push and `db.pull`:
-
-#### Method Signature
-
-```js
-db.push(key: string, value: any, nested?: boolean = true, separator?: string = '..');
-db.pull(key: string, callbackOrValue: any, pullAll?: boolean = false, nested?: boolean = true, separator?: string = '..');
-```
-
-- `key` (required): The key or path to the array you want to manipulate.
-- `value` (required for `push`): The value you want to push to the array.
-- `callbackOrValue` (required for `pull`): Either a value or an arrow function used to determine which elements to pull.
-- `pullAll` (optional for `pull`): Boolean indicating whether to pull all matching elements.
-- `nested` (optional): Boolean indicating whether nested properties should be considered.
-- `separator` (optional): The separator used for nested properties.
-
-#### Examples
-
-```javascript
-// Example 1
-db.push('key', element);
-// Result: Push the element to the array in 'key'
-
-// Example 2
-db.pull('key', element);
-// Result: Pull the element from the array in 'key'
-
-// Additional Examples
-db.push('key..array', "Push", false); // Result: "key..array": ["Push"]
-db.push('key..array', "Push2", false); // Result: "key..array": ["Push", "Push2"]
-db.push('key..array', "Push3", false); // Result: "key..array": ["Push", "Push2", "Push3"]
-db.push('key.array', "Push 1", true, "."); // Result: "key": { "name": "joe", "number": 0, "array": ["Push 1"] }
-db.push('key..array', "Push 2"); // Result: "key": { "name": "joe", "number": 0, "array": ["Push 1", "Push 2"] }
-db.push('key..array', "Push 3"); // Result: "key": { "name": "joe", "number": 0, "array": ["Push 1", "Push 2", "Push 3"] }
-db.push('key..array', 4); // Result: "key": { "name": "joe", "number": 0, "array": ["Push 1", "Push 2", "Push 3", 4] }
-db.pull('key..array', "Push", false, false); // Result: "key": ["Push2", "Push3"]
-db.pull('key..array', (element, index, array) => element, true, false); // Result: "key": []
-db.pull('key.array', "Push 1", false, true, "."); // Result: "key": { "name": "joe", "number": 0, "array": ["Push 2", "Push 3", 4] }
-db.pull('key..array', (element, index, array) => element.array.includes("Push"), true); // Result: "key": { "name": "joe", "number": 0, "array": [4] }
-```
-
----
-
-### Checking Data Existence
-
-Check if a key exists using `db.has`:
-
-#### Method Signature
-
-```js
-db.has(key: string, nested?: boolean = true, separator?:string = '..');
-```
-
-- `key` (required): The key or path to the data you want to check.
-- `nested` (optional): Boolean indicating whether nested properties should be considered.
-- `separator` (optional): The separator used for nested properties.
-
-#### Examples
-
-```javascript
-// Example 1
-db.has('key');
-// Returns: true or false, indicating if 'key' exists in the database
-
-// Additional Examples
-db.has('key'); // Returns: true
-db.has(`key..number..m`, false); // Returns: false
-db.has(`key.age.n`, true, '.'); // Returns: false
-db.has(`key..name`); // Returns: true
-db.has(`key..array`); // Returns: true
-db.has(`key..other..work`); // Returns: true
-```
-
----
-
-
-### Deleting Data
-
-Delete data by key using `db.delete`:
-
-#### Method Signature
-
-```js
-db.delete(key: string, nested?: boolean = true, separator?: string = '..');
-```
-
-- `key` (required): The key or path of the data you want to delete.
-- `nested` (optional): Boolean indicating whether nested properties should be considered.
-- `separator` (optional): The separator used for nested properties.
-
-#### Examples
-
-```javascript
-// Example 1
-db.delete('key');
-// Result: Delete the data at 'key'
-
-// Additional Examples
-db.delete(`key..number`, false); // Result: true
-db.delete(`key.age`, true, '.'); // Result: true
-db.delete(`key..name`); // Result: true
-db.delete(`key..array`); // Result: true
-db.delete(`key..other..work`); // Result: true
-```
-
----
-
-### Retrieving All Data
-
-To retrieve all data in the database, use `db.all()`:
-
-#### Method Signature
-
-```js
-db.all(type?: number = 0);
-```
-
-- `type` (optional): Determines what to retrieve:
-  - 0: Returns an array of objects containing ID and data for each key-value pair.
-  - 1: Returns an array containing all keys.
+- `true` if the value was set successfully, `false` otherwise.
 
 #### Example
 
-```javascript
-// Retrieve an array of key-value pairs.
-const allData = await db.all(0);
-// Result: Returns an array of objects containing ID and data for each key-value pair.
-
-// Retrieve an array of keys.
-const allKeys = await db.all(1);
-// Result: Returns an array containing all keys.
+```typescript
+// Set data
+db.set("key", "value");
 ```
 
+### `get(key: string, options?: methodOptions): Promise<any> | any`
+
+Gets the value for the specified key.
+
+#### Parameters
+
+- `key`: The key to get the value for.
+- `options`: Optional options for getting the value.
+
+#### Returns
+
+The value for the specified key.
+
+#### Example
+
+```typescript
+// Get data
+const value = db.get("key");
+console.log(value); // Output: value
+```
+
+### `has(key: string, options?: methodOptions): Promise<boolean> | boolean`
+
+Checks if a key exists in the database.
+
+#### Parameters
+
+- `key`: The key to check for existence.
+- `options`: Optional options for checking.
+
+#### Returns
+
+- `true` if the key exists, `false` otherwise.
+
+#### Example
+
+```typescript
+// Check if key exists
+const exists = db.has("key");
+console.log(exists); // Output: true or false
+```
+
+### `math(key: string, mathSign: string, value: number, options?: methodOptions): Promise<number> | number`
+
+Performs mathematical operations on numeric values stored in the database.
+
+#### Parameters
+
+- `key`: The key of the numeric value to perform the operation on.
+- `mathSign`: The mathematical operation sign (`+`, `-`, `*`, `/`).
+- `value`: The value to perform the operation with.
+- `options`: Optional options.
+
+#### Returns
+
+The result of the mathematical operation.
+
+#### Example
+
+```typescript
+// Perform addition
+const result = db.math("counter", "+", 5);
+console.log(result); // Output: new value after addition
+```
+
+### `startsWith(key: string, options?: methodOptions): Promise<any> | any`
+
+Retrieves all key-value pairs with keys starting with the specified prefix.
+
+#### Parameters
+
+- `key`: The prefix to search for.
+- `options`: Optional options.
+
+#### Returns
+
+An object containing key-value pairs with keys starting with the specified prefix.
+
+#### Example
+
+```typescript
+// Retrieve all keys starting with "user"
+const data = db.startsWith("user");
+console.log(data); // Output: { "user1": value1, "user2": value2, ... }
+```
+
+### `endsWith(key: string, options?: methodOptions): Promise<any> | any`
+
+Retrieves all key-value pairs with keys ending with the specified suffix.
+
+#### Parameters
+
+- `key`: The suffix to search for.
+- `options`: Optional options.
+
+#### Returns
+
+An object containing key-value pairs with keys ending with the specified suffix.
+
+#### Example
+
+```typescript
+// Retrieve all keys ending with "info"
+const data = db.endsWith("info");
+console.log(data); // Output: { "user_info": value1, "profile_info": value2, ... }
+```
+
+### `push(key: string, value: any, options?: methodOptions): Promise<number> | number`
+
+Appends a value to an array stored at the specified key.
+
+#### Parameters
+
+- `key`: The key of the array.
+- `value`: The value to append.
+- `options`: Optional options.
+
+#### Returns
+
+The new length of the array after appending the value.
+
+#### Example
+
+```typescript
+// Append value to array
+const length = db.push("list", "new value");
+console.log(length); // Output: new length of the array
+```
+
+### `pull(key: string, valueOrCallback: any, pullAll?: boolean, options?: methodOptions): Promise<boolean> | boolean`
+
+Removes elements from an array stored at the specified key.
+
+#### Parameters
+
+- `key`: The key of the array.
+- `valueOrCallback`: The value or callback function to determine which elements to remove.
+- `pullAll`: Whether to remove all matching elements.
+- `options`: Optional options.
+
+#### Returns
+
+- `true` if elements were removed, `false` otherwise.
+
+#### Example
+
+```typescript
+// Remove specific value from array
+const removed = db.pull("list", "valueToRemove");
+console.log(removed); // Output: true or false
+```
+
+### `add(key: string, value: number, options?: methodOptions): Promise<number> | number`
+
+Adds a numeric value to the existing value stored at the specified key.
+
+#### Parameters
+
+- `key`: The key of the numeric value.
+- `value`: The value to add.
+- `options`: Optional options.
+
+#### Returns
+
+The new value after addition.
+
+#### Example
+
+```typescript
+// Add value to existing number
+const newValue = db.add("counter", 5);
+console.log(newValue); // Output: new value after addition
+```
+
+### `subtract(key: string, value: number, options?: methodOptions): Promise<number> | number`
+
+Subtracts a numeric value from the existing value stored at the specified key.
+
+#### Parameters
+
+- `key`: The key of the numeric value.
+- `value`: The value to subtract.
+- `options`: Optional options.
+
+#### Returns
+
+The new value after subtraction.
+
+#### Example
+
+```typescript
+// Subtract value from existing number
+const newValue = db.subtract("counter", 5);
+console.log(newValue); // Output: new value after subtraction
+```
+
+### `delete(key: string, options?: methodOptions): Promise<boolean> | boolean`
+
+Deletes the value associated with the specified key.
+
+#### Parameters
+
+- `key`:
+
+ The key to delete.
+- `options`: Optional options.
+
+#### Returns
+
+- `true` if the value was deleted successfully, `false` otherwise.
+
+#### Example
+
+```typescript
+// Delete data
+const deleted = db.delete("key");
+console.log(deleted); // Output: true or false
+```
+
+### `all(): Promise<any> | any`
+
+Retrieves all key-value pairs in the database.
+
+#### Returns
+
+An object containing all key-value pairs in the database.
+
+#### Example
+
+```typescript
+// Retrieve all data
+const data = db.all();
+console.log(data); // Output: { key1: value1, key2: value2, ... }
+```
 ---
+# Conclusion
 
-### Resetting the Database
+GoodDB is a versatile and lightweight database package for Node.js, offering support for various storage drivers including JSON, SQLite, YML, Cache, and MongoDB. It provides simple and intuitive methods to interact with your data, making it easy to integrate into your Node.js applications.
 
-You can reset the entire database using `db.reset()`:
+## License
 
-```js
-db.reset();
-// Result: Deletes all data in the database
-```
+GoodDB is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
----
+## Links
 
-### Creating and Using Snapshots
-
-You can capture the current state of the database with snapshots. Here's how to use the snapshot-related methods:
-
-#### Creating Snapshots
-
-Capture the current state of the database with snapshots using `db.createSnapshot`:
-
-```js
-db.createSnapshot(snapshotName);
-```
-
-- `snapshotName` (required): The name of the snapshot.
-
-#### Rolling Back to a Snapshot
-
-Roll back the database to a specific snapshot's state using `db.rollbackToSnapshot`:
-
-```js
-db.rollbackToSnapshot(snapshotName);
-```
-
-- `snapshotName` (required): The name of the snapshot to which you want to roll back.
-
-#### Examples
-
-Create and use snapshots:
-
-```js
-db.createSnapshot('backupName'); // Create a snapshot of the current database state.
-db.rollbackToSnapshot('backupName'); // Roll back to the state of the specified snapshot.
-```
-
----
-
-## SQLite Implementation
-
-The SQLite implementation of the database provides a way to store data using SQLite as the backend storage engine. This can be particularly useful when you require a more robust and performant storage solution. The `DataBaseSQLITE` class is provided for interfacing with the SQLite database.
-
-### Usage
-
-To use the SQLite implementation, you'll need to import the necessary classes and instantiate an instance of `DataBaseSQLITE`. Here's how you can set up and use the SQLite database:
-
-```javascript
-const { DataBaseSQLITE } = require('good.db');
-
-// Create an instance of DataBaseSQLITE
-const db = new DataBaseSQLITE();
-
-(async () => {
-    // Set a key-value pair
-    await db.set('name', 'John Doe');
-    
-    // Get the value associated with a key
-    const name = await db.get('name');
-    console.log('Name:', name); // Output: Name: John Doe
-})()
-```
-
-### Example
-
-```javascript
-const { DataBaseSQLITE } = require('good.db');
-
-const db = new DataBaseSQLITE();
-
-(async () => {
-    // Set a key-value pair
-    await db.set('name', 'Alice');
-    
-    // Push a value to an array
-    await db.push('colors', 'blue');
-    
-    // Get the value associated with a key
-    const name = await db.get('name');
-    console.log('Name:', name); // Output: Name: Alice
-    
-    // Get all data in the database
-    const allData = await db.all();
-    console.log('All Data:', allData);
-    
-    // Create a snapshot
-    await db.createSnapshot('backup1');
-    
-    // Roll back to a snapshot
-    await db.rollbackToSnapshot('backup1');
-})();
-```
-
-Absolutely, I understand what you're looking for. Here's the example you requested for the `table` method and its method signature:
-
----
-
-### Creating and Using Custom Tables
-
-The `table` method allows you to create and use custom tables for managing different sets of data. Here's how you can create and use custom tables:
-
-#### Method Signature
-
-```js
-table(table: string, nestedEnabled?: boolean = false, separator?: string = '..');
-```
-
-- `table` (required): The name of the new table you want to create.
-- `nestedEnabled` (optional): Boolean indicating whether nested properties are enabled for the new table (default: true).
-- `separator` (optional): The separator used for nested properties (default: '..').
-
-#### Examples
-
-Create a custom table and perform database operations on it:
-
-```js
-(async () => {
-    // Create a custom table instance
-    const customTable = await db.table('user_data');
-    
-    // Set data in the custom table
-    await customTable.set('username', 'john_doe');
-    
-    // Retrieve data from the custom table
-    const username = await customTable.get('username');
-    console.log('Username:', username); // Output: Username: john_doe
-    
-    // Push an element into an array in the custom table
-    await customTable.push('scores', 100);
-    
-    // Delete data from the custom table
-    const deleted = await customTable.delete('username');
-    console.log('Deleted:', deleted); // Output: Deleted: true
-})();
-```
-
-Creating and using custom tables allows you to manage and organize data separately within your SQLite database.
-
----
-
-### Conclusion
-
-The SQLite implementation of the database provides a powerful way to store and manage your data using SQLite as the backend storage engine. It offers features similar to the JSON implementation, but with the benefits of enhanced performance and robustness.
-
----
-
-# Developer
-
-- Developed By: [Joe](https://discord.com/users/833340407130882068)
-
-This version of `good.db` is 1.7.0.
+- [GitHub](https://github.com/good-db/good.db)
+- [NPM](https://www.npmjs.com/package/good.db)
+- [Documentation](https://good-db.github.io/)
+- [Developer - Joe](https://discord.com/users/833340407130882068)

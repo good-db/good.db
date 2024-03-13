@@ -3,20 +3,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DataBaseSQLITE = exports.YAMLTable = exports.DataBaseYAML = exports.JSONTable = exports.DataBaseJSON = void 0;
-// Create Json database
-const DataBaseJSON_1 = __importDefault(require("./drivers/JSON/DataBaseJSON"));
-exports.DataBaseJSON = DataBaseJSON_1.default;
-// Create Yaml database
-const DataBaseYAML_1 = __importDefault(require("./drivers/YAML/DataBaseYAML"));
-exports.DataBaseYAML = DataBaseYAML_1.default;
-// Create Sqlite database
-const DataBaseSQLITE_1 = __importDefault(require("./drivers/SQLITE/DataBaseSQLITE"));
-exports.DataBaseSQLITE = DataBaseSQLITE_1.default;
-// Create Json table
-const Main_1 = __importDefault(require("./Tables/Json/Main"));
-exports.JSONTable = Main_1.default;
-// Create Yaml table
-const Main_2 = __importDefault(require("./Tables/Yaml/Main"));
-exports.YAMLTable = Main_2.default;
+exports.MongoDBDriver = exports.YMLDriver = exports.CacheDriver = exports.SQLiteDriver = exports.JSONDriver = void 0;
+const good_db_1 = __importDefault(require("./good.db"));
+var JSON_1 = require("./Drivers/JSON");
+Object.defineProperty(exports, "JSONDriver", { enumerable: true, get: function () { return JSON_1.JSONDriver; } });
+var SQLite_1 = require("./Drivers/SQLite");
+Object.defineProperty(exports, "SQLiteDriver", { enumerable: true, get: function () { return SQLite_1.SQLiteDriver; } });
+var Cache_1 = require("./Drivers/Cache");
+Object.defineProperty(exports, "CacheDriver", { enumerable: true, get: function () { return Cache_1.CacheDriver; } });
+var YML_1 = require("./Drivers/YML");
+Object.defineProperty(exports, "YMLDriver", { enumerable: true, get: function () { return YML_1.YMLDriver; } });
+var Mongo_1 = require("./Drivers/Mongo");
+Object.defineProperty(exports, "MongoDBDriver", { enumerable: true, get: function () { return Mongo_1.MongoDBDriver; } });
+exports.default = good_db_1.default;
 //# sourceMappingURL=index.js.map

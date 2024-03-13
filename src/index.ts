@@ -1,12 +1,8 @@
-// Create Json database
-import DataBaseJSON from "./drivers/JSON/DataBaseJSON";
-// Create Yaml database
-import DataBaseYAML from "./drivers/YAML/DataBaseYAML";
-// Create Sqlite database
-import DataBaseSQLITE from './drivers/SQLITE/DataBaseSQLITE';
-// Create Json table
-import JSONTable from "./Tables/Json/Main";
-// Create Yaml table
-import YAMLTable from "./Tables/Yaml/Main";
+import GoodDB from "./good.db";
 
-export { DataBaseJSON, JSONTable, DataBaseYAML, YAMLTable, DataBaseSQLITE };
+export { JSONDriver } from "./Drivers/JSON";
+export { SQLiteDriver } from "./Drivers/SQLite";
+export { CacheDriver } from "./Drivers/Cache";
+export { YMLDriver } from './Drivers/YML';
+export { MongoDBDriver } from './Drivers/Mongo'
+export default GoodDB;
