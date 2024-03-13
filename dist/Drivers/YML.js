@@ -7,9 +7,8 @@ exports.YMLDriver = void 0;
 const fs_1 = __importDefault(require("fs"));
 const js_yaml_1 = __importDefault(require("js-yaml"));
 class YMLDriver {
-    path;
     constructor(options) {
-        this.path = options?.path || './db.yml';
+        this.path = (options === null || options === void 0 ? void 0 : options.path) || './db.yml';
         this.init();
     }
     ;

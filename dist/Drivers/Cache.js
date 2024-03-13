@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CacheDriver = void 0;
 class CacheDriver {
-    cache;
     constructor() {
         this.cache = new Map();
     }

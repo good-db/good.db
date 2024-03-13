@@ -6,10 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SQLiteDriver = void 0;
 const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
 class SQLiteDriver {
-    path;
-    db;
     constructor(options) {
-        this.path = options?.path || './db.sqlite';
+        this.path = (options === null || options === void 0 ? void 0 : options.path) || './db.sqlite';
         this.db = new better_sqlite3_1.default(this.path);
     }
     init() {

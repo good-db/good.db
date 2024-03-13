@@ -1,12 +1,18 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Mongo_1 = require("./Drivers/Mongo");
 const ErrorMessage_1 = require("./utils/ErrorMessage");
 const nested_1 = require("./utils/nested");
 class GoodDB {
-    driver;
-    nested;
-    isAsync;
     /**
      * Create a new instance of GoodDB
      * @param driver The driver to use
@@ -21,8 +27,8 @@ class GoodDB {
     constructor(driver, options) {
         this.driver = driver;
         this.nested = {
-            nested: options?.nested || '..',
-            isEnabled: options?.nestedIsEnabled ? true : false,
+            nested: (options === null || options === void 0 ? void 0 : options.nested) || '..',
+            isEnabled: (options === null || options === void 0 ? void 0 : options.nestedIsEnabled) ? true : false,
         };
         this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver ? true : false;
         this.driver.init();
@@ -45,29 +51,29 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    if (options?.nestedIsEnabled && key.includes(options?.nested)) {
+                    if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const newData = (0, nested_1.setValueAtPath)(this.driver.read(), key, value, {
-                            separator: options?.nested,
+                            separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
-                        await this.driver.write(newData);
+                        yield this.driver.write(newData);
                         resolve(true);
                     }
                     else {
-                        const data = await this.driver.read();
+                        const data = yield this.driver.read();
                         data[key] = value;
-                        await this.driver.write(data);
+                        yield this.driver.write(data);
                         resolve(true);
                     }
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
-            if (options?.nested) {
+            if (options === null || options === void 0 ? void 0 : options.nested) {
                 const newData = (0, nested_1.setValueAtPath)(this.driver.read(), key, value, {
                     separator: this.nested.nested,
                 });
@@ -99,26 +105,26 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    if (options?.nestedIsEnabled && key.includes(options?.nested)) {
-                        const data = (0, nested_1.getValueAtPath)(await this.driver.read(), key, {
+                    if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+                        const data = (0, nested_1.getValueAtPath)(yield this.driver.read(), key, {
                             separator: this.nested.nested,
                         });
                         return resolve(data);
                     }
                     else {
-                        const data = await this.driver.read();
+                        const data = yield this.driver.read();
                         return resolve(data[key]);
                     }
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested)) {
+            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 return (0, nested_1.getValueAtPath)(this.driver.read(), key, {
                     separator: this.nested.nested,
                 });
@@ -145,15 +151,15 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const value = await this.get(key, options);
+                    const value = yield this.get(key, options);
                     resolve(value !== null && value !== undefined);
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             return this.get(key, options) ? true : false;
@@ -264,11 +270,11 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    if (options?.nestedIsEnabled && key.includes(options?.nested)) {
-                        const k = key.split(options?.nested).slice(0, -1).join(options?.nested);
-                        const data = await this.get(k, options);
+                    if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+                        const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        const data = yield this.get(k, options);
                         if (typeof data !== 'object') {
                             throw new ErrorMessage_1.DatabaseError('Value is not an object');
                         }
@@ -283,7 +289,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = await this.driver.read();
+                        const data = yield this.driver.read();
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -297,11 +303,11 @@ class GoodDB {
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested)) {
-                const k = key.split(options?.nested).slice(0, -1).join(options?.nested);
+            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+                const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
                 const data = this.get(k, options);
                 if (typeof data !== 'object') {
                     throw new ErrorMessage_1.DatabaseError('Value is not an object');
@@ -346,11 +352,11 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    if (options?.nestedIsEnabled && key.includes(options?.nested)) {
-                        const k = key.split(options?.nested).slice(0, -1).join(options?.nested);
-                        const data = await this.get(k, options);
+                    if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+                        const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        const data = yield this.get(k, options);
                         if (typeof data !== 'object') {
                             throw new ErrorMessage_1.DatabaseError('Value is not an object');
                         }
@@ -365,7 +371,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = await this.driver.read();
+                        const data = yield this.driver.read();
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -379,11 +385,11 @@ class GoodDB {
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested)) {
-                const k = key.split(options?.nested).slice(0, -1).join(options?.nested);
+            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+                const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
                 const data = this.get(k, options);
                 if (typeof data !== 'object') {
                     throw new ErrorMessage_1.DatabaseError('Value is not an object');
@@ -429,9 +435,9 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = await this.get(key, options);
+                    const data = yield this.get(key, options);
                     if (!Array.isArray(data) && data !== undefined) {
                         throw new ErrorMessage_1.DatabaseError('Value is not an array');
                     }
@@ -440,13 +446,13 @@ class GoodDB {
                         resolve(1);
                     }
                     data.push(value);
-                    await this.set(key, data, options);
+                    yield this.set(key, data, options);
                     resolve(data.length);
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             const data = this.get(key, options);
@@ -484,14 +490,14 @@ class GoodDB {
             throw new ErrorMessage_1.DatabaseError("The key is not defined!");
         }
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = await this.get(key);
+                    const data = yield this.get(key);
                     console.log(data, 'aadada');
                     if (!data) {
                         resolve(false);
                     }
-                    const pullFromArray = async (array) => {
+                    const pullFromArray = (array) => __awaiter(this, void 0, void 0, function* () {
                         const indexesToRemove = [];
                         let removed = false;
                         array.forEach((element, index) => {
@@ -518,46 +524,46 @@ class GoodDB {
                             for (let i = indexesToRemove.length - 1; i >= 0; i--) {
                                 array.splice(indexesToRemove[i], 1);
                             }
-                            await this.set(key, data, options);
+                            yield this.set(key, data, options);
                             return true;
                         }
                         else {
                             return false;
                         }
-                    };
-                    const pullFromNestedObject = async (currentObject, keyParts, depth) => {
+                    });
+                    const pullFromNestedObject = (currentObject, keyParts, depth) => __awaiter(this, void 0, void 0, function* () {
                         const part = keyParts[depth];
                         if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
                             throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
                         }
                         if (depth === keyParts.slice(1).length) {
-                            return await pullFromArray(currentObject[part]);
+                            return yield pullFromArray(currentObject[part]);
                         }
                         else {
-                            const updated = await pullFromNestedObject(currentObject[part], keyParts, depth + 1);
+                            const updated = yield pullFromNestedObject(currentObject[part], keyParts, depth + 1);
                             if (updated) {
-                                await this.set(key, data, options);
+                                yield this.set(key, data, options);
                             }
                             return updated;
                         }
-                    };
-                    if (options?.nestedIsEnabled && key.includes(options?.nested)) {
+                    });
+                    if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const keyParts = key.split(options.nested);
-                        await pullFromNestedObject(data, keyParts, 0);
+                        yield pullFromNestedObject(data, keyParts, 0);
                         resolve(true);
                     }
                     else {
                         if (!Array.isArray(data)) {
                             throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-array value at key '${key}'`);
                         }
-                        await pullFromArray(data);
+                        yield pullFromArray(data);
                         resolve(true);
                     }
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             const data = this.get(key);
@@ -612,7 +618,7 @@ class GoodDB {
                     return updated;
                 }
             };
-            if (options?.nestedIsEnabled && key.includes(options?.nested)) {
+            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 const keyParts = key.split(options.nested);
                 return pullFromNestedObject(data, keyParts, 0);
             }
@@ -642,20 +648,20 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = await this.get(key, options);
+                    const data = yield this.get(key, options);
                     if (typeof data !== 'number' && data !== undefined) {
                         throw new ErrorMessage_1.DatabaseError('Value is not a number');
                     }
                     const newValue = (data || 0) + value;
-                    await this.set(key, newValue, options);
+                    yield this.set(key, newValue, options);
                     resolve(newValue);
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             const data = this.get(key, options);
@@ -685,20 +691,20 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = await this.get(key, options);
+                    const data = yield this.get(key, options);
                     if (typeof data !== 'number' && data !== undefined) {
                         throw new ErrorMessage_1.DatabaseError('Value is not a number');
                     }
                     const newValue = (data || 0) - value;
-                    await this.set(key, newValue, options);
+                    yield this.set(key, newValue, options);
                     resolve(newValue);
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             const data = this.get(key, options);
@@ -727,31 +733,31 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    if (options?.nestedIsEnabled && key.includes(options?.nested)) {
+                    if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const data = (0, nested_1.deleteValueAtPath)(this.driver.read(), key, {
-                            separator: options?.nested,
+                            separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
-                        await this.driver.write(data);
+                        yield this.driver.write(data);
                         resolve(true);
                     }
                     else {
-                        const data = await this.driver.read();
+                        const data = yield this.driver.read();
                         delete data[key];
-                        await this.driver.write(data);
+                        yield this.driver.write(data);
                         resolve(true);
                     }
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested)) {
+            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 const data = (0, nested_1.deleteValueAtPath)(this.driver.read(), key, {
-                    separator: options?.nested,
+                    separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
                 this.driver.write(data);
                 return true;
@@ -775,15 +781,15 @@ class GoodDB {
      */
     all() {
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = await this.driver.read();
+                    const data = yield this.driver.read();
                     resolve(data);
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             return this.driver.read();
@@ -800,15 +806,15 @@ class GoodDB {
      */
     clear() {
         if (this.isAsync) {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    await this.driver.clear();
+                    yield this.driver.clear();
                     resolve(true);
                 }
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             this.driver.clear();

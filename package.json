@@ -1,6 +1,6 @@
 {
   "name": "good.db",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "GoodDB is a lightweight and versatile database package for Node.js, offering support for various storage drivers including JSON, SQLite, YML, Cache, and MongoDB.",
   "main": "dist/index.js",
   "scripts": {

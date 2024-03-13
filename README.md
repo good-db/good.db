@@ -17,7 +17,7 @@ npm install good.db
 Initialize GoodDB with a driver:
 
 ```typescript
-import GoodDB, { JSONDriver } from "good.db";
+import { JSONDriver, GoodDB } from "good.db";
 
 // Initialize GoodDB with a JSON driver
 const db = new GoodDB(new JSONDriver());

@@ -6,9 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSONDriver = void 0;
 const fs_1 = __importDefault(require("fs"));
 class JSONDriver {
-    path;
     constructor(options) {
-        this.path = options?.path || './db.json';
+        this.path = (options === null || options === void 0 ? void 0 : options.path) || './db.json';
         this.init();
     }
     ;
