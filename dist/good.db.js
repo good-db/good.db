@@ -7,6 +7,17 @@ class GoodDB {
     driver;
     nested;
     isAsync;
+    /**
+     * Create a new instance of GoodDB
+     * @param driver The driver to use
+     * @param options The options for the database
+     * @example
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver(), {
+     * nested: '..',
+     * nestedIsEnabled: true
+     * });
+     */
     constructor(driver, options) {
         this.driver = driver;
         this.nested = {
@@ -17,6 +28,17 @@ class GoodDB {
         this.driver.init();
     }
     ;
+    /**
+     * Set a value to the database
+     * @param key The key to set the value to
+     * @param value The value to set
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.set('key', 'value');
+     * ```
+     */
     set(key, value, options) {
         options = options || {
             nested: this.nested.nested,
@@ -61,6 +83,16 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Get a value from the database
+     * @param key The key to get the value from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a value
+     * @example
+     * ```javascript
+     * db.get('key');
+     * ```
+     */
     get(key, options) {
         options = options || {
             nested: this.nested.nested,
@@ -97,6 +129,16 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Check if a value exists in the database
+     * @param key The key to check
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.has('key');
+     * ```
+     */
     has(key, options) {
         options = options || {
             nested: this.nested.nested,
@@ -118,6 +160,18 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Perform a math operation on a value in the database
+     * @param key The key to perform the operation on
+     * @param mathSign The math sign to use
+     * @param value The value to use in the operation
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.math('key', '+', 1);
+     * ```
+     */
     math(key, mathSign, value, options) {
         options = options || {
             nested: this.nested.nested,
@@ -194,6 +248,16 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Get all values that start with a certain key
+     * @param key The key to get the values from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise an object
+     * @example
+     * ```javascript
+     * db.startsWith('key');
+     * ```
+     */
     startsWith(key, options) {
         options = options || {
             nested: this.nested.nested,
@@ -266,6 +330,16 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Get all values that end with a certain key
+     * @param key The key to get the values from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise an object
+     * @example
+     * ```javascript
+     * db.endsWith('key');
+     * ```
+     */
     endsWith(key, options) {
         options = options || {
             nested: this.nested.nested,
@@ -338,6 +412,17 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Push a value to an array in the database
+     * @param key The key to push the value to
+     * @param value The value to push
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.push('key', 'value');
+     * ```
+     */
     push(key, value, options) {
         options = options || {
             nested: this.nested.nested,
@@ -378,6 +463,18 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Pull a value from an array in the database
+     * @param key The key to pull the value from
+     * @param valueOrCallback The value or callback to use
+     * @param pullAll Whether to pull all values
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.pull('key', 'value');
+     * ```
+     */
     pull(key, valueOrCallback, pullAll, options) {
         options = options || {
             nested: this.nested.nested,
@@ -528,6 +625,17 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Add a value to a number in the database
+     * @param key The key to add the value to
+     * @param value The value to add
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.add('key', 1);
+     * ```
+     */
     add(key, value, options) {
         options = options || {
             nested: this.nested.nested,
@@ -560,6 +668,17 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Subtract a value from a number in the database
+     * @param key The key to subtract the value from
+     * @param value The value to subtract
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.subtract('key', 1);
+     * ```
+     */
     subtract(key, value, options) {
         options = options || {
             nested: this.nested.nested,
@@ -592,6 +711,16 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Delete a value from the database
+     * @param key The key to delete the value from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.delete('key');
+     * ```
+     */
     delete(key, options) {
         options = options || {
             nested: this.nested.nested,
@@ -636,6 +765,14 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Get all values from the database
+     * @returns A promise if the method is async, otherwise an object
+     * @example
+     * ```javascript
+     * db.all();
+     * ```
+     */
     all() {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -653,6 +790,14 @@ class GoodDB {
         }
     }
     ;
+    /**
+     * Clear all values from the database
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.clear();
+     * ```
+     */
     clear() {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {

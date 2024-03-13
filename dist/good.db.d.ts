@@ -11,6 +11,17 @@ export default class GoodDB {
         isEnabled: boolean;
     };
     isAsync: boolean;
+    /**
+     * Create a new instance of GoodDB
+     * @param driver The driver to use
+     * @param options The options for the database
+     * @example
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver(), {
+     * nested: '..',
+     * nestedIsEnabled: true
+     * });
+     */
     constructor(driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver, options?: goodDBOptions);
     set(key: string, value: any, options?: methodOptions): Promise<boolean>;
     set(key: string, value: any, options?: methodOptions): boolean;

@@ -15,6 +15,17 @@ export default class GoodDB {
     };
     isAsync: boolean;
 
+    /**
+     * Create a new instance of GoodDB
+     * @param driver The driver to use
+     * @param options The options for the database
+     * @example
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver(), {
+     * nested: '..',
+     * nestedIsEnabled: true
+     * }); 
+     */
     constructor(
         driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver,
         options?: goodDBOptions
@@ -30,6 +41,17 @@ export default class GoodDB {
 
     public async set(key: string, value: any, options?: methodOptions): Promise<boolean>;
     public set(key: string, value: any, options?: methodOptions): boolean;
+    /**
+     * Set a value to the database
+     * @param key The key to set the value to
+     * @param value The value to set
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.set('key', 'value');
+     * ```
+     */
     public set(key: string, value: any, options?: methodOptions): Promise<boolean> | boolean {
         options = options || {
             nested: this.nested.nested,
@@ -77,6 +99,16 @@ export default class GoodDB {
 
     public async get(key: string, options?: methodOptions): Promise<any>;
     public get(key: string, options?: methodOptions): any;
+    /**
+     * Get a value from the database
+     * @param key The key to get the value from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a value
+     * @example
+     * ```javascript
+     * db.get('key');
+     * ```
+     */
     public get(key: string, options?: methodOptions): Promise<any> | any {
         options = options || {
             nested: this.nested.nested,
@@ -111,6 +143,16 @@ export default class GoodDB {
 
     public async has(key: string, options?: methodOptions): Promise<boolean>;
     public has(key: string, options?: methodOptions): boolean;
+    /**
+     * Check if a value exists in the database
+     * @param key The key to check
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.has('key');
+     * ```
+     */
     public has(key: string, options?: methodOptions): Promise<boolean> | boolean {
         options = options || {
             nested: this.nested.nested,
@@ -132,6 +174,18 @@ export default class GoodDB {
 
     public async math(key: string, mathSign: string, value: number, options?: methodOptions): Promise<number>;
     public math(key: string, mathSign: string, value: number, options?: methodOptions): number;
+    /**
+     * Perform a math operation on a value in the database
+     * @param key The key to perform the operation on
+     * @param mathSign The math sign to use
+     * @param value The value to use in the operation
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.math('key', '+', 1);
+     * ```
+     */
     public math(key: string, mathSign: string, value: number, options?: methodOptions): number | Promise<number> {
         options = options || {
             nested: this.nested.nested,
@@ -214,6 +268,16 @@ export default class GoodDB {
 
     public async startsWith(key: string, options?: methodOptions): Promise<any>;
     public startsWith(key: string, options?: methodOptions): any;
+    /**
+     * Get all values that start with a certain key
+     * @param key The key to get the values from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise an object
+     * @example
+     * ```javascript
+     * db.startsWith('key');
+     * ```
+     */
     public startsWith(key: string, options?: methodOptions): Promise<any> | any {
         options = options || {
             nested: this.nested.nested,
@@ -285,6 +349,16 @@ export default class GoodDB {
 
     public async endsWith(key: string, options?: methodOptions): Promise<any>;
     public endsWith(key: string, options?: methodOptions): any;
+    /**
+     * Get all values that end with a certain key
+     * @param key The key to get the values from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise an object
+     * @example
+     * ```javascript
+     * db.endsWith('key');
+     * ```
+     */
     public endsWith(key: string, options?: methodOptions): Promise<any> | any {
         options = options || {
             nested: this.nested.nested,
@@ -355,6 +429,17 @@ export default class GoodDB {
 
     public async push(key: string, value: any, options?: methodOptions): Promise<number>;
     public push(key: string, value: any, options?: methodOptions): number;
+    /**
+     * Push a value to an array in the database
+     * @param key The key to push the value to
+     * @param value The value to push
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.push('key', 'value');
+     * ```
+     */
     public push(key: string, value: any, options?: methodOptions): Promise<number> | number {
         options = options || {
             nested: this.nested.nested,
@@ -395,6 +480,18 @@ export default class GoodDB {
 
     public async pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
     public pull(key: string, valueOrCallback: any, pullAll?: boolean, options?: methodOptions): boolean;
+    /**
+     * Pull a value from an array in the database
+     * @param key The key to pull the value from
+     * @param valueOrCallback The value or callback to use
+     * @param pullAll Whether to pull all values
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.pull('key', 'value');
+     * ```
+     */
     public pull(key: string, valueOrCallback: any, pullAll?: boolean, options?: methodOptions): Promise<boolean> | boolean {
         options = options || {
             nested: this.nested.nested,
@@ -551,6 +648,17 @@ export default class GoodDB {
 
     public async add(key: string, value: number, options?: methodOptions): Promise<number>;
     public add(key: string, value: number, options?: methodOptions): number;
+    /**
+     * Add a value to a number in the database
+     * @param key The key to add the value to
+     * @param value The value to add
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.add('key', 1);
+     * ```
+     */
     public add(key: string, value: number, options?: methodOptions): Promise<number> | number {
         options = options || {
             nested: this.nested.nested,
@@ -583,6 +691,17 @@ export default class GoodDB {
 
     public async subtract(key: string, value: number, options?: methodOptions): Promise<number>;
     public subtract(key: string, value: number, options?: methodOptions): number;
+    /**
+     * Subtract a value from a number in the database
+     * @param key The key to subtract the value from
+     * @param value The value to subtract
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a number
+     * @example
+     * ```javascript
+     * db.subtract('key', 1);
+     * ```
+     */
     public subtract(key: string, value: number, options?: methodOptions): Promise<number> | number {
         options = options || {
             nested: this.nested.nested,
@@ -615,6 +734,16 @@ export default class GoodDB {
 
     public async delete(key: string, options: methodOptions): Promise<boolean>;
     public delete(key: string, options?: methodOptions): boolean;
+    /**
+     * Delete a value from the database
+     * @param key The key to delete the value from
+     * @param options The options for the method
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.delete('key');
+     * ```
+     */
     public delete(key: string, options?: methodOptions): Promise<boolean> | boolean {
         options = options || {
             nested: this.nested.nested,
@@ -661,6 +790,14 @@ export default class GoodDB {
 
     public async all(): Promise<any>;
     public all(): any;
+    /**
+     * Get all values from the database
+     * @returns A promise if the method is async, otherwise an object
+     * @example
+     * ```javascript
+     * db.all();
+     * ```
+     */
     public all(): Promise<any> | any {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -678,6 +815,14 @@ export default class GoodDB {
 
     public async clear(): Promise<boolean>;
     public clear(): boolean;
+    /**
+     * Clear all values from the database
+     * @returns A promise if the method is async, otherwise a boolean
+     * @example
+     * ```javascript
+     * db.clear();
+     * ```
+     */
     public clear(): Promise<boolean> | boolean {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
