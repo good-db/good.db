@@ -3,10 +3,10 @@ import fs from 'fs';
 import Database, { Database as DataBaseType } from 'better-sqlite3';
 
 export class SQLiteDriver {
-    public path: string;
+    public readonly path: string;
     private db: DataBaseType;
 
-    constructor(options?: JSONDriverOptions) {
+    constructor(public readonly options?: JSONDriverOptions) {
         this.path = options?.path || './db.sqlite';
         this.db = new Database(this.path);
     }

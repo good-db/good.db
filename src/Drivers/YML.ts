@@ -3,10 +3,10 @@ import yaml from 'js-yaml';
 import { JSONDriverOptions } from '../Types';
 
 export class YMLDriver {
-    public path: string;
+    public readonly path: string;
 
     constructor(
-        options?: JSONDriverOptions
+        public readonly options?: JSONDriverOptions
     ) {
         this.path = options?.path || './db.yml';
         this.init();

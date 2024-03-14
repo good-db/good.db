@@ -7,6 +7,7 @@ exports.JSONDriver = void 0;
 const fs_1 = __importDefault(require("fs"));
 class JSONDriver {
     constructor(options) {
+        this.options = options;
         this.path = (options === null || options === void 0 ? void 0 : options.path) || './db.json';
         this.init();
     }

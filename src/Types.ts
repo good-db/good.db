@@ -28,5 +28,5 @@ export type methodOptions = {
 
 export interface MongoDBDriverOptions {
     uri: string; // MongoDB connection URI
-    database: string; // MongoDB database name
+    database?: string; // MongoDB database name
 };

@@ -12,5 +12,5 @@ export type methodOptions = {
 };
 export interface MongoDBDriverOptions {
     uri: string;
-    database: string;
+    database?: string;
 }

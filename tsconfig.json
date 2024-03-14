@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES6",
     "module": "CommonJS",
     "outDir": "./dist",
     "rootDir": "./src",
@@ -11,8 +11,6 @@
     "declaration": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "lib": ["ESNext", "DOM"],
-    "types": ["node"],
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*.ts", "src/*.ts"],

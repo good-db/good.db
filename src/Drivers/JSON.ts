@@ -2,10 +2,10 @@ import { JSONDriverOptions } from '../Types';
 import fs from 'fs';
 
 export class JSONDriver {
-    public path: string;
+    public readonly path: string;
 
     constructor(
-        options?: JSONDriverOptions
+        public readonly options?: JSONDriverOptions
     ) {
         this.path = options?.path || './db.json';
         this.init();

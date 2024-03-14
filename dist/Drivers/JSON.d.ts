@@ -1,7 +1,8 @@
 import { JSONDriverOptions } from '../Types';
 export declare class JSONDriver {
-    path: string;
-    constructor(options?: JSONDriverOptions);
+    readonly options?: JSONDriverOptions | undefined;
+    readonly path: string;
+    constructor(options?: JSONDriverOptions | undefined);
     private checkFile;
     init(): void;
     read(): any;
