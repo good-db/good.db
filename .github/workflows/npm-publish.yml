@@ -3,7 +3,7 @@ name: Node.js Package
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   publish-npm:
@@ -16,6 +16,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm install
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --tag dev
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
