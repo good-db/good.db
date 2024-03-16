@@ -57,7 +57,7 @@ class MongoDBDriver {
                 throw new Error('Database not initialized');
             const doc = yield this.db.collection(table).findOne({ key });
             if (!doc)
-                return null;
+                return doc;
             return JSON.parse(doc.value);
         });
     }

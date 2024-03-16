@@ -35,7 +35,7 @@ class SQLiteDriver {
     getRowByKey(table, key) {
         const row = this.db.prepare(`SELECT * FROM ${table} WHERE key = ?`).get(key);
         if (!row)
-            return null;
+            return row;
         return JSON.parse(row.value);
     }
     ;

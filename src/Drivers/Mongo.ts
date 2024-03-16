@@ -38,7 +38,8 @@ export class MongoDBDriver {
     public async getRowByKey(table: string, key: string): Promise<any> {
         if (!this.db) throw new Error('Database not initialized');
         const doc = await this.db.collection(table).findOne({ key });
-        if (!doc) return null;
+        
+        if (!doc) return doc;
         return JSON.parse(doc.value);
     };
 

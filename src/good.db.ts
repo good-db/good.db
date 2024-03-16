@@ -293,12 +293,13 @@ export default class GoodDB {
             });
         } else {
             const data = this.get(key, options);
-            if (!Array.isArray(data) && data !== undefined) {
-                throw new DatabaseError('Value is not an array');
-            }
+            console.log(data)
             if (data === undefined) {
                 this.set(key, [value], options);
                 return 1;
+            }
+            if (!Array.isArray(data) && data !== undefined) {
+                throw new DatabaseError('Value is not an array');
             }
             data.push(value);
             this.set(key, data, options);

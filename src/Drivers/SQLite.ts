@@ -33,7 +33,7 @@ export class SQLiteDriver {
 
     public getRowByKey(table: string, key: string): any {
         const row: any = this.db.prepare(`SELECT * FROM ${table} WHERE key = ?`).get(key);
-        if (!row) return null;
+        if (!row) return row;
         return JSON.parse(row.value);
     };
 
