@@ -1,12 +1,12 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
-import { JSONDriverOptions } from '../Types';
+import { YMLDriverOptions } from '../Types';
 
 export class YMLDriver {
     public readonly path: string;
 
     constructor(
-        public readonly options?: JSONDriverOptions
+        public readonly options?: YMLDriverOptions
     ) {
         this.path = options?.path || './db.yml';
     };

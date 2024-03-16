@@ -1,11 +1,11 @@
-import { JSONDriverOptions } from '../Types';
+import { SQLiteDriverOptions } from '../Types';
 import Database, { Database as DataBaseType } from 'better-sqlite3';
 
 export class SQLiteDriver {
     public readonly path: string;
     private db: DataBaseType;
 
-    constructor(public readonly options?: JSONDriverOptions) {
+    constructor(public readonly options?: SQLiteDriverOptions) {
         this.path = options?.path || './db.sqlite';
         this.db = new Database(this.path);
     }

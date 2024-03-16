@@ -1,8 +1,8 @@
-import { JSONDriverOptions } from '../Types';
+import { YMLDriverOptions } from '../Types';
 export declare class YMLDriver {
-    readonly options?: JSONDriverOptions | undefined;
+    readonly options?: YMLDriverOptions | undefined;
     readonly path: string;
-    constructor(options?: JSONDriverOptions | undefined);
+    constructor(options?: YMLDriverOptions | undefined);
     private checkFile;
     init(table: string): void;
     setRowByKey(table: string, key: string, value: any): boolean;

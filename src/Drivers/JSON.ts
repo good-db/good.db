@@ -3,11 +3,13 @@ import fs from 'fs';
 
 export class JSONDriver {
     public readonly path: string;
+    public readonly format: boolean;
 
     constructor(
         public readonly options?: JSONDriverOptions
     ) {
         this.path = options?.path || './db.json';
+        this.format = options?.format || false;
     };
 
     private checkFile(): boolean {
@@ -67,10 +69,14 @@ export class JSONDriver {
     };
 
     public write(data: any): boolean {
+        if (this.format) {
+            fs.writeFileSync(this.path, JSON.stringify(data, null, 2));
+            return true;
+        }
         fs.writeFileSync(this.path, JSON.stringify(data));
         return true;
     };
-    
+
     public clear(): boolean {
         this.write({});
         return true;

@@ -1,9 +1,9 @@
-import { JSONDriverOptions } from '../Types';
+import { SQLiteDriverOptions } from '../Types';
 export declare class SQLiteDriver {
-    readonly options?: JSONDriverOptions | undefined;
+    readonly options?: SQLiteDriverOptions | undefined;
     readonly path: string;
     private db;
-    constructor(options?: JSONDriverOptions | undefined);
+    constructor(options?: SQLiteDriverOptions | undefined);
     init(table: string): void;
     setRowByKey(table: string, key: string, value: any): boolean;
     getAllRows(table: string): any;

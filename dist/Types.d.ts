@@ -6,6 +6,7 @@ export type goodDBOptions = {
 };
 export type JSONDriverOptions = {
     path?: string;
+    format?: boolean;
 };
 export type methodOptions = {
     nested?: string;
@@ -15,3 +16,9 @@ export interface MongoDBDriverOptions {
     uri: string;
     database?: string;
 }
+export type SQLiteDriverOptions = {
+    path?: string;
+};
+export type YMLDriverOptions = {
+    path?: string;
+};

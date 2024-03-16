@@ -9,6 +9,7 @@ class JSONDriver {
     constructor(options) {
         this.options = options;
         this.path = (options === null || options === void 0 ? void 0 : options.path) || './db.json';
+        this.format = (options === null || options === void 0 ? void 0 : options.format) || false;
     }
     ;
     checkFile() {
@@ -68,6 +69,10 @@ class JSONDriver {
     }
     ;
     write(data) {
+        if (this.format) {
+            fs_1.default.writeFileSync(this.path, JSON.stringify(data, null, 2));
+            return true;
+        }
         fs_1.default.writeFileSync(this.path, JSON.stringify(data));
         return true;
     }

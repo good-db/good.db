@@ -2,6 +2,7 @@ import { JSONDriverOptions } from '../Types';
 export declare class JSONDriver {
     readonly options?: JSONDriverOptions | undefined;
     readonly path: string;
+    readonly format: boolean;
     constructor(options?: JSONDriverOptions | undefined);
     private checkFile;
     init(table: string): void;
