@@ -16,39 +16,110 @@ class MongoDBDriver {
         this.options = options;
         this.client = new mongodb_1.MongoClient(options.uri);
     }
-    init() {
+    init(table) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.db)
                 return true;
             yield this.client.connect();
-            this.db = this.client.db(this.options.database);
+            this.db = this.client.db(this.options.database || 'gooddb');
+            yield this.db.createCollection(table);
             return true;
+        });
+    }
+    ;
+    // Inserters/Updaters
+    setRowByKey(table, key, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            yield this.db.collection(table).updateOne({ key }, { $set: { value: JSON.stringify(value) } }, { upsert: true });
+            return true;
+        });
+    }
+    ;
+    // Getters
+    getAllRows(table) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            const cursor = yield this.db.collection(table).find();
+            const data = {};
+            yield cursor.forEach((doc) => {
+                data[doc.key] = JSON.parse(doc.value);
+            });
+            return data;
+        });
+    }
+    ;
+    getRowByKey(table, key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            const doc = yield this.db.collection(table).findOne({ key });
+            if (!doc)
+                return null;
+            return JSON.parse(doc.value);
+        });
+    }
+    ;
+    // Deleters
+    deleteRowByKey(table, key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            const result = yield this.db.collection(table).deleteOne({ key });
+            return result.deletedCount || 0;
+        });
+    }
+    ;
+    deleteAllRows(table) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            yield this.db.collection(table).deleteMany({});
+            return true;
+        });
+    }
+    ;
+    close() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            yield this.client.close();
+            this.db = undefined;
+            return true;
+        });
+    }
+    ;
+    // OLD
+    read() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            const cursor = yield this.db.collection('data').find();
+            const data = {};
+            yield cursor.forEach((doc) => {
+                data[doc.key] = JSON.parse(doc.value);
+            });
+            return data;
         });
     }
     write(data) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.db)
                 throw new Error('Database not initialized');
-            yield this.db.collection('json').updateOne({ key: 'json' }, { $set: { data } }, { upsert: true });
+            const collection = this.db.collection('data');
+            for (const key of Object.keys(data)) {
+                yield collection.updateOne({ key }, { $set: { value: JSON.stringify(data[key]) } }, { upsert: true });
+            }
             return true;
         });
     }
-    read() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.db)
-                throw new Error('Database not initialized');
-            const documents = yield this.db.collection('json').findOne({
-                key: 'json'
-            });
-            return (documents === null || documents === void 0 ? void 0 : documents.data) || {};
-        });
-    }
-    ;
     clear() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.db)
                 throw new Error('Database not initialized');
-            yield this.db.collection('json').deleteMany({});
+            yield this.db.collection('data').deleteMany({});
             return true;
         });
     }

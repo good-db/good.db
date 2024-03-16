@@ -7,12 +7,49 @@ exports.SQLiteDriver = void 0;
 const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
 class SQLiteDriver {
     constructor(options) {
+        this.options = options;
         this.path = (options === null || options === void 0 ? void 0 : options.path) || './db.sqlite';
         this.db = new better_sqlite3_1.default(this.path);
     }
-    init() {
-        this.db.exec('CREATE TABLE IF NOT EXISTS data (key TEXT PRIMARY KEY, value TEXT)');
+    init(table) {
+        this.db.exec(`CREATE TABLE IF NOT EXISTS ${table} (key TEXT PRIMARY KEY, value TEXT)`);
     }
+    ;
+    // Inserters/Updaters
+    setRowByKey(table, key, value) {
+        const insert = this.db.prepare(`INSERT OR REPLACE INTO ${table} (key, value) VALUES (?, ?)`);
+        insert.run(key, JSON.stringify(value));
+        return true;
+    }
+    ;
+    // Getters
+    getAllRows(table) {
+        const rows = this.db.prepare(`SELECT * FROM ${table}`).all();
+        const data = {};
+        for (const row of rows) {
+            data[row.key] = JSON.parse(row.value);
+        }
+        return data;
+    }
+    ;
+    getRowByKey(table, key) {
+        const row = this.db.prepare(`SELECT * FROM ${table} WHERE key = ?`).get(key);
+        if (!row)
+            return null;
+        return JSON.parse(row.value);
+    }
+    ;
+    // Deleters
+    deleteRowByKey(table, key) {
+        return this.db.prepare(`DELETE FROM ${table} WHERE key = ?`).run(key).changes;
+    }
+    ;
+    deleteAllRows(table) {
+        this.db.exec(`DELETE FROM ${table}`);
+        return true;
+    }
+    ;
+    // OLD
     read() {
         const rows = this.db.prepare('SELECT * FROM data').all();
         const data = {};
@@ -30,6 +67,7 @@ class SQLiteDriver {
         })(data);
         return true;
     }
+    ;
     clear() {
         this.db.exec('DELETE FROM data');
         return true;

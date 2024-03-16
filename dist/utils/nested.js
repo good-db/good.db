@@ -24,7 +24,12 @@ function setValueAtPath(object, key, value, options) {
     }
     ;
     currentObject[lastPart] = value;
-    return object;
+    return {
+        object,
+        key: keyParts[0],
+        value,
+        currentObject: object[keyParts[0]]
+    };
 }
 exports.setValueAtPath = setValueAtPath;
 ;
@@ -35,15 +40,30 @@ function getValueAtPath(object, key, options) {
     for (let i = 0; i < keyParts.length; i++) {
         const part = keyParts[i];
         if (!currentObject[part]) {
-            return undefined;
+            return {
+                object,
+                key: keyParts[keyParts.length - 1],
+                value: undefined,
+                currentObject: undefined
+            };
         }
         else if (i === keyParts.length - 1) {
-            return currentObject[part];
+            return {
+                object,
+                key: keyParts[keyParts.length - 1],
+                value: currentObject[part],
+                currentObject
+            };
         }
         currentObject = currentObject[part];
     }
     ;
-    return currentObject;
+    return {
+        object,
+        key: keyParts[keyParts.length - 1],
+        value: currentObject,
+        currentObject
+    };
 }
 exports.getValueAtPath = getValueAtPath;
 ;
@@ -54,10 +74,20 @@ function deleteValueAtPath(object, key, options) {
     for (let i = 0; i < keyParts.length - 1; i++) {
         const part = keyParts[i];
         if (!currentObject[part]) {
-            return object;
+            return {
+                object,
+                key: keyParts[0],
+                value: undefined,
+                currentObject
+            };
         }
         else if (i === keyParts.length - 1) {
-            return object;
+            return {
+                object,
+                key: keyParts[0],
+                value: undefined,
+                currentObject
+            };
         }
         currentObject = currentObject[part];
     }
@@ -69,7 +99,12 @@ function deleteValueAtPath(object, key, options) {
     }
     ;
     delete currentObject[lastPart];
-    return object;
+    return {
+        object,
+        key: keyParts[0],
+        value: undefined,
+        currentObject: object[keyParts[0]]
+    };
 }
 exports.deleteValueAtPath = deleteValueAtPath;
 ;

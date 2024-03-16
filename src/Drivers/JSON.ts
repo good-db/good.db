@@ -2,13 +2,12 @@ import { JSONDriverOptions } from '../Types';
 import fs from 'fs';
 
 export class JSONDriver {
-    public path: string;
+    public readonly path: string;
 
     constructor(
-        options?: JSONDriverOptions
+        public readonly options?: JSONDriverOptions
     ) {
         this.path = options?.path || './db.json';
-        this.init();
     };
 
     private checkFile(): boolean {
@@ -18,12 +17,51 @@ export class JSONDriver {
         return true;
     }
 
-    public init(): void {
+    public init(table: string): void {
         if (!this.checkFile()) {
             fs.writeFileSync(this.path, JSON.stringify({}));
         };
+
+        if (!this.read()[table]) {
+            this.write({ ...this.read(), [table]: {} });
+        };
     };
 
+    // Inserters/Updaters
+    public setRowByKey(table: string, key: string, value: any): boolean {
+        const data = this.read();
+        const tableData: any = data[table] || {};
+        tableData[key] = value;
+        data[table] = tableData;
+        this.write(data);
+        return true;
+    };
+
+    // Getters
+    public getAllRows(table: string): any {
+        return this.read()[table];
+    };
+
+    public getRowByKey(table: string, key: string): any {
+        return this.read()[table][key];
+    };
+
+    // Deleters
+    public deleteRowByKey(table: string, key: string): number {
+        const data = this.read();
+        delete data[table][key];
+        this.write(data);
+        return 1;
+    };
+
+    public deleteAllRows(table: string): boolean {
+        const data = this.read();
+        delete data[table];
+        this.write(data);
+        return true;
+    };
+
+    // OLD
     public read(): any {
         return JSON.parse(fs.readFileSync(this.path).toString());
     };

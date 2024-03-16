@@ -4,7 +4,12 @@ type SetValueOptions = {
     separator?: string;
 };
 
-export function setValueAtPath(object: any, key: string, value: any, options?: SetValueOptions): any {
+export function setValueAtPath(object: any, key: string, value: any, options?: SetValueOptions): {
+    object: any;
+    key: string;
+    value: any;
+    currentObject: any;
+} {
     const { separator = '.' } = options || {};
 
     const keyParts = key.split(separator);
@@ -28,10 +33,20 @@ export function setValueAtPath(object: any, key: string, value: any, options?: S
     };
     currentObject[lastPart] = value;
 
-    return object;
+    return {
+        object,
+        key: keyParts[0],
+        value,
+        currentObject: object[keyParts[0]]
+    };
 };
 
-export function getValueAtPath(object: any, key: string, options?: SetValueOptions): any {
+export function getValueAtPath(object: any, key: string, options?: SetValueOptions): {
+    object: any;
+    key: string;
+    value: any;
+    currentObject: any;
+} {
     const { separator = '.' } = options || {};
 
     const keyParts = key.split(separator);
@@ -40,17 +55,37 @@ export function getValueAtPath(object: any, key: string, options?: SetValueOptio
     for (let i = 0; i < keyParts.length; i++) {
         const part = keyParts[i];
         if (!currentObject[part]) {
-            return undefined;
+            return {
+                object,
+                key: keyParts[keyParts.length - 1],
+                value: undefined,
+                currentObject: undefined
+            };
         } else if (i === keyParts.length - 1) {
-            return currentObject[part];
+            return {
+                object,
+                key: keyParts[keyParts.length - 1],
+                value: currentObject[part],
+                currentObject
+            };
         }
         currentObject = currentObject[part];
     };
 
-    return currentObject;
+    return {
+        object,
+        key: keyParts[keyParts.length - 1],
+        value: currentObject,
+        currentObject
+    };
 };
 
-export function deleteValueAtPath(object: any, key: string, options?: SetValueOptions): any {
+export function deleteValueAtPath(object: any, key: string, options?: SetValueOptions): {
+    object: any;
+    key: string;
+    value: any;
+    currentObject: any;
+} {
     const { separator = '.' } = options || {};
 
     const keyParts = key.split(separator);
@@ -60,9 +95,19 @@ export function deleteValueAtPath(object: any, key: string, options?: SetValueOp
         const part = keyParts[i];
 
         if (!currentObject[part]) {
-            return object;
+            return {
+                object,
+                key: keyParts[0],
+                value: undefined,
+                currentObject
+            };
         } else if (i === keyParts.length - 1) {
-            return object;
+            return {
+                object,
+                key: keyParts[0],
+                value: undefined,
+                currentObject
+            };
         }
         currentObject = currentObject[part];
     };
@@ -74,5 +119,10 @@ export function deleteValueAtPath(object: any, key: string, options?: SetValueOp
     };
     delete currentObject[lastPart];
 
-    return object;
+    return {
+        object,
+        key: keyParts[0],
+        value: undefined,
+        currentObject: object[keyParts[0]]
+    };
 };

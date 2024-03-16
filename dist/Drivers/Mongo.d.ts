@@ -1,11 +1,17 @@
 import { MongoDBDriverOptions } from '../Types';
 export declare class MongoDBDriver {
-    private options;
+    readonly options: MongoDBDriverOptions;
     private client;
     private db;
     constructor(options: MongoDBDriverOptions);
-    init(): Promise<boolean>;
-    write(data: any): Promise<boolean>;
+    init(table: string): Promise<boolean>;
+    setRowByKey(table: string, key: string, value: any): Promise<boolean>;
+    getAllRows(table: string): Promise<any>;
+    getRowByKey(table: string, key: string): Promise<any>;
+    deleteRowByKey(table: string, key: string): Promise<number>;
+    deleteAllRows(table: string): Promise<boolean>;
+    close(): Promise<boolean>;
     read(): Promise<any>;
+    write(data: any): Promise<boolean>;
     clear(): Promise<boolean>;
 }

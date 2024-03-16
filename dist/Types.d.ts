@@ -1,6 +1,7 @@
 export type goodDBOptions = {
     nested?: string;
     nestedIsEnabled?: boolean;
+    table?: string;
     timeIsEnabled?: boolean;
 };
 export type JSONDriverOptions = {
@@ -12,5 +13,5 @@ export type methodOptions = {
 };
 export interface MongoDBDriverOptions {
     uri: string;
-    database: string;
+    database?: string;
 }

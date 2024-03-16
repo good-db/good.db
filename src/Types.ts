@@ -2,6 +2,7 @@ export type goodDBOptions = {
     // nested
     nested?: string;
     nestedIsEnabled?: boolean;
+    table?: string;
 
     // database
     timeIsEnabled?: boolean;
@@ -28,5 +29,5 @@ export type methodOptions = {
 
 export interface MongoDBDriverOptions {
     uri: string; // MongoDB connection URI
-    database: string; // MongoDB database name
+    database?: string; // MongoDB database name
 };
