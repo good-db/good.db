@@ -1,6 +1,8 @@
 import { CacheDriver } from "./Drivers/Cache";
 import { JSONDriver } from "./Drivers/JSON";
 import { MongoDBDriver } from "./Drivers/Mongo";
+import { MySQLDriver } from "./Drivers/MySQL";
+import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
 import { SQLiteDriver } from "./Drivers/SQLite";
 import { YMLDriver } from "./Drivers/YML";
 import { goodDBOptions, methodOptions } from "./Types";
@@ -13,8 +15,8 @@ import { deleteValueAtPath, getValueAtPath, setValueAtPath } from "./utils/neste
  * ## Using the JSONDriver (sync)
  * ```javascript
  * const db = new GoodDB(new new JSONDriver({ 
- *         path: './database.json' 
- *   }));
+ *         path: './database.json'
+ * }));
  * ```
  * ## Using the MongoDBDriver (async)
  * ```javascript
@@ -25,7 +27,12 @@ import { deleteValueAtPath, getValueAtPath, setValueAtPath } from "./utils/neste
  * ```
  */
 export default class GoodDB {
+<<<<<<< Updated upstream
     private driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver;
+=======
+    private driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver;
+    public readonly tableName: string;
+>>>>>>> Stashed changes
     public readonly nested: {
         nested: string;
         isEnabled: boolean;
@@ -33,7 +40,11 @@ export default class GoodDB {
     private isAsync: boolean;
 
     constructor(
+<<<<<<< Updated upstream
         driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver,
+=======
+        driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver,
+>>>>>>> Stashed changes
         private options?: goodDBOptions
     ) {
         this.driver = driver;
@@ -41,7 +52,12 @@ export default class GoodDB {
             nested: options?.nested || '..',
             isEnabled: options?.nestedIsEnabled ? true : false,
         };
+<<<<<<< Updated upstream
         this.isAsync = this.driver instanceof MongoDBDriver ? true : false;
+=======
+        this.tableName = options?.table || 'gooddb';
+        this.isAsync = this.driver instanceof MongoDBDriver || this.driver instanceof PostgreSQLDriver || this.driver instanceof MySQLDriver ? true : false;
+>>>>>>> Stashed changes
         if (!this.isAsync) {
             this.driver.init();
         };
@@ -297,9 +313,12 @@ export default class GoodDB {
             });
         } else {
             const data = this.get(key, options);
+<<<<<<< Updated upstream
             if (!Array.isArray(data) && data !== undefined) {
                 throw new DatabaseError('Value is not an array');
             }
+=======
+>>>>>>> Stashed changes
             if (data === undefined) {
                 this.set(key, [value], options);
                 return 1;
@@ -434,6 +453,70 @@ export default class GoodDB {
     };
 
     /**
+<<<<<<< Updated upstream
+=======
+     * Pop a value from a key
+     * @param key - The key to pop the value from
+     * @param options - The options to use
+     * @returns A promise if the driver is async, otherwise a value
+     * @example Pop a value from a key
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *      path: './database.json'
+     * }));
+     * db.pop('key');
+     * ```
+     * 
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *    uri: "..."
+     * }));
+     * await db.connect();
+     * await db.pop('key');
+     * ```
+     */
+    public async pop(key: string, options?: methodOptions): Promise<any>;
+    public pop(key: string, options?: methodOptions): any;
+    public pop(key: string, options?: methodOptions): Promise<any> | any {
+        options = options || {
+            nested: this.nested.nested,
+            nestedIsEnabled: this.nested.isEnabled
+        };
+        if (this.isAsync) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const data = await this.get(key, options);
+                    if (!Array.isArray(data) && data !== undefined) {
+                        throw new DatabaseError('Value is not an array');
+                    }
+                    if (data === undefined) {
+                        resolve(undefined);
+                    }
+                    const value = data.pop();
+                    await this.set(key, data, options);
+                    resolve(value);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        } else {
+            const data = this.get(key, options);
+            if (!Array.isArray(data) && data !== undefined) {
+                throw new DatabaseError('Value is not an array');
+            }
+            if (data === undefined) {
+                return undefined;
+            }
+            const value = data.pop();
+            this.set(key, data, options);
+            return value;
+        }
+    };
+
+    /**
+>>>>>>> Stashed changes
      * Pull a value from a key
      * @param key - The key to pull the value from
      * @param valueOrCallback - The value or callback to use to pull the value
@@ -1575,8 +1658,13 @@ export default class GoodDB {
      * ```
      */
     public async connect(): Promise<boolean> {
+<<<<<<< Updated upstream
         if (this.driver instanceof MongoDBDriver) {
             return await this.driver.init();
+=======
+        if (this.driver instanceof MongoDBDriver || this.driver instanceof PostgreSQLDriver || this.driver instanceof MySQLDriver) {
+            return await this.driver.init(this.tableName);
+>>>>>>> Stashed changes
         } else {
             throw new DatabaseError('This driver does not support the connect method');
         }
@@ -1596,7 +1684,7 @@ export default class GoodDB {
      * ```
      */
     public async disconnect(): Promise<boolean> {
-        if (this.driver instanceof MongoDBDriver) {
+        if (this.driver instanceof MongoDBDriver || this.driver instanceof PostgreSQLDriver || this.driver instanceof MySQLDriver) {
             return await this.driver.close();
         } else {
             throw new DatabaseError('This driver does not support the disconnect method');

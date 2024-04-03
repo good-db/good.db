@@ -83,7 +83,39 @@ import { MongoDBDriver } from "good.db";
 const db = new GoodDB(new MongoDBDriver({ uri: "mongodb://localhost:27017", database: "mydb" }));
 ```
 
+<<<<<<< Updated upstream
 ## API
+=======
+### PostgreSQLDriver
+
+The `PostgreSQLDriver` stores data in a PostgreSQL database. It is suitable for medium to large-sized applications and offers advanced features.
+
+```typescript
+import { GoodDB, PostgreSQLDriver } from 'gooddb';
+
+const db = new GoodDB(new PostgreSQLDriver({ 
+  user: 'user', 
+  host: 'localhost',
+}));
+
+await db.connect();
+```
+
+### MySQLDriver
+
+The `MySQLDriver` stores data in a MySQL database. It is suitable for medium to large-sized applications and offers advanced features.
+
+```typescript
+import { GoodDB, MySQLDriver } from 'gooddb';
+
+const db = new GoodDB(new MySQLDriver({ 
+  user: 'user',
+  host: 'localhost'
+}));
+```
+
+## Examples for All Methods:
+>>>>>>> Stashed changes
 
 ### `set(key: string, value: any, options?: methodOptions): Promise<boolean> | boolean`
 
@@ -343,7 +375,171 @@ console.log(data); // Output: { key1: value1, key2: value2, ... }
 ---
 # Conclusion
 
+<<<<<<< Updated upstream
 GoodDB is a versatile and lightweight database package for Node.js, offering support for various storage drivers including JSON, SQLite, YML, Cache, and MongoDB. It provides simple and intuitive methods to interact with your data, making it easy to integrate into your Node.js applications.
+=======
+#### `multiply(key: string, operand: number, options?: methodOptions)`
+
+Multiply a value in the database by a number:
+
+```typescript
+db.set('score', 10);
+db.multiply('score', 5); // 50
+```
+
+#### `divide(key: string, operand: number, options?: methodOptions)`
+
+Divide a value in the database by a number:
+
+```typescript
+db.set('score', 10);
+db.divide('score', 5); // 2
+```
+
+#### `math(key: string, operator: string, operand: number, options?: methodOptions)`
+
+Perform a mathematical operation on a value in the database:
+
+```typescript
+db.set('score', 10);
+db.math('score', '+', 5); // 15
+db.math('score', '-', 5); // 10
+db.math('score', '*', 5); // 50
+db.math('score', '/', 5); // 10
+```
+
+#### `type(key: string, options?: methodOptions)`
+
+Get the type of a value in the database:
+
+```typescript
+db.set('user', { name: 'Alice', age: 25 });
+db.type('user'); // 'object'
+```
+
+#### `size(key: string, options?: methodOptions)`
+
+Get the size of a value in the database:
+
+```typescript
+db.set('users', [{ name: 'Alice', age: 25 }, { name: 'Bob', age: 30 }, { name: 'Charlie', age: 35 }]);
+db.size('users'); // 3
+```
+
+#### `startsWith(key: string, options?: methodsOptions)`
+
+Get all the keys that start with a given string:
+
+```typescript
+db.set('user1', { name: 'Alice', age: 25 });
+db.set('user2', { name: 'Bob', age: 30 });
+db.set('user3', { name: 'Charlie', age: 35 });
+db.startsWith('user'); // { user1: {  name: 'Alice', age: 25 }, user2: { name: 'Bob', age: 30 }, user3: { name: 'Charlie', age: 35 } }
+```
+
+#### `endsWith(key: string, options?: methodsOptions)`
+
+Get all the keys that end with a given string:
+
+```typescript
+db.set('user1', { name: 'Alice', age: 25 });
+db.set('user2', { name: 'Bob', age: 30 });
+db.set('user3', { name: 'Charlie', age: 35 });
+db.endsWith('1'); // { user1: {  name: 'Alice', age: 25 } }
+```
+
+#### `includes(key: string, options?: methodsOptions)`
+
+Get all the keys that include a given string:
+
+```typescript
+db.set('user1', { name: 'Alice', age: 25 });
+db.set('user2', { name: 'Bob', age: 30 });
+db.set('user3', { name: 'Charlie', age: 35 });
+db.includes('user'); // { user1: {  name: 'Alice', age: 25 }, user2: { name: 'Bob', age: 30 }, user3: { name: 'Charlie', age: 35 } }
+```
+
+#### `keys()`
+
+Get all the keys in the database:
+
+```typescript
+db.set('user1', { name: 'Alice', age: 25 });
+db.set('user2', { name: 'Bob', age: 30 });
+db.set('user3', { name: 'Charlie', age: 35 });
+db.keys(); // ['user1', 'user2', 'user3']
+```
+
+#### `values()`
+
+Get all the values in the database:
+
+```typescript
+db.set('user1', { name: 'Alice', age: 25 });
+db.set('user2', { name: 'Bob', age: 30 });
+db.set('user3', { name: 'Charlie', age: 35 });
+db.values(); // [{ name: 'Alice', age: 25 }, { name: 'Bob', age: 30 }, { name: 'Charlie', age: 35 }]
+```
+
+#### `all()`
+
+Get all the entries in the database:
+
+```typescript
+db.set('user1', { name: 'Alice', age: 25 });
+db.set('user2', { name: 'Bob', age: 30 });
+db.set('user3', { name: 'Charlie', age: 35 });
+db.all(); // { user1: { name: 'Alice', age: 25 }, user2: { name: 'Bob', age: 30 }, user3: { name: 'Charlie', age: 35 } }
+```
+
+#### `clear()`
+
+Clear the database:
+
+```typescript
+db.clear(); // true
+```
+
+#### `table(name: string)`
+
+Make table operations on the database:
+
+```typescript
+db.table('users').set('user1', { name: 'Alice', age: 25 }); // true
+db.table('users').get('user1'); // { name: 'Alice', age: 25 }
+```
+
+#### `connect()`
+
+Connect to the database (for ASYNC drivers like `MongoDBDriver`, `PostgreSQLDriver` and `MySQLDriver`):
+
+```typescript
+await db.connect();
+```
+
+#### `disconnect()`
+
+Disconnect from the database (for ASYNC drivers like `MongoDBDriver`, `PostgreSQLDriver` and `MySQLDriver`):
+
+```typescript
+await db.disconnect();
+```
+
+## Contributing
+
+Contributions are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+
+## Support
+
+If you have any questions or need assistance, please feel free to open an issue or contact us at
+
+- [Developer (Joe)](https://discord.com/users/833340407130882068)
+- [GitHub Issues](https://github.com/good-db/good.db/issues)
+- [NPM](https://www.npmjs.com/package/good.db)
+- [Documentation](https://good-db.github.io/)
+
+>>>>>>> Stashed changes
 
 ## License
 

@@ -3,17 +3,116 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GoodDB = exports.MongoDBDriver = exports.YMLDriver = exports.CacheDriver = exports.SQLiteDriver = exports.JSONDriver = void 0;
+exports.MySQLDriver = exports.PostgreSQLDriver = exports.MongoDBDriver = exports.YMLDriver = exports.CacheDriver = exports.SQLiteDriver = exports.JSONDriver = exports.GoodDB = void 0;
 const good_db_1 = __importDefault(require("./good.db"));
-exports.GoodDB = good_db_1.default;
 const JSON_1 = require("./Drivers/JSON");
-Object.defineProperty(exports, "JSONDriver", { enumerable: true, get: function () { return JSON_1.JSONDriver; } });
 const SQLite_1 = require("./Drivers/SQLite");
-Object.defineProperty(exports, "SQLiteDriver", { enumerable: true, get: function () { return SQLite_1.SQLiteDriver; } });
 const Cache_1 = require("./Drivers/Cache");
-Object.defineProperty(exports, "CacheDriver", { enumerable: true, get: function () { return Cache_1.CacheDriver; } });
 const YML_1 = require("./Drivers/YML");
-Object.defineProperty(exports, "YMLDriver", { enumerable: true, get: function () { return YML_1.YMLDriver; } });
 const Mongo_1 = require("./Drivers/Mongo");
-Object.defineProperty(exports, "MongoDBDriver", { enumerable: true, get: function () { return Mongo_1.MongoDBDriver; } });
+const PostgreSQL_1 = require("./Drivers/PostgreSQL");
+const MySQL_1 = require("./Drivers/MySQL");
+/**
+ * The main class for the GoodDB package
+ * @example
+ * ## Using the JSONDriver (sync)
+ * ```javascript
+ * const db = new GoodDB(new new JSONDriver({
+ *         path: './database.json'
+ *   }));
+ * ```
+ * ## Using the MongoDBDriver (async)
+ * ```javascript
+ * const db = new GoodDB(new MongoDBDriver({
+ *       uri: "..."
+ * }));
+ * await db.connect();
+ * ```
+ */
+exports.GoodDB = good_db_1.default;
+/**
+ * The JSONDriver class for the GoodDB package
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new JSONDriver({
+ *        path: './database.json'
+ * }));
+ * ```
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new JSONDriver({
+ *       path: './database.json',
+ *      format: true
+ * }));
+ * ```
+ */
+exports.JSONDriver = JSON_1.JSONDriver;
+/**
+ * The SQLiteDriver class for the GoodDB package
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new SQLiteDriver({
+ *        path: './database.db'
+ * }));
+ * ```
+ */
+exports.SQLiteDriver = SQLite_1.SQLiteDriver;
+/**
+ * The CacheDriver class for the GoodDB package
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new CacheDriver());
+ * ```
+ */
+exports.CacheDriver = Cache_1.CacheDriver;
+/**
+ * The YMLDriver class for the GoodDB package
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new YMLDriver({
+ *        path: './database.yml'
+ * }));
+ * ```
+ */
+exports.YMLDriver = YML_1.YMLDriver;
+/**
+ * The MongoDBDriver class for the GoodDB package
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new MongoDBDriver({
+ *        uri: 'mongodb://localhost:27017'
+ * }));
+ * ```
+ */
+exports.MongoDBDriver = Mongo_1.MongoDBDriver;
+/**
+ * The PostgreSQLDriver class for the GoodDB package
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new PostgreSQLDriver({
+ *     user: "gooddb",
+ *     password: "password",
+ *     host: "host",
+ *     port: 23070,
+ *     database: "defaultdb"
+ * }));
+ */
+exports.PostgreSQLDriver = PostgreSQL_1.PostgreSQLDriver;
+/**
+ * The MySQLDriver class for the GoodDB package
+ * @example
+ * ```javascript
+ * const db = new GoodDB(new MySQLDriver({
+ *   charset: 'utf8mb4',
+ *   connectTimeout: 10,
+ *   database: 'defaultdb',
+ *   host: 'host',
+ *   password: 'password',
+ *   port: 23070,
+ *   user: 'gooddb',
+ *   namedPlaceholders: true,
+ * }));
+ * ```
+ */
+exports.MySQLDriver = MySQL_1.MySQLDriver;
 //# sourceMappingURL=index.js.map

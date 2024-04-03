@@ -1,6 +1,8 @@
 import { CacheDriver } from "./Drivers/Cache";
 import { JSONDriver } from "./Drivers/JSON";
 import { MongoDBDriver } from "./Drivers/Mongo";
+import { MySQLDriver } from "./Drivers/MySQL";
+import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
 import { SQLiteDriver } from "./Drivers/SQLite";
 import { YMLDriver } from "./Drivers/YML";
 import { goodDBOptions, methodOptions } from "./Types";
@@ -11,7 +13,7 @@ import { goodDBOptions, methodOptions } from "./Types";
  * ```javascript
  * const db = new GoodDB(new new JSONDriver({
  *         path: './database.json'
- *   }));
+ * }));
  * ```
  * ## Using the MongoDBDriver (async)
  * ```javascript
@@ -29,7 +31,11 @@ export default class GoodDB {
         isEnabled: boolean;
     };
     private isAsync;
+<<<<<<< Updated upstream
     constructor(driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver, options?: goodDBOptions | undefined);
+=======
+    constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver, options?: goodDBOptions | undefined);
+>>>>>>> Stashed changes
     /**
      * Set a value to a key
      * @param key - The key to set the value to

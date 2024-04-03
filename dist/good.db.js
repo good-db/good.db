@@ -10,6 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Mongo_1 = require("./Drivers/Mongo");
+<<<<<<< Updated upstream
+=======
+const MySQL_1 = require("./Drivers/MySQL");
+const PostgreSQL_1 = require("./Drivers/PostgreSQL");
+const SQLite_1 = require("./Drivers/SQLite");
+>>>>>>> Stashed changes
 const ErrorMessage_1 = require("./utils/ErrorMessage");
 const nested_1 = require("./utils/nested");
 /**
@@ -19,7 +25,7 @@ const nested_1 = require("./utils/nested");
  * ```javascript
  * const db = new GoodDB(new new JSONDriver({
  *         path: './database.json'
- *   }));
+ * }));
  * ```
  * ## Using the MongoDBDriver (async)
  * ```javascript
@@ -37,7 +43,12 @@ class GoodDB {
             nested: (options === null || options === void 0 ? void 0 : options.nested) || '..',
             isEnabled: (options === null || options === void 0 ? void 0 : options.nestedIsEnabled) ? true : false,
         };
+<<<<<<< Updated upstream
         this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver ? true : false;
+=======
+        this.tableName = (options === null || options === void 0 ? void 0 : options.table) || 'gooddb';
+        this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver ? true : false;
+>>>>>>> Stashed changes
         if (!this.isAsync) {
             this.driver.init();
         }
@@ -195,9 +206,12 @@ class GoodDB {
         }
         else {
             const data = this.get(key, options);
+<<<<<<< Updated upstream
             if (!Array.isArray(data) && data !== undefined) {
                 throw new ErrorMessage_1.DatabaseError('Value is not an array');
             }
+=======
+>>>>>>> Stashed changes
             if (data === undefined) {
                 this.set(key, [value], options);
                 return 1;
@@ -1076,8 +1090,13 @@ class GoodDB {
      */
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
+<<<<<<< Updated upstream
             if (this.driver instanceof Mongo_1.MongoDBDriver) {
                 return yield this.driver.init();
+=======
+            if (this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver) {
+                return yield this.driver.init(this.tableName);
+>>>>>>> Stashed changes
             }
             else {
                 throw new ErrorMessage_1.DatabaseError('This driver does not support the connect method');
@@ -1100,7 +1119,7 @@ class GoodDB {
      */
     disconnect() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.driver instanceof Mongo_1.MongoDBDriver) {
+            if (this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver) {
                 return yield this.driver.close();
             }
             else {
