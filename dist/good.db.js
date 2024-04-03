@@ -10,12 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Mongo_1 = require("./Drivers/Mongo");
-<<<<<<< Updated upstream
-=======
 const MySQL_1 = require("./Drivers/MySQL");
 const PostgreSQL_1 = require("./Drivers/PostgreSQL");
 const SQLite_1 = require("./Drivers/SQLite");
->>>>>>> Stashed changes
 const ErrorMessage_1 = require("./utils/ErrorMessage");
 const nested_1 = require("./utils/nested");
 /**
@@ -38,19 +35,17 @@ const nested_1 = require("./utils/nested");
 class GoodDB {
     constructor(driver, options) {
         this.options = options;
-        this.driver = driver;
+        this.driver = driver || new SQLite_1.SQLiteDriver({
+            path: './database.sqlite'
+        });
         this.nested = {
             nested: (options === null || options === void 0 ? void 0 : options.nested) || '..',
             isEnabled: (options === null || options === void 0 ? void 0 : options.nestedIsEnabled) ? true : false,
         };
-<<<<<<< Updated upstream
-        this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver ? true : false;
-=======
         this.tableName = (options === null || options === void 0 ? void 0 : options.table) || 'gooddb';
         this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver ? true : false;
->>>>>>> Stashed changes
         if (!this.isAsync) {
-            this.driver.init();
+            this.driver.init(this.tableName);
         }
         ;
     }
@@ -64,16 +59,14 @@ class GoodDB {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const newData = (0, nested_1.setValueAtPath)(yield this.driver.read(), key, value, {
+                        const newData = (0, nested_1.setValueAtPath)(yield this.driver.getAllRows(this.tableName), key, value, {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
-                        yield this.driver.write(newData);
+                        yield this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
                         resolve(true);
                     }
                     else {
-                        const data = yield this.driver.read();
-                        data[key] = value;
-                        yield this.driver.write(data);
+                        yield this.driver.setRowByKey(this.tableName, key, value);
                         resolve(true);
                     }
                 }
@@ -84,16 +77,14 @@ class GoodDB {
         }
         else {
             if (options === null || options === void 0 ? void 0 : options.nested) {
-                const newData = (0, nested_1.setValueAtPath)(this.driver.read(), key, value, {
+                const newData = (0, nested_1.setValueAtPath)(this.driver.getAllRows(this.tableName), key, value, {
                     separator: this.nested.nested,
                 });
-                this.driver.write(newData);
+                this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
                 return true;
             }
             else {
-                const data = this.driver.read();
-                data[key] = value;
-                this.driver.write(data);
+                this.driver.setRowByKey(this.tableName, key, value);
                 return true;
             }
         }
@@ -108,14 +99,14 @@ class GoodDB {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const data = (0, nested_1.getValueAtPath)(yield this.driver.read(), key, {
+                        const data = (0, nested_1.getValueAtPath)(yield this.driver.getAllRows(this.tableName), key, {
                             separator: this.nested.nested,
                         });
-                        return resolve(data);
+                        return resolve(data.value);
                     }
                     else {
-                        const data = yield this.driver.read();
-                        return resolve(data[key]);
+                        const data = yield this.driver.getRowByKey(this.tableName, key);
+                        return resolve(data);
                     }
                 }
                 catch (error) {
@@ -125,12 +116,12 @@ class GoodDB {
         }
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                return (0, nested_1.getValueAtPath)(this.driver.read(), key, {
+                return (0, nested_1.getValueAtPath)(this.driver.getAllRows(this.tableName), key, {
                     separator: this.nested.nested,
                 });
             }
             else {
-                return this.driver.read()[key];
+                return this.driver.getRowByKey(this.tableName, key);
             }
         }
     }
@@ -144,16 +135,14 @@ class GoodDB {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const data = (0, nested_1.deleteValueAtPath)(this.driver.read(), key, {
+                        const data = (0, nested_1.deleteValueAtPath)(yield this.driver.getAllRows(this.tableName), key, {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
-                        yield this.driver.write(data);
+                        yield this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
                         resolve(true);
                     }
                     else {
-                        const data = yield this.driver.read();
-                        delete data[key];
-                        yield this.driver.write(data);
+                        yield this.driver.deleteRowByKey(this.tableName, key);
                         resolve(true);
                     }
                 }
@@ -164,16 +153,14 @@ class GoodDB {
         }
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const data = (0, nested_1.deleteValueAtPath)(this.driver.read(), key, {
+                const data = (0, nested_1.deleteValueAtPath)(this.driver.getAllRows(this.tableName), key, {
                     separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
-                this.driver.write(data);
+                this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
                 return true;
             }
             else {
-                const data = this.driver.read();
-                delete data[key];
-                this.driver.write(data);
+                this.driver.deleteRowByKey(this.tableName, key);
                 return true;
             }
         }
@@ -206,15 +193,12 @@ class GoodDB {
         }
         else {
             const data = this.get(key, options);
-<<<<<<< Updated upstream
-            if (!Array.isArray(data) && data !== undefined) {
-                throw new ErrorMessage_1.DatabaseError('Value is not an array');
-            }
-=======
->>>>>>> Stashed changes
             if (data === undefined) {
                 this.set(key, [value], options);
                 return 1;
+            }
+            if (!Array.isArray(data) && data !== undefined) {
+                throw new ErrorMessage_1.DatabaseError('Value is not an array');
             }
             data.push(value);
             this.set(key, data, options);
@@ -300,6 +284,44 @@ class GoodDB {
         }
     }
     ;
+    pop(key, options) {
+        options = options || {
+            nested: this.nested.nested,
+            nestedIsEnabled: this.nested.isEnabled
+        };
+        if (this.isAsync) {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const data = yield this.get(key, options);
+                    if (!Array.isArray(data) && data !== undefined) {
+                        throw new ErrorMessage_1.DatabaseError('Value is not an array');
+                    }
+                    if (data === undefined) {
+                        resolve(undefined);
+                    }
+                    const value = data.pop();
+                    yield this.set(key, data, options);
+                    resolve(value);
+                }
+                catch (error) {
+                    reject(error);
+                }
+            }));
+        }
+        else {
+            const data = this.get(key, options);
+            if (!Array.isArray(data) && data !== undefined) {
+                throw new ErrorMessage_1.DatabaseError('Value is not an array');
+            }
+            if (data === undefined) {
+                return undefined;
+            }
+            const value = data.pop();
+            this.set(key, data, options);
+            return value;
+        }
+    }
+    ;
     pull(key, valueOrCallback, pullAll, options) {
         options = options || {
             nested: this.nested.nested,
@@ -311,8 +333,7 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = yield this.get(key);
-                    console.log(data, 'aadada');
+                    const data = yield this.get(key, options);
                     if (!data) {
                         resolve(false);
                     }
@@ -385,7 +406,7 @@ class GoodDB {
             }));
         }
         else {
-            const data = this.get(key);
+            const data = this.get(key, options);
             if (!data) {
                 return false;
             }
@@ -584,9 +605,9 @@ class GoodDB {
             nestedIsEnabled: this.nested.isEnabled
         };
         if (this.isAsync) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    let data = this.get(key, options);
+                    let data = yield this.get(key, options);
                     if (typeof data !== 'number' && data !== undefined) {
                         throw new ErrorMessage_1.DatabaseError('Value is not a number');
                     }
@@ -617,7 +638,7 @@ class GoodDB {
                 catch (error) {
                     reject(error);
                 }
-            });
+            }));
         }
         else {
             try {
@@ -812,7 +833,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = yield this.driver.read();
+                        const data = yield this.driver.getAllRows(this.tableName);
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -846,7 +867,7 @@ class GoodDB {
                 return result;
             }
             else {
-                const data = this.driver.read();
+                const data = this.driver.getAllRows(this.tableName);
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
@@ -884,7 +905,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = yield this.driver.read();
+                        const data = yield this.driver.getAllRows(this.tableName);
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -918,7 +939,7 @@ class GoodDB {
                 return result;
             }
             else {
-                const data = this.driver.read();
+                const data = this.driver.getAllRows(this.tableName);
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
@@ -956,7 +977,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = yield this.driver.read();
+                        const data = yield this.driver.getAllRows(this.tableName);
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -990,7 +1011,7 @@ class GoodDB {
                 return result;
             }
             else {
-                const data = this.driver.read();
+                const data = this.driver.getAllRows(this.tableName);
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
@@ -1007,7 +1028,7 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = yield this.driver.read();
+                    const data = yield this.driver.getAllRows(this.tableName);
                     resolve(Object.keys(data));
                 }
                 catch (error) {
@@ -1016,7 +1037,7 @@ class GoodDB {
             }));
         }
         else {
-            const data = this.driver.read();
+            const data = this.driver.getAllRows(this.tableName);
             return Object.keys(data);
         }
     }
@@ -1025,7 +1046,7 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = yield this.driver.read();
+                    const data = yield this.driver.getAllRows(this.tableName);
                     resolve(Object.values(data));
                 }
                 catch (error) {
@@ -1034,7 +1055,7 @@ class GoodDB {
             }));
         }
         else {
-            const data = this.driver.read();
+            const data = this.driver.getAllRows(this.tableName);
             return Object.values(data);
         }
     }
@@ -1043,7 +1064,7 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = yield this.driver.read();
+                    const data = yield this.driver.getAllRows(this.tableName);
                     resolve(data);
                 }
                 catch (error) {
@@ -1052,7 +1073,7 @@ class GoodDB {
             }));
         }
         else {
-            return this.driver.read();
+            return this.driver.getAllRows(this.tableName);
         }
     }
     ;
@@ -1060,7 +1081,7 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    yield this.driver.clear();
+                    yield this.driver.deleteAllRows(this.tableName);
                     resolve(true);
                 }
                 catch (error) {
@@ -1069,9 +1090,34 @@ class GoodDB {
             }));
         }
         else {
-            this.driver.clear();
+            this.driver.deleteAllRows(this.tableName);
             return true;
         }
+    }
+    ;
+    /**
+     * Make table for the database
+     * @param name - The name of the tableName
+     * @returns A promise if the driver is async, otherwise a boolean
+     * @example Make tableName for the database
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *    uri: "..."
+     * }));
+     * await db.connect();
+     * await db.table('tableName');
+     * ```
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *   path: './database.json'
+     * }));
+     * db.table('tableName');
+     * ```
+     */
+    table(name) {
+        return new GoodDB(this.driver, Object.assign(Object.assign({}, this.options), { table: name }));
     }
     ;
     // End Collection methods //
@@ -1090,13 +1136,8 @@ class GoodDB {
      */
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
-<<<<<<< Updated upstream
-            if (this.driver instanceof Mongo_1.MongoDBDriver) {
-                return yield this.driver.init();
-=======
             if (this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver) {
                 return yield this.driver.init(this.tableName);
->>>>>>> Stashed changes
             }
             else {
                 throw new ErrorMessage_1.DatabaseError('This driver does not support the connect method');

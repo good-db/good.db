@@ -27,12 +27,8 @@ import { deleteValueAtPath, getValueAtPath, setValueAtPath } from "./utils/neste
  * ```
  */
 export default class GoodDB {
-<<<<<<< Updated upstream
-    private driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver;
-=======
     private driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver;
     public readonly tableName: string;
->>>>>>> Stashed changes
     public readonly nested: {
         nested: string;
         isEnabled: boolean;
@@ -40,26 +36,20 @@ export default class GoodDB {
     private isAsync: boolean;
 
     constructor(
-<<<<<<< Updated upstream
-        driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver,
-=======
         driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver,
->>>>>>> Stashed changes
         private options?: goodDBOptions
     ) {
-        this.driver = driver;
+        this.driver = driver || new SQLiteDriver({
+            path: './database.sqlite'
+        });
         this.nested = {
             nested: options?.nested || '..',
             isEnabled: options?.nestedIsEnabled ? true : false,
         };
-<<<<<<< Updated upstream
-        this.isAsync = this.driver instanceof MongoDBDriver ? true : false;
-=======
         this.tableName = options?.table || 'gooddb';
         this.isAsync = this.driver instanceof MongoDBDriver || this.driver instanceof PostgreSQLDriver || this.driver instanceof MySQLDriver ? true : false;
->>>>>>> Stashed changes
         if (!this.isAsync) {
-            this.driver.init();
+            this.driver.init(this.tableName);
         };
     };
 
@@ -99,17 +89,15 @@ export default class GoodDB {
             return new Promise(async (resolve, reject) => {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const newData = setValueAtPath(await this.driver.read(), key, value, {
+                        const newData = setValueAtPath(await this.driver.getAllRows(this.tableName), key, value, {
                             separator: options?.nested,
                         });
 
-                        await this.driver.write(newData);
+                        await this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
 
                         resolve(true);
                     } else {
-                        const data = await this.driver.read();
-                        data[key] = value;
-                        await this.driver.write(data);
+                        await this.driver.setRowByKey(this.tableName, key, value);
                         resolve(true);
                     }
                 } catch (error) {
@@ -118,17 +106,15 @@ export default class GoodDB {
             });
         } else {
             if (options?.nested) {
-                const newData = setValueAtPath(this.driver.read(), key, value, {
+                const newData = setValueAtPath(this.driver.getAllRows(this.tableName), key, value, {
                     separator: this.nested.nested,
                 });
 
-                this.driver.write(newData);
+                this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
 
                 return true;
             } else {
-                const data = this.driver.read();
-                data[key] = value;
-                this.driver.write(data);
+                this.driver.setRowByKey(this.tableName, key, value);
                 return true;
             }
         }
@@ -167,13 +153,13 @@ export default class GoodDB {
             return new Promise(async (resolve, reject) => {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const data = getValueAtPath(await this.driver.read(), key, {
+                        const data = getValueAtPath(await this.driver.getAllRows(this.tableName), key, {
                             separator: this.nested.nested,
                         });
-                        return resolve(data);
+                        return resolve(data.value);
                     } else {
-                        const data = await this.driver.read();
-                        return resolve(data[key]);
+                        const data = await this.driver.getRowByKey(this.tableName, key);
+                        return resolve(data);
                     }
                 } catch (error) {
                     reject(error);
@@ -181,11 +167,11 @@ export default class GoodDB {
             });
         } else {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                return getValueAtPath(this.driver.read(), key, {
+                return getValueAtPath(this.driver.getAllRows(this.tableName), key, {
                     separator: this.nested.nested,
                 });
             } else {
-                return this.driver.read()[key];
+                return this.driver.getRowByKey(this.tableName, key);
             }
         }
     };
@@ -223,17 +209,15 @@ export default class GoodDB {
             return new Promise(async (resolve, reject) => {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const data = deleteValueAtPath(this.driver.read(), key, {
+                        const data = deleteValueAtPath(await this.driver.getAllRows(this.tableName), key, {
                             separator: options?.nested,
                         });
 
-                        await this.driver.write(data);
+                        await this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
 
                         resolve(true);
                     } else {
-                        const data = await this.driver.read();
-                        delete data[key];
-                        await this.driver.write(data);
+                        await this.driver.deleteRowByKey(this.tableName, key);
                         resolve(true);
                     }
                 } catch (error) {
@@ -242,17 +226,15 @@ export default class GoodDB {
             });
         } else {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const data = deleteValueAtPath(this.driver.read(), key, {
+                const data = deleteValueAtPath(this.driver.getAllRows(this.tableName), key, {
                     separator: options?.nested,
                 });
 
-                this.driver.write(data);
+                this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
 
                 return true;
             } else {
-                const data = this.driver.read();
-                delete data[key];
-                this.driver.write(data);
+                this.driver.deleteRowByKey(this.tableName, key);
                 return true;
             }
         }
@@ -313,15 +295,12 @@ export default class GoodDB {
             });
         } else {
             const data = this.get(key, options);
-<<<<<<< Updated upstream
-            if (!Array.isArray(data) && data !== undefined) {
-                throw new DatabaseError('Value is not an array');
-            }
-=======
->>>>>>> Stashed changes
             if (data === undefined) {
                 this.set(key, [value], options);
                 return 1;
+            }
+            if (!Array.isArray(data) && data !== undefined) {
+                throw new DatabaseError('Value is not an array');
             }
             data.push(value);
             this.set(key, data, options);
@@ -453,8 +432,6 @@ export default class GoodDB {
     };
 
     /**
-<<<<<<< Updated upstream
-=======
      * Pop a value from a key
      * @param key - The key to pop the value from
      * @param options - The options to use
@@ -516,7 +493,6 @@ export default class GoodDB {
     };
 
     /**
->>>>>>> Stashed changes
      * Pull a value from a key
      * @param key - The key to pull the value from
      * @param valueOrCallback - The value or callback to use to pull the value
@@ -553,9 +529,7 @@ export default class GoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const data: any = await this.get(key);
-                    console.log(data, 'aadada');
-
+                    const data: any = await this.get(key, options);
                     if (!data) {
                         resolve(false);
                     }
@@ -628,7 +602,7 @@ export default class GoodDB {
                 }
             });
         } else {
-            const data: any = this.get(key);
+            const data: any = this.get(key, options);
             if (!data) {
                 return false;
             }
@@ -952,9 +926,9 @@ export default class GoodDB {
         };
 
         if (this.isAsync) {
-            return new Promise((resolve, reject) => {
+            return new Promise(async (resolve, reject) => {
                 try {
-                    let data: any = this.get(key, options);
+                    let data: any = await this.get(key, options);
 
                     if (typeof data !== 'number' && data !== undefined) {
                         throw new DatabaseError('Value is not a number');
@@ -1260,7 +1234,7 @@ export default class GoodDB {
                         }
                         resolve(result);
                     } else {
-                        const data = await this.driver.read();
+                        const data = await this.driver.getAllRows(this.tableName);
                         const keys = Object.keys(data);
                         const result: any = {};
                         for (const k of keys) {
@@ -1292,7 +1266,7 @@ export default class GoodDB {
                 }
                 return result;
             } else {
-                const data = this.driver.read();
+                const data = this.driver.getAllRows(this.tableName);
                 const keys = Object.keys(data);
                 const result: any = {};
                 for (const k of keys) {
@@ -1353,7 +1327,7 @@ export default class GoodDB {
                         }
                         resolve(result);
                     } else {
-                        const data = await this.driver.read();
+                        const data = await this.driver.getAllRows(this.tableName);
                         const keys = Object.keys(data);
                         const result: any = {};
                         for (const k of keys) {
@@ -1384,7 +1358,7 @@ export default class GoodDB {
                 }
                 return result;
             } else {
-                const data = this.driver.read();
+                const data = this.driver.getAllRows(this.tableName);
                 const keys = Object.keys(data);
                 const result: any = {};
                 for (const k of keys) {
@@ -1445,7 +1419,7 @@ export default class GoodDB {
                         }
                         resolve(result);
                     } else {
-                        const data = await this.driver.read();
+                        const data = await this.driver.getAllRows(this.tableName);
                         const keys = Object.keys(data);
                         const result: any = {};
                         for (const k of keys) {
@@ -1477,7 +1451,7 @@ export default class GoodDB {
                 }
                 return result;
             } else {
-                const data = this.driver.read();
+                const data = this.driver.getAllRows(this.tableName);
                 const keys = Object.keys(data);
                 const result: any = {};
                 for (const k of keys) {
@@ -1516,14 +1490,14 @@ export default class GoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const data = await this.driver.read();
+                    const data = await this.driver.getAllRows(this.tableName);
                     resolve(Object.keys(data));
                 } catch (error) {
                     reject(error);
                 }
             });
         } else {
-            const data = this.driver.read();
+            const data = this.driver.getAllRows(this.tableName);
             return Object.keys(data);
         }
     };
@@ -1554,14 +1528,14 @@ export default class GoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const data = await this.driver.read();
+                    const data = await this.driver.getAllRows(this.tableName);
                     resolve(Object.values(data));
                 } catch (error) {
                     reject(error);
                 }
             });
         } else {
-            const data = this.driver.read();
+            const data = this.driver.getAllRows(this.tableName);
             return Object.values(data);
         }
     };
@@ -1592,14 +1566,14 @@ export default class GoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const data = await this.driver.read();
+                    const data = await this.driver.getAllRows(this.tableName);
                     resolve(data);
                 } catch (error) {
                     reject(error);
                 }
             });
         } else {
-            return this.driver.read();
+            return this.driver.getAllRows(this.tableName);
         }
     };
 
@@ -1629,16 +1603,44 @@ export default class GoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    await this.driver.clear();
+                    await this.driver.deleteAllRows(this.tableName);
                     resolve(true);
                 } catch (error) {
                     reject(error);
                 }
             });
         } else {
-            this.driver.clear();
+            this.driver.deleteAllRows(this.tableName);
             return true;
         }
+    };
+
+    /**
+     * Make table for the database
+     * @param name - The name of the tableName
+     * @returns A promise if the driver is async, otherwise a boolean
+     * @example Make tableName for the database
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *    uri: "..."
+     * }));
+     * await db.connect();
+     * await db.table('tableName');
+     * ```
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *   path: './database.json'
+     * }));
+     * db.table('tableName');
+     * ```
+     */
+    public table(name: string): GoodDB {
+        return new GoodDB(this.driver, {
+            ...this.options,
+            table: name,
+        });
     };
 
     // End Collection methods //
@@ -1658,13 +1660,8 @@ export default class GoodDB {
      * ```
      */
     public async connect(): Promise<boolean> {
-<<<<<<< Updated upstream
-        if (this.driver instanceof MongoDBDriver) {
-            return await this.driver.init();
-=======
         if (this.driver instanceof MongoDBDriver || this.driver instanceof PostgreSQLDriver || this.driver instanceof MySQLDriver) {
             return await this.driver.init(this.tableName);
->>>>>>> Stashed changes
         } else {
             throw new DatabaseError('This driver does not support the connect method');
         }

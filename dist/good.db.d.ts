@@ -26,16 +26,13 @@ import { goodDBOptions, methodOptions } from "./Types";
 export default class GoodDB {
     private options?;
     private driver;
+    readonly tableName: string;
     readonly nested: {
         nested: string;
         isEnabled: boolean;
     };
     private isAsync;
-<<<<<<< Updated upstream
-    constructor(driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver, options?: goodDBOptions | undefined);
-=======
     constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver, options?: goodDBOptions | undefined);
->>>>>>> Stashed changes
     /**
      * Set a value to a key
      * @param key - The key to set the value to
@@ -183,6 +180,31 @@ export default class GoodDB {
      */
     unshift(key: string, value: any, options?: methodOptions): Promise<number>;
     unshift(key: string, value: any, options?: methodOptions): number;
+    /**
+     * Pop a value from a key
+     * @param key - The key to pop the value from
+     * @param options - The options to use
+     * @returns A promise if the driver is async, otherwise a value
+     * @example Pop a value from a key
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *      path: './database.json'
+     * }));
+     * db.pop('key');
+     * ```
+     *
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *    uri: "..."
+     * }));
+     * await db.connect();
+     * await db.pop('key');
+     * ```
+     */
+    pop(key: string, options?: methodOptions): Promise<any>;
+    pop(key: string, options?: methodOptions): any;
     /**
      * Pull a value from a key
      * @param key - The key to pull the value from
@@ -566,6 +588,28 @@ export default class GoodDB {
      */
     clear(): Promise<boolean>;
     clear(): boolean;
+    /**
+     * Make table for the database
+     * @param name - The name of the tableName
+     * @returns A promise if the driver is async, otherwise a boolean
+     * @example Make tableName for the database
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *    uri: "..."
+     * }));
+     * await db.connect();
+     * await db.table('tableName');
+     * ```
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *   path: './database.json'
+     * }));
+     * db.table('tableName');
+     * ```
+     */
+    table(name: string): GoodDB;
     /**
      * Connect to the database
      * @returns A promise if the driver is async, otherwise a boolean
