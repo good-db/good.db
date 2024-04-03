@@ -1,12 +1,7 @@
 {
   "name": "good.db",
-<<<<<<< Updated upstream
-  "version": "2.1.0-dev",
-  "description": "GoodDB is a lightweight and versatile database package for Node.js, offering support for various storage drivers including JSON, SQLite, YML, Cache, and MongoDB.",
-=======
   "version": "2.2.0",
   "description": "A simple, fast, and powerful database package for Node.js",
->>>>>>> Stashed changes
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -42,12 +37,8 @@
     "fs": "^0.0.1-security",
     "js-yaml": "^4.1.0",
     "mongodb": "^6.5.0",
-<<<<<<< Updated upstream
-    "quick.db": "^9.1.7"
-=======
     "mysql2": "^3.9.3",
     "pg": "^8.11.5"
->>>>>>> Stashed changes
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.4",
@@ -56,6 +47,14 @@
     "@types/pg": "^8.11.4"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0",
+    "yarn": ">=3.0.0",
+    "pnpm": ">=7.0.0",
+    "npx": ">=10.0.0",
+    "nvm": ">=0.38.0",
+    "nvs": ">=1.7.0",
+    "n": ">=8.0.0",
+    "node-gyp": ">=8.0.0"
   }
 }
