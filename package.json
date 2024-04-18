@@ -1,6 +1,6 @@
 {
   "name": "good.db",
-  "version": "2.1.4",
+  "version": "2.2.2",
   "description": "A simple, fast, and powerful database package for Node.js",
   "main": "dist/index.js",
   "scripts": {
@@ -36,14 +36,25 @@
     "better-sqlite3": "^8.5.2",
     "fs": "^0.0.1-security",
     "js-yaml": "^4.1.0",
-    "mongodb": "^6.5.0"
+    "mongodb": "^6.5.0",
+    "mysql2": "^3.9.3",
+    "pg": "^8.11.5"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.4",
     "@types/js-yaml": "^4.0.5",
-    "@types/node": "^20.5.1"
+    "@types/node": "^20.5.1",
+    "@types/pg": "^8.11.4"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0",
+    "yarn": ">=3.0.0",
+    "pnpm": ">=7.0.0",
+    "npx": ">=10.0.0",
+    "nvm": ">=0.38.0",
+    "nvs": ">=1.7.0",
+    "n": ">=8.0.0",
+    "node-gyp": ">=8.0.0"
   }
 }

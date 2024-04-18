@@ -1,6 +1,8 @@
 import { CacheDriver } from "./Drivers/Cache";
 import { JSONDriver } from "./Drivers/JSON";
 import { MongoDBDriver } from "./Drivers/Mongo";
+import { MySQLDriver } from "./Drivers/MySQL";
+import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
 import { SQLiteDriver } from "./Drivers/SQLite";
 import { YMLDriver } from "./Drivers/YML";
 import { goodDBOptions, methodOptions } from "./Types";
@@ -11,7 +13,7 @@ import { goodDBOptions, methodOptions } from "./Types";
  * ```javascript
  * const db = new GoodDB(new new JSONDriver({
  *         path: './database.json'
- *   }));
+ * }));
  * ```
  * ## Using the MongoDBDriver (async)
  * ```javascript
@@ -30,7 +32,11 @@ export default class GoodDB {
         isEnabled: boolean;
     };
     private isAsync;
-    constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver, options?: goodDBOptions | undefined);
+    constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver, options?: goodDBOptions | undefined);
+    get getNestedOptions(): {
+        nested: string;
+        nestedIsEnabled: boolean;
+    };
     /**
      * Set a value to a key
      * @param key - The key to set the value to
@@ -229,6 +235,35 @@ export default class GoodDB {
      */
     pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
     pull(key: string, valueOrCallback: any, pullAll?: boolean, options?: methodOptions): boolean;
+    /**
+     * Find a key in a collection
+     * @param key - The key to find in the collection
+     * @param callback - The callback find function to use
+     * @param options - The options to use
+     * @returns A promise if the driver is async, otherwise a boolean
+     * @example Find a key in a collection
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *     path: './database.json'
+     * }));
+     *
+     * db.find('key', (value) => value === 'value');
+     * ```
+     *
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *    uri: "..."
+     * }));
+     *
+     * await db.connect();
+     *
+     * await db.find('key', (value) => value === 'value');
+     * ```
+     */
+    find(key: string, callback: (value: any) => boolean, options?: methodOptions): Promise<boolean>;
+    find(key: string, callback: (value: any) => boolean, options?: methodOptions): boolean;
     /**
      * Add a value to a key
      * @param key - The key to add the value to

@@ -10,6 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Mongo_1 = require("./Drivers/Mongo");
+const MySQL_1 = require("./Drivers/MySQL");
+const PostgreSQL_1 = require("./Drivers/PostgreSQL");
 const SQLite_1 = require("./Drivers/SQLite");
 const ErrorMessage_1 = require("./utils/ErrorMessage");
 const nested_1 = require("./utils/nested");
@@ -20,7 +22,7 @@ const nested_1 = require("./utils/nested");
  * ```javascript
  * const db = new GoodDB(new new JSONDriver({
  *         path: './database.json'
- *   }));
+ * }));
  * ```
  * ## Using the MongoDBDriver (async)
  * ```javascript
@@ -41,18 +43,25 @@ class GoodDB {
             isEnabled: (options === null || options === void 0 ? void 0 : options.nestedIsEnabled) ? true : false,
         };
         this.tableName = (options === null || options === void 0 ? void 0 : options.table) || 'gooddb';
-        this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver ? true : false;
+        this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver ? true : false;
         if (!this.isAsync) {
             this.driver.init(this.tableName);
         }
         ;
     }
     ;
-    set(key, value, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
+    get getNestedOptions() {
+        var _a, _b;
+        return {
+            nested: (_a = this.nested.nested) !== null && _a !== void 0 ? _a : '..',
+            nestedIsEnabled: (_b = this.nested.isEnabled) !== null && _b !== void 0 ? _b : false,
         };
+    }
+    ;
+    set(key, value, options) {
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        options = options || this.getNestedOptions;
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -89,16 +98,15 @@ class GoodDB {
     }
     ;
     get(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const data = (0, nested_1.getValueAtPath)(yield this.driver.getAllRows(this.tableName), key, {
-                            separator: this.nested.nested,
+                            separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
                         return resolve(data.value);
                     }
@@ -114,9 +122,10 @@ class GoodDB {
         }
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                return (0, nested_1.getValueAtPath)(this.driver.getAllRows(this.tableName), key, {
-                    separator: this.nested.nested,
+                const data = (0, nested_1.getValueAtPath)(this.driver.getAllRows(this.tableName), key, {
+                    separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
+                return data.value;
             }
             else {
                 return this.driver.getRowByKey(this.tableName, key);
@@ -125,10 +134,9 @@ class GoodDB {
     }
     ;
     delete(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -165,10 +173,9 @@ class GoodDB {
     }
     ;
     push(key, value, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -191,7 +198,6 @@ class GoodDB {
         }
         else {
             const data = this.get(key, options);
-            console.log(data);
             if (data === undefined) {
                 this.set(key, [value], options);
                 return 1;
@@ -206,10 +212,9 @@ class GoodDB {
     }
     ;
     shift(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -244,10 +249,9 @@ class GoodDB {
     }
     ;
     unshift(key, value, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -284,10 +288,9 @@ class GoodDB {
     }
     ;
     pop(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -322,10 +325,9 @@ class GoodDB {
     }
     ;
     pull(key, valueOrCallback, pullAll, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (!key) {
             throw new ErrorMessage_1.DatabaseError("The key is not defined!");
         }
@@ -470,11 +472,37 @@ class GoodDB {
         }
     }
     ;
+    find(key, callback, options) {
+        options = options || this.getNestedOptions;
+        if (typeof callback !== 'function')
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires the callback to be a function. Provided: ${typeof callback}`);
+        if (this.isAsync) {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const data = yield this.get(key, options);
+                    if (!Array.isArray(data)) {
+                        throw new ErrorMessage_1.DatabaseError('Value is not an array');
+                    }
+                    resolve(data.find(callback));
+                }
+                catch (error) {
+                    reject(error);
+                }
+            }));
+        }
+        else {
+            const data = this.get(key, options);
+            if (!Array.isArray(data)) {
+                throw new ErrorMessage_1.DatabaseError('Value is not an array');
+            }
+            return data.find(callback);
+        }
+    }
+    ;
     add(key, value, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -503,10 +531,9 @@ class GoodDB {
     }
     ;
     multiply(key, value, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -535,10 +562,9 @@ class GoodDB {
     }
     ;
     double(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -567,10 +593,9 @@ class GoodDB {
     }
     ;
     subtract(key, value, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -599,10 +624,9 @@ class GoodDB {
     }
     ;
     math(key, mathSign, value, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -675,10 +699,9 @@ class GoodDB {
     }
     ;
     type(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -737,10 +760,9 @@ class GoodDB {
     }
     ;
     size(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -787,10 +809,7 @@ class GoodDB {
     }
     ;
     has(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -808,10 +827,9 @@ class GoodDB {
     }
     ;
     startsWith(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -880,10 +898,9 @@ class GoodDB {
     }
     ;
     endsWith(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -952,10 +969,9 @@ class GoodDB {
     }
     ;
     includes(key, options) {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -1116,6 +1132,8 @@ class GoodDB {
      * ```
      */
     table(name) {
+        if (!name)
+            throw new ErrorMessage_1.DatabaseError('Table name is required.');
         return new GoodDB(this.driver, Object.assign(Object.assign({}, this.options), { table: name }));
     }
     ;
@@ -1135,7 +1153,7 @@ class GoodDB {
      */
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.driver instanceof Mongo_1.MongoDBDriver) {
+            if (this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver) {
                 return yield this.driver.init(this.tableName);
             }
             else {
@@ -1159,7 +1177,7 @@ class GoodDB {
      */
     disconnect() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.driver instanceof Mongo_1.MongoDBDriver) {
+            if (this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver) {
                 return yield this.driver.close();
             }
             else {
