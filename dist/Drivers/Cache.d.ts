@@ -1,4 +1,4 @@
-export declare class CacheDriver {
+export declare class MemoryDriver {
     private cache;
     constructor();
     init(table: string): boolean;

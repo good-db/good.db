@@ -1,4 +1,4 @@
-import { CacheDriver } from "./Drivers/Cache";
+import { MemoryDriver } from "./Drivers/Cache";
 import { JSONDriver } from "./Drivers/JSON";
 import { MongoDBDriver } from "./Drivers/Mongo";
 import { MySQLDriver } from "./Drivers/MySQL";
@@ -7,6 +7,7 @@ import { SQLiteDriver } from "./Drivers/SQLite";
 import { YMLDriver } from "./Drivers/YML";
 import { goodDBOptions, methodOptions } from "./Types";
 import { DatabaseError } from "./utils/ErrorMessage";
+import { LRUCache } from "./utils/Caching";
 import { deleteValueAtPath, getValueAtPath, setValueAtPath } from "./utils/nested";
 
 /**
@@ -27,16 +28,18 @@ import { deleteValueAtPath, getValueAtPath, setValueAtPath } from "./utils/neste
  * ```
  */
 export default class GoodDB {
-    private driver: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver;
+    private driver: JSONDriver | SQLiteDriver | YMLDriver | MemoryDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver;
     public readonly tableName: string;
     public readonly nested: {
         nested: string;
         isEnabled: boolean;
     };
-    private isAsync: boolean;
+    private cacheIsEnabled: boolean;
+    public readonly isAsync: boolean;
+    public cacheService: LRUCache | undefined;
 
     constructor(
-        driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver,
+        driver?: JSONDriver | SQLiteDriver | YMLDriver | MemoryDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver,
         private options?: goodDBOptions
     ) {
         this.driver = driver || new SQLiteDriver({
@@ -50,6 +53,20 @@ export default class GoodDB {
         this.isAsync = this.driver instanceof MongoDBDriver || this.driver instanceof PostgreSQLDriver || this.driver instanceof MySQLDriver ? true : false;
         if (!this.isAsync) {
             this.driver.init(this.tableName);
+        };
+        this.cacheIsEnabled = options?.cache?.isEnabled ?? false;
+        this.cacheService = this.cacheIsEnabled ? new LRUCache(
+            options?.cache?.capacity ?? 1024
+        ) : undefined;
+    };
+
+    get getNestedOptions(): {
+        nested: string;
+        nestedIsEnabled: boolean;
+    } {
+        return {
+            nested: this.nested.nested ?? '..',
+            nestedIsEnabled: this.nested.isEnabled ?? false,
         };
     };
 
@@ -84,25 +101,26 @@ export default class GoodDB {
      */
     public async set(key: string, value: any, options?: methodOptions): Promise<boolean>;
     public set(key: string, value: any, options?: methodOptions): boolean;
-    public set(key: string, value: any, options?: methodOptions): Promise<boolean> | boolean {
+    public set(key: string, value: any, options?: methodOptions): boolean | Promise<boolean> {
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const newData = setValueAtPath(await this.driver.getAllRows(this.tableName), key, value, {
+                        const firstKey = key.split(options?.nested as string)[0];
+                        const otherKeys = key.split(options?.nested as string).slice(1).join(options?.nested as string);
+                        const data = await this.get(firstKey);
+                        const newData = setValueAtPath(data, otherKeys, value, {
                             separator: options?.nested,
                         });
 
-                        await this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
-
+                        await this.driver.setRowByKey(this.tableName, firstKey, newData.object);
+                        this.cacheService?.put(firstKey, newData.object);
                         resolve(true);
                     } else {
                         await this.driver.setRowByKey(this.tableName, key, value);
+                        this.cacheService?.put(key, value);
                         resolve(true);
                     }
                 } catch (error) {
@@ -110,16 +128,27 @@ export default class GoodDB {
                 }
             });
         } else {
-            if (options?.nested) {
-                const newData = setValueAtPath(this.driver.getAllRows(this.tableName), key, value, {
-                    separator: this.nested.nested,
+            if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
+                // Split all keys
+                const splitKeys = key.split(options?.nested as string);
+                // First key
+                const firstKey = splitKeys[0];
+                // Other keys
+                const otherKeys = splitKeys.slice(1).join(options?.nested as string);
+                // Get the data
+                const data = this.get(firstKey);
+
+                const newData = setValueAtPath(data || {}, otherKeys, value, {
+                    separator: options?.nested,
                 });
 
-                this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
+                this.driver.setRowByKey(this.tableName, firstKey, newData.object);
+                this.cacheService?.put(firstKey, newData.object);
 
                 return true;
             } else {
                 this.driver.setRowByKey(this.tableName, key, value);
+                this.cacheService?.put(key, value);
                 return true;
             }
         }
@@ -149,22 +178,32 @@ export default class GoodDB {
      */
     public async get(key: string, options?: methodOptions): Promise<any>;
     public get(key: string, options?: methodOptions): any;
-    public get(key: string, options?: methodOptions): Promise<any> | any {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+    public get(key: string, options?: methodOptions): any | Promise<any> {
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
+
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const data = getValueAtPath(await this.driver.getAllRows(this.tableName), key, {
-                            separator: this.nested.nested,
+                        // Split all keys
+                        let [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];;
+                        // Get the data
+                        const data = this.cacheService?.get(firstKey) ?? await this.driver.getRowByKey(this.tableName, firstKey);
+                        if (typeof data !== 'object') {
+                            throw new DatabaseError('Value is not an object');
+                        };
+
+                        // Get the value
+                        const getData = getValueAtPath(data, otherKeys.join(options?.nested as string), {
+                            separator: options?.nested,
                         });
-                        return resolve(data.value);
+
+                        this.cacheService?.put(firstKey, getData.object);
+                        return resolve(getData.value);
                     } else {
-                        const data = await this.driver.getRowByKey(this.tableName, key);
+                        const data = this.cacheService?.get(key) ?? await this.driver.getRowByKey(this.tableName, key);
+                        this.cacheService?.put(key, data);
                         return resolve(data);
                     }
                 } catch (error) {
@@ -173,12 +212,29 @@ export default class GoodDB {
             });
         } else {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const data = getValueAtPath(this.driver.getAllRows(this.tableName), key, {
-                    separator: this.nested.nested,
+                // Split all keys
+                const splitKeys = key.split(options?.nested as string);
+                // First key
+                const firstKey = splitKeys[0];
+                // Other keys
+                const otherKeys = splitKeys.slice(1).join(options?.nested as string);
+                // Get the data
+                const data = this.cacheService?.get(firstKey) ?? this.driver.getRowByKey(this.tableName, firstKey);
+
+                if (typeof data !== 'object') {
+                    throw new DatabaseError('Value is not an object');
+                };
+                // Get the value
+                const getData = getValueAtPath(data, otherKeys, {
+                    separator: options?.nested,
                 });
-                return data.value;
+
+                this.cacheService?.put(firstKey, getData.object);
+                return getData.value;
             } else {
-                return this.driver.getRowByKey(this.tableName, key);
+                const data = this.cacheService?.get(key) ?? this.driver.getRowByKey(this.tableName, key);
+                this.cacheService?.put(key, data);
+                return data;
             }
         }
     };
@@ -207,25 +263,29 @@ export default class GoodDB {
      */
     public async delete(key: string, options: methodOptions): Promise<boolean>;
     public delete(key: string, options?: methodOptions): boolean;
-    public delete(key: string, options?: methodOptions): Promise<boolean> | boolean {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+    public delete(key: string, options?: methodOptions): boolean | Promise<boolean> {
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const data = deleteValueAtPath(await this.driver.getAllRows(this.tableName), key, {
+                        // Split all keys
+                        const [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];
+                        // Get the data
+                        const data = await this.get(firstKey);
+
+                        const deleteData = deleteValueAtPath(data, otherKeys.join(options.nested), {
                             separator: options?.nested,
                         });
 
-                        await this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
+                        await this.driver.setRowByKey(this.tableName, firstKey, deleteData.object);
+                        this.cacheService?.put(firstKey, deleteData.object);
 
                         resolve(true);
                     } else {
                         await this.driver.deleteRowByKey(this.tableName, key);
+                        this.cacheService?.delete(key);
                         resolve(true);
                     }
                 } catch (error) {
@@ -234,15 +294,18 @@ export default class GoodDB {
             });
         } else {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const data = deleteValueAtPath(this.driver.getAllRows(this.tableName), key, {
+                const [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];
+                const data = this.get(firstKey);
+                const deleteDate = deleteValueAtPath(data, otherKeys.join(options.nested), {
                     separator: options?.nested,
                 });
 
-                this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
-
+                this.driver.setRowByKey(this.tableName, firstKey, deleteDate.object);
+                this.cacheService?.put(firstKey, deleteDate.object);
                 return true;
             } else {
                 this.driver.deleteRowByKey(this.tableName, key);
+                this.cacheService?.delete(key);
                 return true;
             }
         }
@@ -278,11 +341,8 @@ export default class GoodDB {
      */
     public async push(key: string, value: any, options?: methodOptions): Promise<number>;
     public push(key: string, value: any, options?: methodOptions): number;
-    public push(key: string, value: any, options?: methodOptions): Promise<number> | number {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+    public push(key: string, value: any, options?: methodOptions): number | Promise<number> {
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -341,11 +401,8 @@ export default class GoodDB {
      */
     public async shift(key: string, options?: methodOptions): Promise<any>;
     public shift(key: string, options?: methodOptions): any;
-    public shift(key: string, options?: methodOptions): Promise<any> | any {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+    public shift(key: string, options?: methodOptions): any | Promise<any> {
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -403,11 +460,8 @@ export default class GoodDB {
      */
     public async unshift(key: string, value: any, options?: methodOptions): Promise<number>;
     public unshift(key: string, value: any, options?: methodOptions): number;
-    public unshift(key: string, value: any, options?: methodOptions): Promise<number> | number {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+    public unshift(key: string, value: any, options?: methodOptions): number | Promise<number> {
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -467,11 +521,8 @@ export default class GoodDB {
      */
     public async pop(key: string, options?: methodOptions): Promise<any>;
     public pop(key: string, options?: methodOptions): any;
-    public pop(key: string, options?: methodOptions): Promise<any> | any {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+    public pop(key: string, options?: methodOptions): any | Promise<any> {
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -529,12 +580,9 @@ export default class GoodDB {
      * ```
      */
     public async pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
-    public pull(key: string, valueOrCallback: any, pullAll?: boolean, options?: methodOptions): boolean;
-    public pull(key: string, valueOrCallback: any, pullAll?: boolean, options?: methodOptions): Promise<boolean> | boolean {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+    public pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean;
+    public pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean> | boolean {
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (!key) {
             throw new DatabaseError("The key is not defined!");
@@ -713,10 +761,7 @@ export default class GoodDB {
     public async find(key: string, callback: (value: any) => boolean, options?: methodOptions): Promise<boolean>;
     public find(key: string, callback: (value: any) => boolean, options?: methodOptions): boolean;
     public find(key: string, callback: (value: any) => boolean, options?: methodOptions): Promise<boolean> | boolean {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof callback !== 'function') throw new DatabaseError(`GoodDB requires the callback to be a function. Provided: ${typeof callback}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -797,10 +842,7 @@ export default class GoodDB {
     public async add(key: string, value: number, options?: methodOptions): Promise<number>;
     public add(key: string, value: number, options?: methodOptions): number;
     public add(key: string, value: number, options?: methodOptions): Promise<number> | number {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -853,10 +895,7 @@ export default class GoodDB {
     public async multiply(key: string, value: number, options?: methodOptions): Promise<number>;
     public multiply(key: string, value: number, options?: methodOptions): number;
     public multiply(key: string, value: number, options?: methodOptions): Promise<number> | number {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -908,10 +947,7 @@ export default class GoodDB {
     public async double(key: string, options?: methodOptions): Promise<number>;
     public double(key: string, options?: methodOptions): number;
     public double(key: string, options?: methodOptions): Promise<number> | number {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -964,10 +1000,7 @@ export default class GoodDB {
     public async subtract(key: string, value: number, options?: methodOptions): Promise<number>;
     public subtract(key: string, value: number, options?: methodOptions): number;
     public subtract(key: string, value: number, options?: methodOptions): Promise<number> | number {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -1021,10 +1054,7 @@ export default class GoodDB {
     public async math(key: string, mathSign: string, value: number, options?: methodOptions): Promise<number>;
     public math(key: string, mathSign: string, value: number, options?: methodOptions): number;
     public math(key: string, mathSign: string, value: number, options?: methodOptions): number | Promise<number> {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -1129,10 +1159,7 @@ export default class GoodDB {
     public async type(key: string, options?: methodOptions): Promise<string>;
     public type(key: string, options?: methodOptions): string;
     public type(key: string, options?: methodOptions): Promise<string> | string {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -1202,10 +1229,7 @@ export default class GoodDB {
     public async size(key: string, options?: methodOptions): Promise<number>;
     public size(key: string, options?: methodOptions): number;
     public size(key: string, options?: methodOptions): Promise<number> | number {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -1267,10 +1291,7 @@ export default class GoodDB {
     public async has(key: string, options?: methodOptions): Promise<boolean>;
     public has(key: string, options?: methodOptions): boolean;
     public has(key: string, options?: methodOptions): Promise<boolean> | boolean {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -1315,10 +1336,7 @@ export default class GoodDB {
     public async startsWith(key: string, options?: methodOptions): Promise<any>;
     public startsWith(key: string, options?: methodOptions): any;
     public startsWith(key: string, options?: methodOptions): Promise<any> | any {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -1339,7 +1357,7 @@ export default class GoodDB {
                         }
                         resolve(result);
                     } else {
-                        const data = await this.driver.getAllRows(this.tableName);
+                        const data = await this.all();
                         const keys = Object.keys(data);
                         const result: any = {};
                         for (const k of keys) {
@@ -1371,7 +1389,7 @@ export default class GoodDB {
                 }
                 return result;
             } else {
-                const data = this.driver.getAllRows(this.tableName);
+                const data = this.all() as any;
                 const keys = Object.keys(data);
                 const result: any = {};
                 for (const k of keys) {
@@ -1409,10 +1427,7 @@ export default class GoodDB {
     public async endsWith(key: string, options?: methodOptions): Promise<any>;
     public endsWith(key: string, options?: methodOptions): any;
     public endsWith(key: string, options?: methodOptions): Promise<any> | any {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -1433,7 +1448,7 @@ export default class GoodDB {
                         }
                         resolve(result);
                     } else {
-                        const data = await this.driver.getAllRows(this.tableName);
+                        const data = await this.all();
                         const keys = Object.keys(data);
                         const result: any = {};
                         for (const k of keys) {
@@ -1464,7 +1479,7 @@ export default class GoodDB {
                 }
                 return result;
             } else {
-                const data = this.driver.getAllRows(this.tableName);
+                const data = this.all() as any;
                 const keys = Object.keys(data);
                 const result: any = {};
                 for (const k of keys) {
@@ -1502,10 +1517,7 @@ export default class GoodDB {
     public async includes(key: string, options?: methodOptions): Promise<any>;
     public includes(key: string, options?: methodOptions): any;
     public includes(key: string, options?: methodOptions): Promise<any> | any {
-        options = options || {
-            nested: this.nested.nested,
-            nestedIsEnabled: this.nested.isEnabled
-        };
+        options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
@@ -1526,7 +1538,7 @@ export default class GoodDB {
                         }
                         resolve(result);
                     } else {
-                        const data = await this.driver.getAllRows(this.tableName);
+                        const data = await this.all();
                         const keys = Object.keys(data);
                         const result: any = {};
                         for (const k of keys) {
@@ -1558,7 +1570,7 @@ export default class GoodDB {
                 }
                 return result;
             } else {
-                const data = this.driver.getAllRows(this.tableName);
+                const data = this.all() as any;
                 const keys = Object.keys(data);
                 const result: any = {};
                 for (const k of keys) {
@@ -1597,14 +1609,14 @@ export default class GoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const data = await this.driver.getAllRows(this.tableName);
+                    const data = await this.all();
                     resolve(Object.keys(data));
                 } catch (error) {
                     reject(error);
                 }
             });
         } else {
-            const data = this.driver.getAllRows(this.tableName);
+            const data = this.all();
             return Object.keys(data);
         }
     };
@@ -1635,14 +1647,14 @@ export default class GoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const data = await this.driver.getAllRows(this.tableName);
+                    const data = await this.all();
                     resolve(Object.values(data));
                 } catch (error) {
                     reject(error);
                 }
             });
         } else {
-            const data = this.driver.getAllRows(this.tableName);
+            const data = this.all();
             return Object.values(data);
         }
     };
@@ -1669,7 +1681,7 @@ export default class GoodDB {
      */
     public async all(): Promise<any>;
     public all(): any;
-    public all(): Promise<any> | any {
+    public all(): any | Promise<any> {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -1706,7 +1718,7 @@ export default class GoodDB {
      */
     public async clear(): Promise<boolean>;
     public clear(): boolean;
-    public clear(): Promise<boolean> | boolean {
+    public clear(): boolean | Promise<boolean> {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {

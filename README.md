@@ -32,6 +32,10 @@ const db = new GoodDB(new JSONDriver({ path: './database.json' }), {
   table: 'data',
   nested: '.',
   nestedIsEnabled: true,
+  cache: {
+    isEnabled: true,
+    capacity: 1024
+  }
 });
 ```
 
@@ -41,18 +45,22 @@ const db = new GoodDB(new JSONDriver({ path: './database.json' }), {
 
 - `nestedIsEnabled` (boolean): Whether to enable nested key handling.
 
+- `cache` 
+  - `isEnabled` (boolean): Whether to enable caching.
+  - `capacity` (number): The maximum number of entries to cache.
+
 ## Drivers
 
 GoodDB supports the following drivers:
 
-### CacheDriver
+### MemoryDriver
 
-The `CacheDriver` stores data in memory. It is suitable for small applications and is easy to set up.
+The `MemoryDriver` stores data in memory. It is suitable for small applications and is easy to set up.
 
 ```typescript
-import { GoodDB, CacheDriver } from 'gooddb';
+import { GoodDB, MemoryDriver } from 'gooddb';
 
-const db = new GoodDB(new CacheDriver());
+const db = new GoodDB(new MemoryDriver());
 ```
 
 ### SQLiteDriver

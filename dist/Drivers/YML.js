@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.YMLDriver = void 0;
-const fs_1 = __importDefault(require("fs"));
+const node_fs_1 = __importDefault(require("node:fs"));
 const js_yaml_1 = __importDefault(require("js-yaml"));
 class YMLDriver {
     constructor(options) {
@@ -13,11 +13,11 @@ class YMLDriver {
     }
     ;
     checkFile() {
-        return fs_1.default.existsSync(this.path);
+        return node_fs_1.default.existsSync(this.path);
     }
     init(table) {
         if (!this.checkFile()) {
-            fs_1.default.writeFileSync(this.path, '');
+            node_fs_1.default.writeFileSync(this.path, '');
         }
         ;
         if (!this.read()[table]) {
@@ -62,13 +62,13 @@ class YMLDriver {
     ;
     // OLD
     read() {
-        const fileContent = fs_1.default.readFileSync(this.path, 'utf8');
+        const fileContent = node_fs_1.default.readFileSync(this.path, 'utf8');
         return js_yaml_1.default.load(fileContent) || {};
     }
     ;
     write(data) {
         const yamlString = js_yaml_1.default.dump(data);
-        fs_1.default.writeFileSync(this.path, yamlString);
+        node_fs_1.default.writeFileSync(this.path, yamlString);
         return true;
     }
     ;

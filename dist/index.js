@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MySQLDriver = exports.PostgreSQLDriver = exports.MongoDBDriver = exports.YMLDriver = exports.CacheDriver = exports.SQLiteDriver = exports.JSONDriver = exports.GoodDB = void 0;
+exports.MySQLDriver = exports.PostgreSQLDriver = exports.MongoDBDriver = exports.YMLDriver = exports.MemoryDriver = exports.CacheDriver = exports.SQLiteDriver = exports.JSONDriver = exports.GoodDB = void 0;
 const good_db_1 = __importDefault(require("./good.db"));
 const JSON_1 = require("./Drivers/JSON");
 const SQLite_1 = require("./Drivers/SQLite");
@@ -64,7 +64,14 @@ exports.SQLiteDriver = SQLite_1.SQLiteDriver;
  * const db = new GoodDB(new CacheDriver());
  * ```
  */
-exports.CacheDriver = Cache_1.CacheDriver;
+class CacheDriver extends Cache_1.MemoryDriver {
+    constructor() {
+        super();
+        console.log("\x1b[33m[Warning:good.db]: CacheDriver name will be deprecated in the future, please use MemoryDriver instead.\x1b[0m");
+    }
+}
+exports.CacheDriver = CacheDriver;
+exports.MemoryDriver = Cache_1.MemoryDriver;
 /**
  * The YMLDriver class for the GoodDB package
  * @example

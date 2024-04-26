@@ -1,4 +1,4 @@
-import { CacheDriver } from "./Drivers/Cache";
+import { MemoryDriver } from "./Drivers/Cache";
 import { JSONDriver } from "./Drivers/JSON";
 import { MongoDBDriver } from "./Drivers/Mongo";
 import { MySQLDriver } from "./Drivers/MySQL";
@@ -6,6 +6,7 @@ import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
 import { SQLiteDriver } from "./Drivers/SQLite";
 import { YMLDriver } from "./Drivers/YML";
 import { goodDBOptions, methodOptions } from "./Types";
+import { LRUCache } from "./utils/Caching";
 /**
  * The main class for the GoodDB package
  * @example
@@ -31,8 +32,14 @@ export default class GoodDB {
         nested: string;
         isEnabled: boolean;
     };
-    private isAsync;
-    constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | CacheDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver, options?: goodDBOptions | undefined);
+    private cacheIsEnabled;
+    readonly isAsync: boolean;
+    cacheService: LRUCache | undefined;
+    constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | MemoryDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver, options?: goodDBOptions | undefined);
+    get getNestedOptions(): {
+        nested: string;
+        nestedIsEnabled: boolean;
+    };
     /**
      * Set a value to a key
      * @param key - The key to set the value to
@@ -230,7 +237,7 @@ export default class GoodDB {
      * ```
      */
     pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
-    pull(key: string, valueOrCallback: any, pullAll?: boolean, options?: methodOptions): boolean;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean;
     /**
      * Find a key in a collection
      * @param key - The key to find in the collection

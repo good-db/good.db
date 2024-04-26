@@ -1,4 +1,4 @@
-export class CacheDriver {
+export class MemoryDriver {
     private cache: Map<string, any>;
 
     constructor() {

@@ -1,5 +1,5 @@
 import { JSONDriverOptions } from '../Types';
-import fs from 'fs';
+import fs from 'node:fs';
 
 export class JSONDriver {
     public readonly path: string;

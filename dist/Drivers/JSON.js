@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSONDriver = void 0;
-const fs_1 = __importDefault(require("fs"));
+const node_fs_1 = __importDefault(require("node:fs"));
 class JSONDriver {
     constructor(options) {
         this.options = options;
@@ -13,14 +13,14 @@ class JSONDriver {
     }
     ;
     checkFile() {
-        if (!fs_1.default.existsSync(this.path)) {
+        if (!node_fs_1.default.existsSync(this.path)) {
             return false;
         }
         return true;
     }
     init(table) {
         if (!this.checkFile()) {
-            fs_1.default.writeFileSync(this.path, JSON.stringify({}));
+            node_fs_1.default.writeFileSync(this.path, JSON.stringify({}));
         }
         ;
         if (!this.read()[table]) {
@@ -65,15 +65,15 @@ class JSONDriver {
     ;
     // OLD
     read() {
-        return JSON.parse(fs_1.default.readFileSync(this.path).toString());
+        return JSON.parse(node_fs_1.default.readFileSync(this.path).toString());
     }
     ;
     write(data) {
         if (this.format) {
-            fs_1.default.writeFileSync(this.path, JSON.stringify(data, null, 2));
+            node_fs_1.default.writeFileSync(this.path, JSON.stringify(data, null, 2));
             return true;
         }
-        fs_1.default.writeFileSync(this.path, JSON.stringify(data));
+        node_fs_1.default.writeFileSync(this.path, JSON.stringify(data));
         return true;
     }
     ;

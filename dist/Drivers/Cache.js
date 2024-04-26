@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CacheDriver = void 0;
-class CacheDriver {
+exports.MemoryDriver = void 0;
+class MemoryDriver {
     constructor() {
         this.cache = new Map();
     }
@@ -61,6 +61,6 @@ class CacheDriver {
     }
     ;
 }
-exports.CacheDriver = CacheDriver;
+exports.MemoryDriver = MemoryDriver;
 ;
 //# sourceMappingURL=Cache.js.map

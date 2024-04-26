@@ -6,6 +6,10 @@ export type goodDBOptions = {
 
     // database
     timeIsEnabled?: boolean;
+    cache?: {
+        isEnabled?: boolean;
+        capacity?: number;
+    };
 };
 
 export type JSONDriverOptions = {
