@@ -63,28 +63,28 @@ class GoodDB {
     }
     ;
     set(key, value, options) {
-        var _a, _b;
+        var _a, _b, _c, _d;
         if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
             throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         options = options || this.getNestedOptions;
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                var _c, _d;
+                var _e, _f, _g, _h;
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const firstKey = key.split(options === null || options === void 0 ? void 0 : options.nested)[0];
                         const otherKeys = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
-                        const data = yield this.get(firstKey);
+                        const data = (_f = (_e = this.cacheService) === null || _e === void 0 ? void 0 : _e.get(firstKey)) !== null && _f !== void 0 ? _f : yield this.get(firstKey);
                         const newData = (0, nested_1.setValueAtPath)(data, otherKeys, value, {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
                         yield this.driver.setRowByKey(this.tableName, firstKey, newData.object);
-                        (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, newData.object);
+                        (_g = this.cacheService) === null || _g === void 0 ? void 0 : _g.put(firstKey, newData.object);
                         resolve(true);
                     }
                     else {
                         yield this.driver.setRowByKey(this.tableName, key, value);
-                        (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.put(key, value);
+                        (_h = this.cacheService) === null || _h === void 0 ? void 0 : _h.put(key, value);
                         resolve(true);
                     }
                 }
@@ -102,17 +102,17 @@ class GoodDB {
                 // Other keys
                 const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
                 // Get the data
-                const data = this.get(firstKey);
+                const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.get(firstKey);
                 const newData = (0, nested_1.setValueAtPath)(data || {}, otherKeys, value, {
                     separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
                 this.driver.setRowByKey(this.tableName, firstKey, newData.object);
-                (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.put(firstKey, newData.object);
+                (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, newData.object);
                 return true;
             }
             else {
                 this.driver.setRowByKey(this.tableName, key, value);
-                (_b = this.cacheService) === null || _b === void 0 ? void 0 : _b.put(key, value);
+                (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.put(key, value);
                 return true;
             }
         }
@@ -134,7 +134,7 @@ class GoodDB {
                         // Get the data
                         const data = (_h = (_g = this.cacheService) === null || _g === void 0 ? void 0 : _g.get(firstKey)) !== null && _h !== void 0 ? _h : yield this.driver.getRowByKey(this.tableName, firstKey);
                         if (typeof data !== 'object') {
-                            throw new ErrorMessage_1.DatabaseError('Value is not an object');
+                            return undefined;
                         }
                         ;
                         // Get the value
@@ -166,7 +166,7 @@ class GoodDB {
                 // Get the data
                 const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.driver.getRowByKey(this.tableName, firstKey);
                 if (typeof data !== 'object') {
-                    throw new ErrorMessage_1.DatabaseError('Value is not an object');
+                    return undefined;
                 }
                 ;
                 // Get the value

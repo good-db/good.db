@@ -110,7 +110,7 @@ export default class GoodDB {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                         const firstKey = key.split(options?.nested as string)[0];
                         const otherKeys = key.split(options?.nested as string).slice(1).join(options?.nested as string);
-                        const data = await this.get(firstKey);
+                        const data = this.cacheService?.get(firstKey) ?? await this.get(firstKey);
                         const newData = setValueAtPath(data, otherKeys, value, {
                             separator: options?.nested,
                         });
@@ -136,7 +136,7 @@ export default class GoodDB {
                 // Other keys
                 const otherKeys = splitKeys.slice(1).join(options?.nested as string);
                 // Get the data
-                const data = this.get(firstKey);
+                const data = this.cacheService?.get(firstKey) ?? this.get(firstKey);
 
                 const newData = setValueAtPath(data || {}, otherKeys, value, {
                     separator: options?.nested,
@@ -190,8 +190,9 @@ export default class GoodDB {
                         let [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];;
                         // Get the data
                         const data = this.cacheService?.get(firstKey) ?? await this.driver.getRowByKey(this.tableName, firstKey);
+                        
                         if (typeof data !== 'object') {
-                            throw new DatabaseError('Value is not an object');
+                            return undefined;
                         };
 
                         // Get the value
@@ -220,9 +221,8 @@ export default class GoodDB {
                 const otherKeys = splitKeys.slice(1).join(options?.nested as string);
                 // Get the data
                 const data = this.cacheService?.get(firstKey) ?? this.driver.getRowByKey(this.tableName, firstKey);
-
                 if (typeof data !== 'object') {
-                    throw new DatabaseError('Value is not an object');
+                    return undefined;
                 };
                 // Get the value
                 const getData = getValueAtPath(data, otherKeys, {
