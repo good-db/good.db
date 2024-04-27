@@ -45,21 +45,6 @@ class MemoryDriver {
         return true;
     }
     ;
-    // OLD
-    read() {
-        return Object.fromEntries(this.cache);
-    }
-    ;
-    write(data) {
-        this.cache = new Map(Object.entries(data));
-        return true;
-    }
-    ;
-    clear() {
-        this.cache.clear();
-        return true;
-    }
-    ;
 }
 exports.MemoryDriver = MemoryDriver;
 ;

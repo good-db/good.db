@@ -44,19 +44,4 @@ export class MemoryDriver {
         this.cache.delete(table);
         return true;
     };
-
-    // OLD
-    public read(): any {
-        return Object.fromEntries(this.cache);
-    };
-
-    public write(data: any): boolean {
-        this.cache = new Map(Object.entries(data));
-        return true;
-    };
-
-    public clear(): boolean {
-        this.cache.clear();
-        return true;
-    };
 };

@@ -11,7 +11,4 @@ export declare class MongoDBDriver {
     deleteRowByKey(table: string, key: string): Promise<number>;
     deleteAllRows(table: string): Promise<boolean>;
     close(): Promise<boolean>;
-    read(): Promise<any>;
-    write(data: any): Promise<boolean>;
-    clear(): Promise<boolean>;
 }

@@ -46,29 +46,4 @@ export class SQLiteDriver {
         this.db.exec(`DELETE FROM ${table}`);
         return true;
     };
-
-    // OLD
-    public read(): any {
-        const rows: any = this.db.prepare('SELECT * FROM data').all();
-        const data: any = {};
-        for (const row of rows) {
-            data[row.key] = JSON.parse(row.value);
-        }
-        return data;
-    }
-
-    public write(data: any): boolean {
-        const insert = this.db.prepare('INSERT OR REPLACE INTO data (key, value) VALUES (?, ?)');
-        this.db.transaction((data: any) => {
-            for (const key of Object.keys(data)) {
-                insert.run(key, JSON.stringify(data[key]));
-            }
-        })(data);
-        return true;
-    };
-
-    public clear(): boolean {
-        this.db.exec('DELETE FROM data');
-        return true;
-    }
 }
