@@ -108,10 +108,16 @@ export default class GoodDB {
             return new Promise(async (resolve, reject) => {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const firstKey = key.split(options?.nested as string)[0];
-                        const otherKeys = key.split(options?.nested as string).slice(1).join(options?.nested as string);
+                        // Split all keys
+                        const splitKeys = key.split(options?.nested as string);
+                        // First key
+                        const firstKey = splitKeys[0];
+                        // Other keys
+                        const otherKeys = splitKeys.slice(1).join(options?.nested as string);
+                        // Get the data
                         const data = this.cacheService?.get(firstKey) ?? await this.get(firstKey);
-                        const newData = setValueAtPath(data, otherKeys, value, {
+
+                        const newData = setValueAtPath(data || {}, otherKeys, value, {
                             separator: options?.nested,
                         });
 
@@ -190,13 +196,13 @@ export default class GoodDB {
                         let [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];;
                         // Get the data
                         const data = this.cacheService?.get(firstKey) ?? await this.driver.getRowByKey(this.tableName, firstKey);
-                        
-                        if (typeof data !== 'object') {
+
+                        if (typeof data !== 'object' || !data) {
                             return undefined;
                         };
 
                         // Get the value
-                        const getData = getValueAtPath(data, otherKeys.join(options?.nested as string), {
+                        const getData = getValueAtPath(data || {}, otherKeys.join(options?.nested as string), {
                             separator: options?.nested,
                         });
 
@@ -221,11 +227,11 @@ export default class GoodDB {
                 const otherKeys = splitKeys.slice(1).join(options?.nested as string);
                 // Get the data
                 const data = this.cacheService?.get(firstKey) ?? this.driver.getRowByKey(this.tableName, firstKey);
-                if (typeof data !== 'object') {
+                if (typeof data !== 'object' || !data) {
                     return undefined;
                 };
                 // Get the value
-                const getData = getValueAtPath(data, otherKeys, {
+                const getData = getValueAtPath(data || {}, otherKeys, {
                     separator: options?.nested,
                 });
 
@@ -275,7 +281,7 @@ export default class GoodDB {
                         // Get the data
                         const data = await this.get(firstKey);
 
-                        const deleteData = deleteValueAtPath(data, otherKeys.join(options.nested), {
+                        const deleteData = deleteValueAtPath(data || {}, otherKeys.join(options.nested), {
                             separator: options?.nested,
                         });
 
@@ -296,7 +302,7 @@ export default class GoodDB {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                 const [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];
                 const data = this.get(firstKey);
-                const deleteDate = deleteValueAtPath(data, otherKeys.join(options.nested), {
+                const deleteDate = deleteValueAtPath(data || {}, otherKeys.join(options.nested), {
                     separator: options?.nested,
                 });
 

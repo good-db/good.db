@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteValueAtPath = exports.getValueAtPath = exports.setValueAtPath = void 0;
 const ErrorMessage_1 = require("./ErrorMessage");
 function setValueAtPath(object, key, value, options) {
+    if (!object)
+        throw new ErrorMessage_1.DatabaseError('Cannot set value on undefined object.');
     const { separator = '..' } = options || {};
     const keyParts = key.split(separator);
     let currentObject = object;
@@ -34,6 +36,8 @@ function setValueAtPath(object, key, value, options) {
 exports.setValueAtPath = setValueAtPath;
 ;
 function getValueAtPath(object, key, options) {
+    if (!object)
+        throw new ErrorMessage_1.DatabaseError('Cannot get value from undefined object.');
     const { separator = '..' } = options || {};
     const keyParts = key.split(separator);
     let currentObject = object;
@@ -68,6 +72,8 @@ function getValueAtPath(object, key, options) {
 exports.getValueAtPath = getValueAtPath;
 ;
 function deleteValueAtPath(object, key, options) {
+    if (!object)
+        throw new ErrorMessage_1.DatabaseError('Cannot delete value from undefined object.');
     const { separator = '..' } = options || {};
     const keyParts = key.split(separator);
     let currentObject = object;

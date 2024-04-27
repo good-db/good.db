@@ -72,10 +72,15 @@ class GoodDB {
                 var _e, _f, _g, _h;
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const firstKey = key.split(options === null || options === void 0 ? void 0 : options.nested)[0];
-                        const otherKeys = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        // Split all keys
+                        const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
+                        // First key
+                        const firstKey = splitKeys[0];
+                        // Other keys
+                        const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        // Get the data
                         const data = (_f = (_e = this.cacheService) === null || _e === void 0 ? void 0 : _e.get(firstKey)) !== null && _f !== void 0 ? _f : yield this.get(firstKey);
-                        const newData = (0, nested_1.setValueAtPath)(data, otherKeys, value, {
+                        const newData = (0, nested_1.setValueAtPath)(data || {}, otherKeys, value, {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
                         yield this.driver.setRowByKey(this.tableName, firstKey, newData.object);
@@ -133,12 +138,12 @@ class GoodDB {
                         ;
                         // Get the data
                         const data = (_h = (_g = this.cacheService) === null || _g === void 0 ? void 0 : _g.get(firstKey)) !== null && _h !== void 0 ? _h : yield this.driver.getRowByKey(this.tableName, firstKey);
-                        if (typeof data !== 'object') {
+                        if (typeof data !== 'object' || !data) {
                             return undefined;
                         }
                         ;
                         // Get the value
-                        const getData = (0, nested_1.getValueAtPath)(data, otherKeys.join(options === null || options === void 0 ? void 0 : options.nested), {
+                        const getData = (0, nested_1.getValueAtPath)(data || {}, otherKeys.join(options === null || options === void 0 ? void 0 : options.nested), {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
                         (_j = this.cacheService) === null || _j === void 0 ? void 0 : _j.put(firstKey, getData.object);
@@ -165,12 +170,12 @@ class GoodDB {
                 const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
                 // Get the data
                 const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.driver.getRowByKey(this.tableName, firstKey);
-                if (typeof data !== 'object') {
+                if (typeof data !== 'object' || !data) {
                     return undefined;
                 }
                 ;
                 // Get the value
-                const getData = (0, nested_1.getValueAtPath)(data, otherKeys, {
+                const getData = (0, nested_1.getValueAtPath)(data || {}, otherKeys, {
                     separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
                 (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, getData.object);
@@ -198,7 +203,7 @@ class GoodDB {
                         const [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
                         // Get the data
                         const data = yield this.get(firstKey);
-                        const deleteData = (0, nested_1.deleteValueAtPath)(data, otherKeys.join(options.nested), {
+                        const deleteData = (0, nested_1.deleteValueAtPath)(data || {}, otherKeys.join(options.nested), {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
                         yield this.driver.setRowByKey(this.tableName, firstKey, deleteData.object);
@@ -220,7 +225,7 @@ class GoodDB {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 const [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
                 const data = this.get(firstKey);
-                const deleteDate = (0, nested_1.deleteValueAtPath)(data, otherKeys.join(options.nested), {
+                const deleteDate = (0, nested_1.deleteValueAtPath)(data || {}, otherKeys.join(options.nested), {
                     separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
                 this.driver.setRowByKey(this.tableName, firstKey, deleteDate.object);
