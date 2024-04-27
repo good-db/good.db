@@ -139,7 +139,7 @@ class GoodDB {
                         // Get the data
                         const data = (_h = (_g = this.cacheService) === null || _g === void 0 ? void 0 : _g.get(firstKey)) !== null && _h !== void 0 ? _h : yield this.driver.getRowByKey(this.tableName, firstKey);
                         if (typeof data !== 'object' || !data) {
-                            return undefined;
+                            return resolve(undefined);
                         }
                         ;
                         // Get the value

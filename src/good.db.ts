@@ -198,7 +198,7 @@ export default class GoodDB {
                         const data = this.cacheService?.get(firstKey) ?? await this.driver.getRowByKey(this.tableName, firstKey);
 
                         if (typeof data !== 'object' || !data) {
-                            return undefined;
+                            return resolve(undefined);
                         };
 
                         // Get the value
