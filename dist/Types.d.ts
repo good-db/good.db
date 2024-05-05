@@ -3,6 +3,10 @@ export type goodDBOptions = {
     nestedIsEnabled?: boolean;
     table?: string;
     timeIsEnabled?: boolean;
+    cache?: {
+        isEnabled?: boolean;
+        capacity?: number;
+    };
 };
 export type JSONDriverOptions = {
     path?: string;

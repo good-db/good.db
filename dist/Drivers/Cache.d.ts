@@ -1,4 +1,4 @@
-export declare class CacheDriver {
+export declare class MemoryDriver {
     private cache;
     constructor();
     init(table: string): boolean;
@@ -8,7 +8,4 @@ export declare class CacheDriver {
     getRowByKey(table: string, key: string): any;
     deleteRowByKey(table: string, key: string): number;
     deleteAllRows(table: string): boolean;
-    read(): any;
-    write(data: any): boolean;
-    clear(): boolean;
 }

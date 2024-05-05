@@ -1,7 +1,7 @@
 import GoodDBMain from "./good.db";
 import { JSONDriver as JSONDriverMain } from "./Drivers/JSON";
 import { SQLiteDriver as SQLiteDriverMain } from "./Drivers/SQLite";
-import { CacheDriver as CacheDriverMain } from "./Drivers/Cache";
+import { MemoryDriver as MemoryDriverMain } from "./Drivers/Cache";
 import { YMLDriver as YMLDriverMain } from './Drivers/YML';
 import { MongoDBDriver as MongoDBDriverMain } from './Drivers/Mongo';
 import { PostgreSQLDriver as PostgreSQLDriverMain } from "./Drivers/PostgreSQL";
@@ -58,7 +58,10 @@ export declare const SQLiteDriver: typeof SQLiteDriverMain;
  * const db = new GoodDB(new CacheDriver());
  * ```
  */
-export declare const CacheDriver: typeof CacheDriverMain;
+export declare class CacheDriver extends MemoryDriverMain {
+    constructor();
+}
+export declare const MemoryDriver: typeof MemoryDriverMain;
 /**
  * The YMLDriver class for the GoodDB package
  * @example

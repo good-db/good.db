@@ -49,29 +49,6 @@ class SQLiteDriver {
         return true;
     }
     ;
-    // OLD
-    read() {
-        const rows = this.db.prepare('SELECT * FROM data').all();
-        const data = {};
-        for (const row of rows) {
-            data[row.key] = JSON.parse(row.value);
-        }
-        return data;
-    }
-    write(data) {
-        const insert = this.db.prepare('INSERT OR REPLACE INTO data (key, value) VALUES (?, ?)');
-        this.db.transaction((data) => {
-            for (const key of Object.keys(data)) {
-                insert.run(key, JSON.stringify(data[key]));
-            }
-        })(data);
-        return true;
-    }
-    ;
-    clear() {
-        this.db.exec('DELETE FROM data');
-        return true;
-    }
 }
 exports.SQLiteDriver = SQLiteDriver;
 //# sourceMappingURL=SQLite.js.map

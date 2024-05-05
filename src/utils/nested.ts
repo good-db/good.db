@@ -10,7 +10,9 @@ export function setValueAtPath(object: any, key: string, value: any, options?: S
     value: any;
     currentObject: any;
 } {
-    const { separator = '.' } = options || {};
+    if (!object) throw new DatabaseError('Cannot set value on undefined object.');
+    
+    const { separator = '..' } = options || {};
 
     const keyParts = key.split(separator);
 
@@ -47,7 +49,8 @@ export function getValueAtPath(object: any, key: string, options?: SetValueOptio
     value: any;
     currentObject: any;
 } {
-    const { separator = '.' } = options || {};
+    if (!object) throw new DatabaseError('Cannot get value from undefined object.'); 
+    const { separator = '..' } = options || {};
 
     const keyParts = key.split(separator);
 
@@ -86,7 +89,8 @@ export function deleteValueAtPath(object: any, key: string, options?: SetValueOp
     value: any;
     currentObject: any;
 } {
-    const { separator = '.' } = options || {};
+    if (!object) throw new DatabaseError('Cannot delete value from undefined object.');
+    const { separator = '..' } = options || {};
 
     const keyParts = key.split(separator);
 

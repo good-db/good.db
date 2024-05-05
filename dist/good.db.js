@@ -14,6 +14,7 @@ const MySQL_1 = require("./Drivers/MySQL");
 const PostgreSQL_1 = require("./Drivers/PostgreSQL");
 const SQLite_1 = require("./Drivers/SQLite");
 const ErrorMessage_1 = require("./utils/ErrorMessage");
+const Caching_1 = require("./utils/Caching");
 const nested_1 = require("./utils/nested");
 /**
  * The main class for the GoodDB package
@@ -34,6 +35,7 @@ const nested_1 = require("./utils/nested");
  */
 class GoodDB {
     constructor(driver, options) {
+        var _a, _b, _c, _d;
         this.options = options;
         this.driver = driver || new SQLite_1.SQLiteDriver({
             path: './database.sqlite'
@@ -48,6 +50,8 @@ class GoodDB {
             this.driver.init(this.tableName);
         }
         ;
+        this.cacheIsEnabled = (_b = (_a = options === null || options === void 0 ? void 0 : options.cache) === null || _a === void 0 ? void 0 : _a.isEnabled) !== null && _b !== void 0 ? _b : false;
+        this.cacheService = this.cacheIsEnabled ? new Caching_1.LRUCache((_d = (_c = options === null || options === void 0 ? void 0 : options.cache) === null || _c === void 0 ? void 0 : _c.capacity) !== null && _d !== void 0 ? _d : 1024) : undefined;
     }
     ;
     get getNestedOptions() {
@@ -59,21 +63,33 @@ class GoodDB {
     }
     ;
     set(key, value, options) {
+        var _a, _b, _c, _d;
         if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
             throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         options = options || this.getNestedOptions;
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                var _e, _f, _g, _h;
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const newData = (0, nested_1.setValueAtPath)(yield this.driver.getAllRows(this.tableName), key, value, {
+                        // Split all keys
+                        const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
+                        // First key
+                        const firstKey = splitKeys[0];
+                        // Other keys
+                        const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        // Get the data
+                        const data = (_f = (_e = this.cacheService) === null || _e === void 0 ? void 0 : _e.get(firstKey)) !== null && _f !== void 0 ? _f : yield this.get(firstKey);
+                        const newData = (0, nested_1.setValueAtPath)(data || {}, otherKeys, value, {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
-                        yield this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
+                        yield this.driver.setRowByKey(this.tableName, firstKey, newData.object);
+                        (_g = this.cacheService) === null || _g === void 0 ? void 0 : _g.put(firstKey, newData.object);
                         resolve(true);
                     }
                     else {
                         yield this.driver.setRowByKey(this.tableName, key, value);
+                        (_h = this.cacheService) === null || _h === void 0 ? void 0 : _h.put(key, value);
                         resolve(true);
                     }
                 }
@@ -83,35 +99,59 @@ class GoodDB {
             }));
         }
         else {
-            if (options === null || options === void 0 ? void 0 : options.nested) {
-                const newData = (0, nested_1.setValueAtPath)(this.driver.getAllRows(this.tableName), key, value, {
-                    separator: this.nested.nested,
+            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+                // Split all keys
+                const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
+                // First key
+                const firstKey = splitKeys[0];
+                // Other keys
+                const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
+                // Get the data
+                const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.get(firstKey);
+                const newData = (0, nested_1.setValueAtPath)(data || {}, otherKeys, value, {
+                    separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
-                this.driver.setRowByKey(this.tableName, newData.key, newData.currentObject);
+                this.driver.setRowByKey(this.tableName, firstKey, newData.object);
+                (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, newData.object);
                 return true;
             }
             else {
                 this.driver.setRowByKey(this.tableName, key, value);
+                (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.put(key, value);
                 return true;
             }
         }
     }
     ;
     get(key, options) {
+        var _a, _b, _c, _d, _e, _f;
         options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
             throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                var _g, _h, _j, _k, _l, _m;
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const data = (0, nested_1.getValueAtPath)(yield this.driver.getAllRows(this.tableName), key, {
+                        // Split all keys
+                        let [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
+                        ;
+                        // Get the data
+                        const data = (_h = (_g = this.cacheService) === null || _g === void 0 ? void 0 : _g.get(firstKey)) !== null && _h !== void 0 ? _h : yield this.driver.getRowByKey(this.tableName, firstKey);
+                        if (typeof data !== 'object' || !data) {
+                            return resolve(undefined);
+                        }
+                        ;
+                        // Get the value
+                        const getData = (0, nested_1.getValueAtPath)(data || {}, otherKeys.join(options === null || options === void 0 ? void 0 : options.nested), {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
-                        return resolve(data.value);
+                        (_j = this.cacheService) === null || _j === void 0 ? void 0 : _j.put(firstKey, getData.object);
+                        return resolve(getData.value);
                     }
                     else {
-                        const data = yield this.driver.getRowByKey(this.tableName, key);
+                        const data = (_l = (_k = this.cacheService) === null || _k === void 0 ? void 0 : _k.get(key)) !== null && _l !== void 0 ? _l : yield this.driver.getRowByKey(this.tableName, key);
+                        (_m = this.cacheService) === null || _m === void 0 ? void 0 : _m.put(key, data);
                         return resolve(data);
                     }
                 }
@@ -122,33 +162,57 @@ class GoodDB {
         }
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const data = (0, nested_1.getValueAtPath)(this.driver.getAllRows(this.tableName), key, {
+                // Split all keys
+                const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
+                // First key
+                const firstKey = splitKeys[0];
+                // Other keys
+                const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
+                // Get the data
+                const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.driver.getRowByKey(this.tableName, firstKey);
+                if (typeof data !== 'object' || !data) {
+                    return undefined;
+                }
+                ;
+                // Get the value
+                const getData = (0, nested_1.getValueAtPath)(data || {}, otherKeys, {
                     separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
-                return data.value;
+                (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, getData.object);
+                return getData.value;
             }
             else {
-                return this.driver.getRowByKey(this.tableName, key);
+                const data = (_e = (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.get(key)) !== null && _e !== void 0 ? _e : this.driver.getRowByKey(this.tableName, key);
+                (_f = this.cacheService) === null || _f === void 0 ? void 0 : _f.put(key, data);
+                return data;
             }
         }
     }
     ;
     delete(key, options) {
+        var _a, _b;
         options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
             throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                var _c, _d;
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const data = (0, nested_1.deleteValueAtPath)(yield this.driver.getAllRows(this.tableName), key, {
+                        // Split all keys
+                        const [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
+                        // Get the data
+                        const data = yield this.get(firstKey);
+                        const deleteData = (0, nested_1.deleteValueAtPath)(data || {}, otherKeys.join(options.nested), {
                             separator: options === null || options === void 0 ? void 0 : options.nested,
                         });
-                        yield this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
+                        yield this.driver.setRowByKey(this.tableName, firstKey, deleteData.object);
+                        (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, deleteData.object);
                         resolve(true);
                     }
                     else {
                         yield this.driver.deleteRowByKey(this.tableName, key);
+                        (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.delete(key);
                         resolve(true);
                     }
                 }
@@ -159,14 +223,18 @@ class GoodDB {
         }
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const data = (0, nested_1.deleteValueAtPath)(this.driver.getAllRows(this.tableName), key, {
+                const [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
+                const data = this.get(firstKey);
+                const deleteDate = (0, nested_1.deleteValueAtPath)(data || {}, otherKeys.join(options.nested), {
                     separator: options === null || options === void 0 ? void 0 : options.nested,
                 });
-                this.driver.setRowByKey(this.tableName, data.key, data.currentObject);
+                this.driver.setRowByKey(this.tableName, firstKey, deleteDate.object);
+                (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.put(firstKey, deleteDate.object);
                 return true;
             }
             else {
                 this.driver.deleteRowByKey(this.tableName, key);
+                (_b = this.cacheService) === null || _b === void 0 ? void 0 : _b.delete(key);
                 return true;
             }
         }
@@ -850,7 +918,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = yield this.driver.getAllRows(this.tableName);
+                        const data = yield this.all();
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -884,7 +952,7 @@ class GoodDB {
                 return result;
             }
             else {
-                const data = this.driver.getAllRows(this.tableName);
+                const data = this.all();
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
@@ -921,7 +989,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = yield this.driver.getAllRows(this.tableName);
+                        const data = yield this.all();
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -955,7 +1023,7 @@ class GoodDB {
                 return result;
             }
             else {
-                const data = this.driver.getAllRows(this.tableName);
+                const data = this.all();
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
@@ -992,7 +1060,7 @@ class GoodDB {
                         resolve(result);
                     }
                     else {
-                        const data = yield this.driver.getAllRows(this.tableName);
+                        const data = yield this.all();
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
@@ -1026,7 +1094,7 @@ class GoodDB {
                 return result;
             }
             else {
-                const data = this.driver.getAllRows(this.tableName);
+                const data = this.all();
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
@@ -1043,7 +1111,7 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = yield this.driver.getAllRows(this.tableName);
+                    const data = yield this.all();
                     resolve(Object.keys(data));
                 }
                 catch (error) {
@@ -1052,7 +1120,7 @@ class GoodDB {
             }));
         }
         else {
-            const data = this.driver.getAllRows(this.tableName);
+            const data = this.all();
             return Object.keys(data);
         }
     }
@@ -1061,7 +1129,7 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = yield this.driver.getAllRows(this.tableName);
+                    const data = yield this.all();
                     resolve(Object.values(data));
                 }
                 catch (error) {
@@ -1070,7 +1138,7 @@ class GoodDB {
             }));
         }
         else {
-            const data = this.driver.getAllRows(this.tableName);
+            const data = this.all();
             return Object.values(data);
         }
     }

@@ -20,7 +20,7 @@ export class MongoDBDriver {
     // Inserters/Updaters
     public async setRowByKey(table: string, key: string, value: any): Promise<boolean> {
         if (!this.db) throw new Error('Database not initialized');
-        await this.db.collection(table).updateOne({ key }, { $set: { value: JSON.stringify(value) } }, { upsert: true });
+        await this.db.collection(table).updateOne({ key }, { $set: { value: value } }, { upsert: true });
         return true;
     };
 
@@ -30,7 +30,7 @@ export class MongoDBDriver {
         const cursor = await this.db.collection(table).find();
         const data: any = {};
         await cursor.forEach((doc: any) => {
-            data[doc.key] = JSON.parse(doc.value);
+            data[doc.key] = doc.value;
         });
         return data;
     };
@@ -38,9 +38,8 @@ export class MongoDBDriver {
     public async getRowByKey(table: string, key: string): Promise<any> {
         if (!this.db) throw new Error('Database not initialized');
         const doc = await this.db.collection(table).findOne({ key });
-        
-        if (!doc) return doc;
-        return JSON.parse(doc.value);
+        if (!doc) return null;
+        return doc.value;
     };
 
     // Deleters
@@ -62,32 +61,4 @@ export class MongoDBDriver {
         this.db = undefined;
         return true;
     };
-    
-    // OLD
-
-    public async read(): Promise<any> {
-        if (!this.db) throw new Error('Database not initialized');
-        const cursor = await this.db.collection('data').find();
-        const data: any = {};
-        await cursor.forEach((doc: any) => {
-            data[doc.key] = JSON.parse(doc.value);
-        });
-        return data;
-    }
-
-    public async write(data: any): Promise<boolean> {
-        if (!this.db) throw new Error('Database not initialized');
-        const collection = this.db.collection('data');
-        
-        for (const key of Object.keys(data)) {
-            await collection.updateOne({ key }, { $set: { value: JSON.stringify(data[key]) } }, { upsert: true });
-        }
-        return true;
-    }
-
-    public async clear(): Promise<boolean> {
-        if (!this.db) throw new Error('Database not initialized');
-        await this.db.collection('data').deleteMany({});
-        return true;
-    }
 }

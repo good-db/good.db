@@ -1,8 +1,6 @@
-Sure, let's include examples for all methods in the package, organized alphabetically:
-
 # GoodDB
 
-![GoodDB Logo](https://avatars.githubusercontent.com/u/143133652?s=50&v=50)
+![GoodDB Logo](https://media.discordapp.net/attachments/1121060658478329987/1235402665739943966/gooddb_ts_js.png?ex=66383264&is=6636e0e4&hm=78d6e44cb845870fbd5a23e0265fa0f7941579f115f509280987a6948e640ea4&=&format=webp&quality=lossless&width=2160&height=910)
 
 GoodDB is a lightweight and flexible TypeScript database wrapper that simplifies interactions with your database. It offers a simple API, supports various drivers, and is designed with modern TypeScript development in mind.
 
@@ -13,13 +11,15 @@ GoodDB is a lightweight and flexible TypeScript database wrapper that simplifies
 - **Async/Await Support**: GoodDB supports async/await for seamless integration with modern JavaScript and TypeScript applications.
 - **Flexible Configuration**: Customize the database configuration to suit your needs, including table/collection names, nested key handling, and more.
 - **Type Safety**: GoodDB is written in TypeScript and provides type definitions for a seamless development experience.
+- **Fast and Lightweight**: GoodDB is fast and lightweight, making it ideal for small to medium-sized applications.
+- **Caching**: GoodDB supports caching to improve performance and reduce the number of database queries.
 
 ## Installation
 
 You can install GoodDB via npm:
 
 ```bash
-npm install gooddb
+npm install good.db
 ```
 
 
@@ -32,6 +32,10 @@ const db = new GoodDB(new JSONDriver({ path: './database.json' }), {
   table: 'data',
   nested: '.',
   nestedIsEnabled: true,
+  cache: {
+    isEnabled: true,
+    capacity: 1024
+  }
 });
 ```
 
@@ -41,18 +45,22 @@ const db = new GoodDB(new JSONDriver({ path: './database.json' }), {
 
 - `nestedIsEnabled` (boolean): Whether to enable nested key handling.
 
+- `cache` 
+  - `isEnabled` (boolean): Whether to enable caching.
+  - `capacity` (number): The maximum number of entries to cache.
+
 ## Drivers
 
 GoodDB supports the following drivers:
 
-### CacheDriver
+### MemoryDriver
 
-The `CacheDriver` stores data in memory. It is suitable for small applications and is easy to set up.
+The `MemoryDriver` stores data in memory. It is suitable for small applications and is easy to set up.
 
 ```typescript
-import { GoodDB, CacheDriver } from 'gooddb';
+import { GoodDB, MemoryDriver } from 'gooddb';
 
-const db = new GoodDB(new CacheDriver());
+const db = new GoodDB(new MemoryDriver());
 ```
 
 ### SQLiteDriver
@@ -97,7 +105,35 @@ const db = new GoodDB(new MongoDBDriver({ uri: 'mongodb://localhost:27017/mydb' 
 await db.connect();
 ```
 
-### Examples for All Methods:
+### PostgreSQLDriver
+
+The `PostgreSQLDriver` stores data in a PostgreSQL database. It is suitable for medium to large-sized applications and offers advanced features.
+
+```typescript
+import { GoodDB, PostgreSQLDriver } from 'gooddb';
+
+const db = new GoodDB(new PostgreSQLDriver({ 
+  user: 'user', 
+  host: 'localhost',
+}));
+
+await db.connect();
+```
+
+### MySQLDriver
+
+The `MySQLDriver` stores data in a MySQL database. It is suitable for medium to large-sized applications and offers advanced features.
+
+```typescript
+import { GoodDB, MySQLDriver } from 'gooddb';
+
+const db = new GoodDB(new MySQLDriver({ 
+  user: 'user',
+  host: 'localhost'
+}));
+```
+
+## Examples for All Methods:
 
 #### `set(key: string, value: any, options?: methodOptions)`
 
@@ -335,7 +371,7 @@ db.table('users').get('user1'); // { name: 'Alice', age: 25 }
 
 #### `connect()`
 
-Connect to the database (for `MongoDBDriver`):
+Connect to the database (for ASYNC drivers like `MongoDBDriver`, `PostgreSQLDriver` and `MySQLDriver`):
 
 ```typescript
 await db.connect();
@@ -343,7 +379,7 @@ await db.connect();
 
 #### `disconnect()`
 
-Disconnect from the database (for `MongoDBDriver`):
+Disconnect from the database (for ASYNC drivers like `MongoDBDriver`, `PostgreSQLDriver` and `MySQLDriver`):
 
 ```typescript
 await db.disconnect();
