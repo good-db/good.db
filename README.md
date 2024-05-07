@@ -1,6 +1,6 @@
 # GoodDB
 
-![GoodDB Logo](https://media.discordapp.net/attachments/1121060658478329987/1235402665739943966/gooddb_ts_js.png?ex=66383264&is=6636e0e4&hm=78d6e44cb845870fbd5a23e0265fa0f7941579f115f509280987a6948e640ea4&=&format=webp&quality=lossless&width=2160&height=910)
+![GoodDB Logo](https://i.imgur.com/PSrNMwZ.png)
 
 GoodDB is a lightweight and flexible TypeScript database wrapper that simplifies interactions with your database. It offers a simple API, supports various drivers, and is designed with modern TypeScript development in mind.
 
