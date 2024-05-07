@@ -1,6 +1,6 @@
 {
   "name": "good.db",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "A simple, fast, and powerful database package for Node.js",
   "main": "dist/index.js",
   "scripts": {
@@ -43,10 +43,10 @@
   "author": "Discord username: \"u.si\"",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^8.5.2",
+    "better-sqlite3": "^9.6.0",
     "js-yaml": "^4.1.0",
-    "mongodb": "^6.5.0",
-    "mysql2": "^3.9.3",
+    "mongodb": "^6.6.1",
+    "mysql2": "^3.9.7",
     "pg": "^8.11.5"
   },
   "devDependencies": {
