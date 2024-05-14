@@ -60,7 +60,7 @@ export default class GoodDB {
         ) : undefined;
     };
 
-    get getNestedOptions(): {
+    private get getNestedOptions(): {
         nested: string;
         nestedIsEnabled: boolean;
     } {
@@ -764,9 +764,9 @@ export default class GoodDB {
      * await db.find('key', (value) => value === 'value');
      * ```
      */
-    public async find(key: string, callback: (value: any) => boolean, options?: methodOptions): Promise<boolean>;
-    public find(key: string, callback: (value: any) => boolean, options?: methodOptions): boolean;
-    public find(key: string, callback: (value: any) => boolean, options?: methodOptions): Promise<boolean> | boolean {
+    public async find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<boolean>;
+    public find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): boolean;
+    public find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<boolean> | boolean {
         options = options || this.getNestedOptions;
         if (typeof callback !== 'function') throw new DatabaseError(`GoodDB requires the callback to be a function. Provided: ${typeof callback}`);
         if (this.isAsync) {
@@ -787,6 +787,63 @@ export default class GoodDB {
                 throw new DatabaseError('Value is not an array');
             }
             return data.find(callback);
+        }
+    };
+
+    /**
+     * Remove all values duplicated in a key (array)
+     * @param key - The key to remove the duplicated values from
+     * @param value - The value to remove
+     * @param options - The options to use
+     * @returns A promise if the driver is async, otherwise a boolean
+     * @example Remove all values duplicated in a key
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *    path: './database.json'
+     * }));
+     * 
+     * db.distinct('key', 'value');
+     * ```
+     * 
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *   uri: "..."
+     * }));
+     * 
+     * await db.connect();
+     * 
+     * await db.distinct('key', 'value');
+     * ```
+     */
+    public async distinct(key: string, value: any, options?: methodOptions): Promise<boolean>;
+    public distinct(key: string, value: any, options?: methodOptions): boolean;
+    public distinct(key: string, value: any, options?: methodOptions): Promise<boolean> | boolean {
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
+        if (this.isAsync) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const data = await this.get(key, options);
+                    if (!Array.isArray(data)) {
+                        throw new DatabaseError('Value is not an array');
+                    }
+                    const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                    await this.set(key, newData, options);
+                    resolve(true);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        } else {
+            const data = this.get(key, options);
+            if (!Array.isArray(data)) {
+                throw new DatabaseError('Value is not an array');
+            }
+            const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+            this.set(key, newData, options);
+            return true;
         }
     };
 
@@ -1685,20 +1742,41 @@ export default class GoodDB {
      * await db.all();
      * ```
      */
-    public async all(): Promise<any>;
-    public all(): any;
-    public all(): any | Promise<any> {
+    public async all(type?: 'object' | 'array' | undefined): Promise<any | {
+        id: string;
+        value: any;
+    }[]>;
+    public all(type?: 'object' | 'array' | undefined): any | {
+        id: string;
+        value: any;
+    }[];
+    public all(type: 'object' | 'array' | undefined = 'object'): any | {
+        id: string;
+        value: any;
+    }[] | Promise<any | {
+        id: string;
+        value: any;
+    }[]> {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
                     const data = await this.driver.getAllRows(this.tableName);
-                    resolve(data);
+                    if (type === 'object') {
+                        resolve(data);
+                    } else {
+                        resolve(Object.entries(data).map(([id, value]) => ({ id, value })));
+                    };
                 } catch (error) {
                     reject(error);
                 }
             });
         } else {
-            return this.driver.getAllRows(this.tableName);
+            const data = this.driver.getAllRows(this.tableName);
+            if (type === 'object') {
+                return data;
+            } else {
+                return Object.entries(data).map(([id, value]) => ({ id, value }));
+            };
         }
     };
 

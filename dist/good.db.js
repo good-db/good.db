@@ -567,6 +567,37 @@ class GoodDB {
         }
     }
     ;
+    distinct(key, value, options) {
+        options = options || this.getNestedOptions;
+        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        if (this.isAsync) {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const data = yield this.get(key, options);
+                    if (!Array.isArray(data)) {
+                        throw new ErrorMessage_1.DatabaseError('Value is not an array');
+                    }
+                    const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                    yield this.set(key, newData, options);
+                    resolve(true);
+                }
+                catch (error) {
+                    reject(error);
+                }
+            }));
+        }
+        else {
+            const data = this.get(key, options);
+            if (!Array.isArray(data)) {
+                throw new ErrorMessage_1.DatabaseError('Value is not an array');
+            }
+            const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+            this.set(key, newData, options);
+            return true;
+        }
+    }
+    ;
     add(key, value, options) {
         options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
@@ -1143,12 +1174,18 @@ class GoodDB {
         }
     }
     ;
-    all() {
+    all(type = 'object') {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     const data = yield this.driver.getAllRows(this.tableName);
-                    resolve(data);
+                    if (type === 'object') {
+                        resolve(data);
+                    }
+                    else {
+                        resolve(Object.entries(data).map(([id, value]) => ({ id, value })));
+                    }
+                    ;
                 }
                 catch (error) {
                     reject(error);
@@ -1156,7 +1193,14 @@ class GoodDB {
             }));
         }
         else {
-            return this.driver.getAllRows(this.tableName);
+            const data = this.driver.getAllRows(this.tableName);
+            if (type === 'object') {
+                return data;
+            }
+            else {
+                return Object.entries(data).map(([id, value]) => ({ id, value }));
+            }
+            ;
         }
     }
     ;

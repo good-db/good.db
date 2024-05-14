@@ -36,10 +36,7 @@ export default class GoodDB {
     readonly isAsync: boolean;
     cacheService: LRUCache | undefined;
     constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | MemoryDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver, options?: goodDBOptions | undefined);
-    get getNestedOptions(): {
-        nested: string;
-        nestedIsEnabled: boolean;
-    };
+    private get getNestedOptions();
     /**
      * Set a value to a key
      * @param key - The key to set the value to
@@ -265,8 +262,37 @@ export default class GoodDB {
      * await db.find('key', (value) => value === 'value');
      * ```
      */
-    find(key: string, callback: (value: any) => boolean, options?: methodOptions): Promise<boolean>;
-    find(key: string, callback: (value: any) => boolean, options?: methodOptions): boolean;
+    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<boolean>;
+    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): boolean;
+    /**
+     * Remove all values duplicated in a key (array)
+     * @param key - The key to remove the duplicated values from
+     * @param value - The value to remove
+     * @param options - The options to use
+     * @returns A promise if the driver is async, otherwise a boolean
+     * @example Remove all values duplicated in a key
+     * ## Using the JSONDriver (sync)
+     * ```javascript
+     * const db = new GoodDB(new JSONDriver({
+     *    path: './database.json'
+     * }));
+     *
+     * db.distinct('key', 'value');
+     * ```
+     *
+     * ## Using the MongoDBDriver (async)
+     * ```javascript
+     * const db = new GoodDB(new MongoDBDriver({
+     *   uri: "..."
+     * }));
+     *
+     * await db.connect();
+     *
+     * await db.distinct('key', 'value');
+     * ```
+     */
+    distinct(key: string, value: any, options?: methodOptions): Promise<boolean>;
+    distinct(key: string, value: any, options?: methodOptions): boolean;
     /**
      * Add a value to a key
      * @param key - The key to add the value to
@@ -600,8 +626,14 @@ export default class GoodDB {
      * await db.all();
      * ```
      */
-    all(): Promise<any>;
-    all(): any;
+    all(type?: 'object' | 'array' | undefined): Promise<any | {
+        id: string;
+        value: any;
+    }[]>;
+    all(type?: 'object' | 'array' | undefined): any | {
+        id: string;
+        value: any;
+    }[];
     /**
      * Clear the database
      * @returns A promise if the driver is async, otherwise a boolean

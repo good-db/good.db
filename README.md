@@ -220,6 +220,27 @@ db.pull('users', (element) => element.age > 20); // true
 db.get('users'); // []
 ```
 
+#### `find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions)`
+
+Find a value in an array in the database:
+
+```typescript
+db.push('users', { name: 'Alice', age: 25 });
+db.push('users', { name: 'Bob', age: 30 });
+db.push('users', { name: 'Charlie', age: 35 });
+db.find('users', (object) => object.name == 'Bob') // { name: 'Bob', age: 30 }
+```
+
+#### `distinct(key: string, value: string, options?: methodOptions)`
+Get distinct values from an array in the database:
+
+```typescript
+db.push('users', "Alice");
+db.push('users', "Alice");
+db.push('users', "Alice");
+db.distinct('users', "Alice"); // ['Alice']
+```
+
 #### `add(key: string, operand: number, options?: methodOptions)`
 
 Add a number to a value in the database:

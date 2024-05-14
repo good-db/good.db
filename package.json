@@ -1,13 +1,13 @@
 {
   "name": "good.db",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "A simple, fast, and powerful database package for Node.js",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "node dist/index.js",
-    "docs": "typedoc --plugin typedoc-material-theme --themeColor '#212529' --out website/docs src"
+    "docs": "typedoc --plugin typedoc-material-theme --themeColor '#212529' --out good-db.github.io/docs src"
   },
   "repository": {
     "type": "git",
@@ -43,7 +43,7 @@
   "author": "Discord username: \"u.si\"",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^9.6.0",
+    "better-sqlite3": "^10.0.0",
     "js-yaml": "^4.1.0",
     "mongodb": "^6.6.1",
     "mysql2": "^3.9.7",
