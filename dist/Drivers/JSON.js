@@ -45,7 +45,7 @@ class JSONDriver {
     }
     ;
     getRowByKey(table, key) {
-        return this.read()[table][key];
+        return this.read()[table] ? this.read()[table][key] || undefined : undefined;
     }
     ;
     // Deleters
@@ -65,6 +65,9 @@ class JSONDriver {
     ;
     // OLD
     read() {
+        if (!this.checkFile()) {
+            return {};
+        }
         return JSON.parse(node_fs_1.default.readFileSync(this.path).toString());
     }
     ;

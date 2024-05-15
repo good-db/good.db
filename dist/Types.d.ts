@@ -26,3 +26,4 @@ export type SQLiteDriverOptions = {
 export type YMLDriverOptions = {
     path?: string;
 };
+export type MathSigns = '+' | '-' | '*' | '×' | '/';

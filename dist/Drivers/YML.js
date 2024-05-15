@@ -38,11 +38,11 @@ class YMLDriver {
     ;
     // Getters
     getAllRows(table) {
-        return this.read()[table];
+        return this.read()[table] || undefined;
     }
     ;
     getRowByKey(table, key) {
-        return this.read()[table][key];
+        return this.read()[table] ? this.read()[table][key] || undefined : undefined;
     }
     ;
     // Deleters

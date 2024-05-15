@@ -1,10 +1,10 @@
 {
   "name": "good.db",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "A simple, fast, and powerful database package for Node.js",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --config jest.config.js",
     "build": "tsc",
     "start": "node dist/index.js",
     "docs": "typedoc --plugin typedoc-material-theme --themeColor '#212529' --out good-db.github.io/docs src"
@@ -50,10 +50,14 @@
     "pg": "^8.11.5"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/better-sqlite3": "^7.6.4",
+    "@types/jest": "^29.5.12",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^20.5.1",
-    "@types/pg": "^8.11.4"
+    "@types/pg": "^8.11.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2"
   },
   "engines": {
     "node": ">=16.0.0",

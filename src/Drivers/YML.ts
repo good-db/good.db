@@ -37,11 +37,11 @@ export class YMLDriver {
 
     // Getters
     public getAllRows(table: string): any {
-        return this.read()[table];
+        return this.read()[table] || undefined;
     };
 
     public getRowByKey(table: string, key: string): any {
-        return this.read()[table][key];
+        return this.read()[table] ? this.read()[table][key] || undefined : undefined;
     };
 
     // Deleters

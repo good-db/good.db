@@ -5,7 +5,7 @@ import { MySQLDriver } from "./Drivers/MySQL";
 import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
 import { SQLiteDriver } from "./Drivers/SQLite";
 import { YMLDriver } from "./Drivers/YML";
-import { goodDBOptions, methodOptions } from "./Types";
+import { goodDBOptions, MathSigns, methodOptions } from "./Types";
 import { LRUCache } from "./utils/Caching";
 /**
  * The main class for the GoodDB package
@@ -291,8 +291,8 @@ export default class GoodDB {
      * await db.distinct('key', 'value');
      * ```
      */
-    distinct(key: string, value: any, options?: methodOptions): Promise<boolean>;
-    distinct(key: string, value: any, options?: methodOptions): boolean;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean>;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean;
     /**
      * Add a value to a key
      * @param key - The key to add the value to
@@ -416,8 +416,8 @@ export default class GoodDB {
      *  await db.math('key', '+', 1);
      * ```
      */
-    math(key: string, mathSign: string, value: number, options?: methodOptions): Promise<number>;
-    math(key: string, mathSign: string, value: number, options?: methodOptions): number;
+    math(key: string, mathSign: MathSigns, value: number, options?: methodOptions): Promise<number>;
+    math(key: string, mathSign: MathSigns, value: number, options?: methodOptions): number;
     /**
      * Get the type of a key
      * @param key - The key to get the type of

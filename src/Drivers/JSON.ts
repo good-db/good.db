@@ -45,7 +45,7 @@ export class JSONDriver {
     };
 
     public getRowByKey(table: string, key: string): any {
-        return this.read()[table][key];
+        return this.read()[table] ? this.read()[table][key] || undefined : undefined;
     };
 
     // Deleters
@@ -65,6 +65,9 @@ export class JSONDriver {
 
     // OLD
     public read(): any {
+        if (!this.checkFile()) {
+            return {};
+        }
         return JSON.parse(fs.readFileSync(this.path).toString());
     };
 

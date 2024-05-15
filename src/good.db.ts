@@ -5,7 +5,7 @@ import { MySQLDriver } from "./Drivers/MySQL";
 import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
 import { SQLiteDriver } from "./Drivers/SQLite";
 import { YMLDriver } from "./Drivers/YML";
-import { goodDBOptions, methodOptions } from "./Types";
+import { goodDBOptions, MathSigns, methodOptions } from "./Types";
 import { DatabaseError } from "./utils/ErrorMessage";
 import { LRUCache } from "./utils/Caching";
 import { deleteValueAtPath, getValueAtPath, setValueAtPath } from "./utils/nested";
@@ -637,6 +637,8 @@ export default class GoodDB {
 
                     const pullFromNestedObject = async (currentObject: any, keyParts: string[], depth: number): Promise<boolean> => {
                         const part = keyParts[depth];
+                        console.log(part);
+
 
                         if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
                             throw new DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
@@ -710,9 +712,11 @@ export default class GoodDB {
             const pullFromNestedObject = (currentObject: any, keyParts: string[], depth: number): boolean => {
                 const part = keyParts[depth];
 
+                console.log(currentObject[part], currentObject, keyParts);
                 if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
-                    throw new DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
+                    throw new DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
                 }
+
 
                 if (depth === keyParts.slice(1).length) {
                     return pullFromArray(currentObject[part]);
@@ -726,8 +730,8 @@ export default class GoodDB {
             };
 
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const keyParts = key.split(options.nested as string);
-                return pullFromNestedObject(data, keyParts, 0);
+                const dataa = pullFromArray(data);
+                return dataa;
             } else {
                 if (!Array.isArray(data)) {
                     throw new DatabaseError(`Cannot pull from a non-array value at key '${key}'`);
@@ -817,9 +821,9 @@ export default class GoodDB {
      * await db.distinct('key', 'value');
      * ```
      */
-    public async distinct(key: string, value: any, options?: methodOptions): Promise<boolean>;
-    public distinct(key: string, value: any, options?: methodOptions): boolean;
-    public distinct(key: string, value: any, options?: methodOptions): Promise<boolean> | boolean {
+    public async distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean>;
+    public distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean;
+    public distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean> | boolean {
         options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
@@ -829,7 +833,17 @@ export default class GoodDB {
                     if (!Array.isArray(data)) {
                         throw new DatabaseError('Value is not an array');
                     }
-                    const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                    let newData;
+                    if (value !== undefined) {
+                        if (typeof value === 'function') {
+                            newData = data.filter(value);
+                        } else {
+                            newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                        };
+                    } else {
+                        newData = Array.from(new Set(data.map(item => JSON.stringify(item))));
+                        newData = newData.map(item => JSON.parse(item));
+                    };
                     await this.set(key, newData, options);
                     resolve(true);
                 } catch (error) {
@@ -841,7 +855,17 @@ export default class GoodDB {
             if (!Array.isArray(data)) {
                 throw new DatabaseError('Value is not an array');
             }
-            const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+            let newData;
+            if (value !== undefined) {
+                if (typeof value === 'function') {
+                    newData = data.filter(value);
+                } else {
+                    newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                };
+            } else {
+                newData = Array.from(new Set(data.map(item => JSON.stringify(item))));
+                newData = newData.map(item => JSON.parse(item));
+            };
             this.set(key, newData, options);
             return true;
         }
@@ -1114,9 +1138,9 @@ export default class GoodDB {
      *  await db.math('key', '+', 1);
      * ```
      */
-    public async math(key: string, mathSign: string, value: number, options?: methodOptions): Promise<number>;
-    public math(key: string, mathSign: string, value: number, options?: methodOptions): number;
-    public math(key: string, mathSign: string, value: number, options?: methodOptions): number | Promise<number> {
+    public async math(key: string, mathSign: MathSigns, value: number, options?: methodOptions): Promise<number>;
+    public math(key: string, mathSign: MathSigns, value: number, options?: methodOptions): number;
+    public math(key: string, mathSign: MathSigns, value: number, options?: methodOptions): number | Promise<number> {
         options = options || this.getNestedOptions;
         if (typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key?.trim() ? 'Null' : typeof key}`);
         if (this.isAsync) {
@@ -1406,7 +1430,9 @@ export default class GoodDB {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                         const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
-                        const data: any = await this.get(k, options);
+                        const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
+                        const data: any = this.get(k, options);
+
                         if (typeof data !== 'object') {
                             throw new DatabaseError('Value is not an object');
                         };
@@ -1414,7 +1440,7 @@ export default class GoodDB {
 
                         const result: any = {};
                         for (const k of keys) {
-                            if (k.startsWith(key)) {
+                            if (k.startsWith(lastKey)) {
                                 result[k] = data[k];
                             }
                         }
@@ -1437,6 +1463,7 @@ export default class GoodDB {
         } else {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                 const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+                const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
                 const data: any = this.get(k, options);
 
                 if (typeof data !== 'object') {
@@ -1446,7 +1473,7 @@ export default class GoodDB {
 
                 const result: any = {};
                 for (const k of keys) {
-                    if (k.startsWith(key)) {
+                    if (k.startsWith(lastKey)) {
                         result[k] = data[k];
                     }
                 }
@@ -1497,6 +1524,7 @@ export default class GoodDB {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                         const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+                        const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
                         const data: any = await this.get(k, options);
                         if (typeof data !== 'object') {
                             throw new DatabaseError('Value is not an object');
@@ -1505,7 +1533,7 @@ export default class GoodDB {
 
                         const result: any = {};
                         for (const k of keys) {
-                            if (k.endsWith(key)) {
+                            if (k.endsWith(lastKey)) {
                                 result[k] = data[k];
                             }
                         }
@@ -1528,6 +1556,7 @@ export default class GoodDB {
         } else {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                 const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+                const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
                 const data: any = this.get(k, options);
                 if (typeof data !== 'object') {
                     throw new DatabaseError('Value is not an object');
@@ -1536,7 +1565,7 @@ export default class GoodDB {
 
                 const result: any = {};
                 for (const k of keys) {
-                    if (k.endsWith(key)) {
+                    if (k.endsWith(lastKey)) {
                         result[k] = data[k];
                     }
                 }
@@ -1587,6 +1616,7 @@ export default class GoodDB {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                         const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+                        const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
                         const data: any = await this.get(k, options);
                         if (typeof data !== 'object') {
                             throw new DatabaseError('Value is not an object');
@@ -1595,7 +1625,7 @@ export default class GoodDB {
 
                         const result: any = {};
                         for (const k of keys) {
-                            if (k.includes(key)) {
+                            if (k.includes(lastKey)) {
                                 result[k] = data[k];
                             }
                         }
@@ -1618,6 +1648,7 @@ export default class GoodDB {
         } else {
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                 const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+                const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
                 const data: any = this.get(k, options);
 
                 if (typeof data !== 'object') {
@@ -1627,10 +1658,10 @@ export default class GoodDB {
 
                 const result: any = {};
                 for (const k of keys) {
-                    if (k.includes(key)) {
+                    if (k.includes(lastKey)) {
                         result[k] = data[k];
                     }
-                }
+                };
                 return result;
             } else {
                 const data = this.all() as any;

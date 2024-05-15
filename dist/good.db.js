@@ -442,6 +442,7 @@ class GoodDB {
                     });
                     const pullFromNestedObject = (currentObject, keyParts, depth) => __awaiter(this, void 0, void 0, function* () {
                         const part = keyParts[depth];
+                        console.log(part);
                         if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
                             throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
                         }
@@ -513,8 +514,9 @@ class GoodDB {
             };
             const pullFromNestedObject = (currentObject, keyParts, depth) => {
                 const part = keyParts[depth];
+                console.log(currentObject[part], currentObject, keyParts);
                 if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
-                    throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
+                    throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
                 }
                 if (depth === keyParts.slice(1).length) {
                     return pullFromArray(currentObject[part]);
@@ -528,8 +530,8 @@ class GoodDB {
                 }
             };
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const keyParts = key.split(options.nested);
-                return pullFromNestedObject(data, keyParts, 0);
+                const dataa = pullFromArray(data);
+                return dataa;
             }
             else {
                 if (!Array.isArray(data)) {
@@ -578,7 +580,21 @@ class GoodDB {
                     if (!Array.isArray(data)) {
                         throw new ErrorMessage_1.DatabaseError('Value is not an array');
                     }
-                    const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                    let newData;
+                    if (value !== undefined) {
+                        if (typeof value === 'function') {
+                            newData = data.filter(value);
+                        }
+                        else {
+                            newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                        }
+                        ;
+                    }
+                    else {
+                        newData = Array.from(new Set(data.map(item => JSON.stringify(item))));
+                        newData = newData.map(item => JSON.parse(item));
+                    }
+                    ;
                     yield this.set(key, newData, options);
                     resolve(true);
                 }
@@ -592,7 +608,21 @@ class GoodDB {
             if (!Array.isArray(data)) {
                 throw new ErrorMessage_1.DatabaseError('Value is not an array');
             }
-            const newData = data.filter((v, i, a) => a.indexOf(v) === i);
+            let newData;
+            if (value !== undefined) {
+                if (typeof value === 'function') {
+                    newData = data.filter(value);
+                }
+                else {
+                    newData = data.filter((v, i, a) => a.indexOf(v) === i);
+                }
+                ;
+            }
+            else {
+                newData = Array.from(new Set(data.map(item => JSON.stringify(item))));
+                newData = newData.map(item => JSON.parse(item));
+            }
+            ;
             this.set(key, newData, options);
             return true;
         }
@@ -934,7 +964,8 @@ class GoodDB {
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
-                        const data = yield this.get(k, options);
+                        const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        const data = this.get(k, options);
                         if (typeof data !== 'object') {
                             throw new ErrorMessage_1.DatabaseError('Value is not an object');
                         }
@@ -942,7 +973,7 @@ class GoodDB {
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
-                            if (k.startsWith(key)) {
+                            if (k.startsWith(lastKey)) {
                                 result[k] = data[k];
                             }
                         }
@@ -968,6 +999,7 @@ class GoodDB {
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+                const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
                 const data = this.get(k, options);
                 if (typeof data !== 'object') {
                     throw new ErrorMessage_1.DatabaseError('Value is not an object');
@@ -976,7 +1008,7 @@ class GoodDB {
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
-                    if (k.startsWith(key)) {
+                    if (k.startsWith(lastKey)) {
                         result[k] = data[k];
                     }
                 }
@@ -1005,6 +1037,7 @@ class GoodDB {
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
                         const data = yield this.get(k, options);
                         if (typeof data !== 'object') {
                             throw new ErrorMessage_1.DatabaseError('Value is not an object');
@@ -1013,7 +1046,7 @@ class GoodDB {
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
-                            if (k.endsWith(key)) {
+                            if (k.endsWith(lastKey)) {
                                 result[k] = data[k];
                             }
                         }
@@ -1039,6 +1072,7 @@ class GoodDB {
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+                const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
                 const data = this.get(k, options);
                 if (typeof data !== 'object') {
                     throw new ErrorMessage_1.DatabaseError('Value is not an object');
@@ -1047,7 +1081,7 @@ class GoodDB {
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
-                    if (k.endsWith(key)) {
+                    if (k.endsWith(lastKey)) {
                         result[k] = data[k];
                     }
                 }
@@ -1076,6 +1110,7 @@ class GoodDB {
                 try {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+                        const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
                         const data = yield this.get(k, options);
                         if (typeof data !== 'object') {
                             throw new ErrorMessage_1.DatabaseError('Value is not an object');
@@ -1084,7 +1119,7 @@ class GoodDB {
                         const keys = Object.keys(data);
                         const result = {};
                         for (const k of keys) {
-                            if (k.includes(key)) {
+                            if (k.includes(lastKey)) {
                                 result[k] = data[k];
                             }
                         }
@@ -1110,6 +1145,7 @@ class GoodDB {
         else {
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+                const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
                 const data = this.get(k, options);
                 if (typeof data !== 'object') {
                     throw new ErrorMessage_1.DatabaseError('Value is not an object');
@@ -1118,10 +1154,11 @@ class GoodDB {
                 const keys = Object.keys(data);
                 const result = {};
                 for (const k of keys) {
-                    if (k.includes(key)) {
+                    if (k.includes(lastKey)) {
                         result[k] = data[k];
                     }
                 }
+                ;
                 return result;
             }
             else {
