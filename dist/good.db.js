@@ -9,13 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Mongo_1 = require("./Drivers/Mongo");
-const MySQL_1 = require("./Drivers/MySQL");
-const PostgreSQL_1 = require("./Drivers/PostgreSQL");
 const SQLite_1 = require("./Drivers/SQLite");
 const ErrorMessage_1 = require("./utils/ErrorMessage");
 const Caching_1 = require("./utils/Caching");
 const nested_1 = require("./utils/nested");
+const Utils_1 = require("./utils/Utils");
 /**
  * The main class for the GoodDB package
  * @example
@@ -45,7 +43,7 @@ class GoodDB {
             isEnabled: (options === null || options === void 0 ? void 0 : options.nestedIsEnabled) ? true : false,
         };
         this.tableName = (options === null || options === void 0 ? void 0 : options.table) || 'gooddb';
-        this.isAsync = this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver ? true : false;
+        this.isAsync = (0, Utils_1.checkDriverIsAsync)(this.driver);
         if (!this.isAsync) {
             this.driver.init(this.tableName);
         }
@@ -62,10 +60,14 @@ class GoodDB {
         };
     }
     ;
+    checkKey(key) {
+        if (!key || typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key || !(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+    }
+    ;
     set(key, value, options) {
         var _a, _b, _c, _d;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         options = options || this.getNestedOptions;
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
@@ -126,8 +128,7 @@ class GoodDB {
     get(key, options) {
         var _a, _b, _c, _d, _e, _f;
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 var _g, _h, _j, _k, _l, _m;
@@ -192,8 +193,7 @@ class GoodDB {
     delete(key, options) {
         var _a, _b;
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 var _c, _d;
@@ -242,8 +242,7 @@ class GoodDB {
     ;
     push(key, value, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -281,8 +280,7 @@ class GoodDB {
     ;
     shift(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -318,8 +316,7 @@ class GoodDB {
     ;
     unshift(key, value, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -357,8 +354,7 @@ class GoodDB {
     ;
     pop(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -394,8 +390,7 @@ class GoodDB {
     ;
     pull(key, valueOrCallback, pullAll, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (!key) {
             throw new ErrorMessage_1.DatabaseError("The key is not defined!");
         }
@@ -442,7 +437,6 @@ class GoodDB {
                     });
                     const pullFromNestedObject = (currentObject, keyParts, depth) => __awaiter(this, void 0, void 0, function* () {
                         const part = keyParts[depth];
-                        console.log(part);
                         if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
                             throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
                         }
@@ -514,7 +508,6 @@ class GoodDB {
             };
             const pullFromNestedObject = (currentObject, keyParts, depth) => {
                 const part = keyParts[depth];
-                console.log(currentObject[part], currentObject, keyParts);
                 if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
                     throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
                 }
@@ -571,8 +564,7 @@ class GoodDB {
     ;
     distinct(key, value, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -630,8 +622,7 @@ class GoodDB {
     ;
     add(key, value, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -661,8 +652,7 @@ class GoodDB {
     ;
     multiply(key, value, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -692,8 +682,7 @@ class GoodDB {
     ;
     double(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -723,8 +712,7 @@ class GoodDB {
     ;
     subtract(key, value, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -754,8 +742,7 @@ class GoodDB {
     ;
     math(key, mathSign, value, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -829,8 +816,7 @@ class GoodDB {
     ;
     type(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -890,8 +876,7 @@ class GoodDB {
     ;
     size(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -957,8 +942,7 @@ class GoodDB {
     ;
     startsWith(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -977,6 +961,7 @@ class GoodDB {
                                 result[k] = data[k];
                             }
                         }
+                        ;
                         resolve(result);
                     }
                     else {
@@ -1030,8 +1015,7 @@ class GoodDB {
     ;
     endsWith(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -1103,8 +1087,7 @@ class GoodDB {
     ;
     includes(key, options) {
         options = options || this.getNestedOptions;
-        if (typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+        this.checkKey(key);
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -1173,6 +1156,7 @@ class GoodDB {
                 return result;
             }
         }
+        ;
     }
     ;
     keys() {
@@ -1215,12 +1199,38 @@ class GoodDB {
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    const data = yield this.driver.getAllRows(this.tableName);
+                    const [data, isObject] = yield this.driver.getAllRows(this.tableName);
                     if (type === 'object') {
-                        resolve(data);
+                        if (isObject) {
+                            return resolve(data);
+                        }
+                        ;
+                        return resolve(Object.fromEntries(data
+                            .map(({ key, value }) => {
+                            if (!key)
+                                return;
+                            return [key, typeof value !== 'string' ? value : JSON.parse(value)];
+                        })
+                            .filter(Boolean)));
                     }
-                    else {
-                        resolve(Object.entries(data).map(([id, value]) => ({ id, value })));
+                    else if (type === 'array') {
+                        if (isObject) {
+                            return resolve(Object.entries(data)
+                                .map(([key, value]) => {
+                                if (!key)
+                                    return;
+                                return { key, value };
+                            })
+                                .filter(Boolean));
+                        }
+                        ;
+                        return resolve(data
+                            .map(({ key, value }) => {
+                            if (!key)
+                                return;
+                            return { key: key, value: typeof value !== 'string' ? value : JSON.parse(value) };
+                        })
+                            .filter(Boolean));
                     }
                     ;
                 }
@@ -1230,12 +1240,38 @@ class GoodDB {
             }));
         }
         else {
-            const data = this.driver.getAllRows(this.tableName);
+            const [data, isObject] = this.driver.getAllRows(this.tableName);
             if (type === 'object') {
-                return data;
+                if (isObject) {
+                    return data;
+                }
+                ;
+                return Object.fromEntries(data
+                    .map(({ key, value }) => {
+                    if (!key)
+                        return;
+                    return [key, typeof value !== 'string' ? value : JSON.parse(value)];
+                })
+                    .filter(Boolean));
             }
-            else {
-                return Object.entries(data).map(([id, value]) => ({ id, value }));
+            else if (type === 'array') {
+                if (isObject) {
+                    return Object.entries(data)
+                        .map(([key, value]) => {
+                        if (!key)
+                            return;
+                        return { key, value };
+                    })
+                        .filter(Boolean);
+                }
+                ;
+                return data
+                    .map(({ key, value }) => {
+                    if (!key)
+                        return;
+                    return { key: key, value: typeof value !== 'string' ? value : JSON.parse(value) };
+                })
+                    .filter(Boolean);
             }
             ;
         }
@@ -1259,31 +1295,24 @@ class GoodDB {
         }
     }
     ;
-    /**
-     * Make table for the database
-     * @param name - The name of the tableName
-     * @returns A promise if the driver is async, otherwise a boolean
-     * @example Make tableName for the database
-     * ## Using the MongoDBDriver (async)
-     * ```javascript
-     * const db = new GoodDB(new MongoDBDriver({
-     *    uri: "..."
-     * }));
-     * await db.connect();
-     * await db.table('tableName');
-     * ```
-     * ## Using the JSONDriver (sync)
-     * ```javascript
-     * const db = new GoodDB(new JSONDriver({
-     *   path: './database.json'
-     * }));
-     * db.table('tableName');
-     * ```
-     */
     table(name) {
         if (!name)
             throw new ErrorMessage_1.DatabaseError('Table name is required.');
-        return new GoodDB(this.driver, Object.assign(Object.assign({}, this.options), { table: name }));
+        if (this.isAsync) {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    yield this.driver.createTable(name);
+                    resolve(new GoodDB(this.driver, Object.assign(Object.assign({}, this.options), { table: name })));
+                }
+                catch (error) {
+                    reject(error);
+                }
+            }));
+        }
+        else {
+            this.driver.createTable(name);
+            return new GoodDB(this.driver, Object.assign(Object.assign({}, this.options), { table: name }));
+        }
     }
     ;
     // End Collection methods //
@@ -1302,7 +1331,7 @@ class GoodDB {
      */
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver) {
+            if ((0, Utils_1.checkDriverIsAsync)(this.driver)) {
                 return yield this.driver.init(this.tableName);
             }
             else {
@@ -1326,8 +1355,9 @@ class GoodDB {
      */
     disconnect() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.driver instanceof Mongo_1.MongoDBDriver || this.driver instanceof PostgreSQL_1.PostgreSQLDriver || this.driver instanceof MySQL_1.MySQLDriver) {
-                return yield this.driver.close();
+            if ((0, Utils_1.checkDriverIsAsync)(this.driver)) {
+                return yield this.driver
+                    .close();
             }
             else {
                 throw new ErrorMessage_1.DatabaseError('This driver does not support the disconnect method');

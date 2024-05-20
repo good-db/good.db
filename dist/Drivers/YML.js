@@ -15,6 +15,7 @@ class YMLDriver {
     checkFile() {
         return node_fs_1.default.existsSync(this.path);
     }
+    ;
     init(table) {
         if (!this.checkFile()) {
             node_fs_1.default.writeFileSync(this.path, '');
@@ -26,7 +27,35 @@ class YMLDriver {
         ;
     }
     ;
+    createTable(table) {
+        if (!this.checkFile()) {
+            node_fs_1.default.writeFileSync(this.path, '');
+        }
+        ;
+        if (!this.read()[table]) {
+            this.write(Object.assign(Object.assign({}, this.read()), { [table]: {} }));
+        }
+        ;
+        return true;
+    }
+    ;
+    tables() {
+        return Object.keys(this.read());
+    }
+    ;
     // Inserters/Updaters
+    insert(table, array) {
+        const data = this.read();
+        const tableData = data[table] || {};
+        for (const { key, value } of array) {
+            tableData[key] = value;
+        }
+        ;
+        data[table] = tableData;
+        this.write(data);
+        return true;
+    }
+    ;
     setRowByKey(table, key, value) {
         const data = this.read();
         const tableData = data[table] || {};
@@ -38,7 +67,7 @@ class YMLDriver {
     ;
     // Getters
     getAllRows(table) {
-        return this.read()[table] || undefined;
+        return [this.read()[table] || {}, true];
     }
     ;
     getRowByKey(table, key) {

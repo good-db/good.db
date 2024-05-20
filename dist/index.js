@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MySQLDriver = exports.PostgreSQLDriver = exports.MongoDBDriver = exports.YMLDriver = exports.MemoryDriver = exports.CacheDriver = exports.SQLiteDriver = exports.JSONDriver = exports.GoodDB = void 0;
+exports.Convertor = exports.MySQLDriver = exports.PostgreSQLDriver = exports.MongoDBDriver = exports.YMLDriver = exports.MemoryDriver = exports.CacheDriver = exports.SQLiteDriver = exports.JSONDriver = exports.GoodDB = void 0;
 const good_db_1 = __importDefault(require("./good.db"));
+const Convertor_1 = __importDefault(require("./Convertor"));
 const JSON_1 = require("./Drivers/JSON");
 const SQLite_1 = require("./Drivers/SQLite");
 const Cache_1 = require("./Drivers/Cache");
@@ -122,4 +123,16 @@ exports.PostgreSQLDriver = PostgreSQL_1.PostgreSQLDriver;
  * ```
  */
 exports.MySQLDriver = MySQL_1.MySQLDriver;
+/**
+ * The Convertor class for the GoodDB package
+ * @example
+ * ```javascript
+ * const convertor = new Convertor({
+ *     from: new JSONDriver(),
+ *     to: new MongoDBDriver(),
+ *     table: 'all_tables',
+ * });
+ * ```
+ */
+exports.Convertor = Convertor_1.default;
 //# sourceMappingURL=index.js.map

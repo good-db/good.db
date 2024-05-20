@@ -17,17 +17,44 @@ class MongoDBDriver {
         this.client = new mongodb_1.MongoClient(options.uri);
     }
     init(table) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             if (this.db)
-                return true;
+                return false;
             yield this.client.connect();
-            this.db = this.client.db(this.options.database || 'gooddb');
+            this.db = this.client.db((_a = this.options.database) !== null && _a !== void 0 ? _a : 'gooddb');
             yield this.db.createCollection(table);
             return true;
         });
     }
     ;
+    createTable(table) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            yield this.db.createCollection(table);
+            return true;
+        });
+    }
+    ;
+    tables() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            return (yield this.db.listCollections().toArray()).map((collection) => collection.name);
+        });
+    }
+    ;
     // Inserters/Updaters
+    insert(table, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.db)
+                throw new Error('Database not initialized');
+            yield this.db.collection(table).insertMany(value);
+            return true;
+        });
+    }
+    ;
     setRowByKey(table, key, value) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.db)
@@ -42,12 +69,8 @@ class MongoDBDriver {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.db)
                 throw new Error('Database not initialized');
-            const cursor = yield this.db.collection(table).find();
-            const data = {};
-            yield cursor.forEach((doc) => {
-                data[doc.key] = doc.value;
-            });
-            return data;
+            const cursor = yield this.db.collection(table).find().toArray();
+            return [cursor, false];
         });
     }
     ;
@@ -57,7 +80,7 @@ class MongoDBDriver {
                 throw new Error('Database not initialized');
             const doc = yield this.db.collection(table).findOne({ key });
             if (!doc)
-                return null;
+                return undefined;
             return doc.value;
         });
     }

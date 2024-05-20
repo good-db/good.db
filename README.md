@@ -58,7 +58,7 @@ GoodDB supports the following drivers:
 The `MemoryDriver` stores data in memory. It is suitable for small applications and is easy to set up.
 
 ```typescript
-import { GoodDB, MemoryDriver } from 'gooddb';
+import { GoodDB, MemoryDriver } from 'good.db';
 
 const db = new GoodDB(new MemoryDriver());
 ```
@@ -68,7 +68,7 @@ const db = new GoodDB(new MemoryDriver());
 The `SQLiteDriver` stores data in an SQLite database. It is suitable for small to medium-sized applications and is easy to set up.
 
 ```typescript
-import { GoodDB, SQLiteDriver } from 'gooddb';
+import { GoodDB, SQLiteDriver } from 'good.db';
 
 const db = new GoodDB(new SQLiteDriver({ path: './database.sqlite' }));
 ```
@@ -78,7 +78,7 @@ const db = new GoodDB(new SQLiteDriver({ path: './database.sqlite' }));
 The `YMLDriver` stores data in a YML file. It is suitable for small to medium-sized applications and is easy to set up.
 
 ```typescript
-import { GoodDB, YMLDriver } from 'gooddb';
+import { GoodDB, YMLDriver } from 'good.db';
 
 const db = new GoodDB(new YMLDriver({ path: './database.yml' }));
 ```
@@ -88,7 +88,7 @@ const db = new GoodDB(new YMLDriver({ path: './database.yml' }));
 The `JSONDriver` stores data in a JSON file. It is suitable for small to medium-sized applications and is easy to set up.
 
 ```typescript
-import { GoodDB, JSONDriver } from 'gooddb';
+import { GoodDB, JSONDriver } from 'good.db';
 
 const db = new GoodDB(new JSONDriver({ path: './database.json' }));
 ```
@@ -98,7 +98,7 @@ const db = new GoodDB(new JSONDriver({ path: './database.json' }));
 The `MongoDBDriver` stores data in a MongoDB database. It is suitable for medium to large-sized applications and offers advanced features.
 
 ```typescript
-import { GoodDB, MongoDBDriver } from 'gooddb';
+import { GoodDB, MongoDBDriver } from 'good.db';
 
 const db = new GoodDB(new MongoDBDriver({ uri: 'mongodb://localhost:27017/mydb' }));
 
@@ -110,7 +110,7 @@ await db.connect();
 The `PostgreSQLDriver` stores data in a PostgreSQL database. It is suitable for medium to large-sized applications and offers advanced features.
 
 ```typescript
-import { GoodDB, PostgreSQLDriver } from 'gooddb';
+import { GoodDB, PostgreSQLDriver } from 'good.db';
 
 const db = new GoodDB(new PostgreSQLDriver({ 
   user: 'user', 
@@ -125,12 +125,40 @@ await db.connect();
 The `MySQLDriver` stores data in a MySQL database. It is suitable for medium to large-sized applications and offers advanced features.
 
 ```typescript
-import { GoodDB, MySQLDriver } from 'gooddb';
+import { GoodDB, MySQLDriver } from 'good.db';
 
 const db = new GoodDB(new MySQLDriver({ 
   user: 'user',
   host: 'localhost'
 }));
+```
+
+## Convert between Drivers
+
+### Convertor Options
+
+- `from` (Driver): The driver to convert from.
+- `to` (Driver): The driver to convert to.
+- `table` (string): The name of the table/collection to convert.
+
+### Example
+
+Convert an SQLite database to a JSON file:
+
+```typescript
+import { Convertor, SQLiteDriver, JSONDriver } from 'good.db';
+
+const convertor = new Convertor({
+    from: new SQLiteDriver({
+        path: './client/database.sqlite'
+    }),
+    to: new JSONDriver({
+        path: './client/database.json'
+    }),
+    table: 'all_tables',
+});
+
+convertor.convert().then(console.log).catch(console.error);
 ```
 
 ## Examples for All Methods:
@@ -423,6 +451,6 @@ If you have any questions or need assistance, please feel free to open an issue 
 
 ## License
 
-GoodDB is licensed under the MIT License. See the [LICENSE](https://github.com/yourusername/gooddb/blob/main/LICENSE) file for details.
+GoodDB is licensed under the MIT License. See the [LICENSE](https://github.com/good-db/gooddb/blob/main/license.md) file for details.
 
 ---

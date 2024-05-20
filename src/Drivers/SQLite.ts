@@ -1,7 +1,7 @@
-import { SQLiteDriverOptions } from '../Types';
+import { DriversClassType, SQLiteDriverOptions } from '../Types';
 import Database, { Database as DataBaseType } from 'better-sqlite3';
 
-export class SQLiteDriver {
+export class SQLiteDriver implements DriversClassType {
     public readonly path: string;
     private db: DataBaseType;
 
@@ -14,7 +14,26 @@ export class SQLiteDriver {
         this.db.exec(`CREATE TABLE IF NOT EXISTS ${table} (key TEXT PRIMARY KEY, value TEXT)`);
     };
 
+    public createTable(table: string): boolean {
+        this.db.exec(`CREATE TABLE IF NOT EXISTS ${table} (key TEXT PRIMARY KEY, value TEXT)`);
+        return true;
+    };
+
+    public tables(): string[] {
+        const tables = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+        return tables.map((table: any) => table.name);
+    };
+
     // Inserters/Updaters
+    public insert(table: string, array: any[]): boolean {
+        this.db.exec(`CREATE TABLE IF NOT EXISTS ${table} (key TEXT PRIMARY KEY, value TEXT)`);
+        const insert = this.db.prepare(`INSERT OR REPLACE INTO ${table} (key, value) VALUES (?, ?)`);
+        for (const { key, value } of array) {
+            insert.run(key, JSON.stringify(value));
+        };
+        return true;
+    };
+
     public setRowByKey(table: string, key: string, value: any): boolean {
         const insert = this.db.prepare(`INSERT OR REPLACE INTO ${table} (key, value) VALUES (?, ?)`);
         insert.run(key, JSON.stringify(value));
@@ -22,18 +41,16 @@ export class SQLiteDriver {
     };
 
     // Getters
-    public getAllRows(table: string): any {
+    public getAllRows(table: string): [any, boolean] {
         const rows: any = this.db.prepare(`SELECT * FROM ${table}`).all();
-        const data: any = {};
-        for (const row of rows) {
-            data[row.key] = JSON.parse(row.value);
-        }
-        return data;
+        console.log(rows);
+
+        return [rows, false];
     };
 
     public getRowByKey(table: string, key: string): any {
         const row: any = this.db.prepare(`SELECT * FROM ${table} WHERE key = ?`).get(key);
-        if (!row) return row;
+        if (!row) return undefined;
         return JSON.parse(row.value);
     };
 

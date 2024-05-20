@@ -1,7 +1,7 @@
-import { JSONDriverOptions } from '../Types';
+import { DriversClassType, JSONDriverOptions } from '../Types';
 import fs from 'node:fs';
 
-export class JSONDriver {
+export class JSONDriver implements DriversClassType {
     public readonly path: string;
     public readonly format: boolean;
 
@@ -17,7 +17,7 @@ export class JSONDriver {
             return false;
         }
         return true;
-    }
+    };
 
     public init(table: string): void {
         if (!this.checkFile()) {
@@ -29,7 +29,33 @@ export class JSONDriver {
         };
     };
 
+    public createTable(table: string): boolean {
+        if (!this.checkFile()) {
+            fs.writeFileSync(this.path, JSON.stringify({}));
+        };
+
+        if (!this.read()[table]) {
+            this.write({ ...this.read(), [table]: {} });
+        };
+        return true;
+    };
+
+    public tables(): string[] {
+        return Object.keys(this.read());
+    };
+
     // Inserters/Updaters
+    public insert(table: string, array: any[]): boolean {
+        const data = this.read();
+        const tableData: any = data[table] || {};
+        for (const { key, value } of array) {
+            tableData[key] = value;
+        };
+        data[table] = tableData;
+        this.write(data);
+        return true;
+    };
+
     public setRowByKey(table: string, key: string, value: any): boolean {
         const data = this.read();
         const tableData: any = data[table] || {};
@@ -41,7 +67,7 @@ export class JSONDriver {
 
     // Getters
     public getAllRows(table: string): any {
-        return this.read()[table];
+        return [this.read()[table] || {}, true];
     };
 
     public getRowByKey(table: string, key: string): any {
@@ -71,17 +97,16 @@ export class JSONDriver {
         return JSON.parse(fs.readFileSync(this.path).toString());
     };
 
-    public write(data: any): boolean {
+    public write(data: any): void {
         if (this.format) {
             fs.writeFileSync(this.path, JSON.stringify(data, null, 2));
-            return true;
+        } else {
+            fs.writeFileSync(this.path, JSON.stringify(data));
         }
-        fs.writeFileSync(this.path, JSON.stringify(data));
-        return true;
     };
 
-    public clear(): boolean {
+    public clear(): void {
         this.write({});
-        return true;
     };
+    
 };

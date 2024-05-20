@@ -179,14 +179,14 @@ describe('JSON Driver without nested', () => {
             db.all('array')
         ).toEqual([
             {
-                id: 'users',
+                key: 'users',
                 value: [
                     { name: 'Alice', age: 25 },
                     { name: 'Charlie', age: 35 }
                 ]
             },
             {
-                id: 'points',
+                key: 'points',
                 value: 20
             }
         ]);
@@ -404,7 +404,7 @@ describe('JSON Driver with nested', () => {
             db.all('array')
         ).toEqual([
             {
-                id: 'data',
+                key: 'data',
                 value: {
                     users: [
                         { name: 'Alice', age: 25 },

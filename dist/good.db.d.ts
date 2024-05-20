@@ -1,11 +1,4 @@
-import { MemoryDriver } from "./Drivers/Cache";
-import { JSONDriver } from "./Drivers/JSON";
-import { MongoDBDriver } from "./Drivers/Mongo";
-import { MySQLDriver } from "./Drivers/MySQL";
-import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
-import { SQLiteDriver } from "./Drivers/SQLite";
-import { YMLDriver } from "./Drivers/YML";
-import { goodDBOptions, MathSigns, methodOptions } from "./Types";
+import { AllDataReturns, Drivers, goodDBOptions, IGoodDB, MathSigns, methodOptions } from "./Types";
 import { LRUCache } from "./utils/Caching";
 /**
  * The main class for the GoodDB package
@@ -24,7 +17,7 @@ import { LRUCache } from "./utils/Caching";
  * await db.connect();
  * ```
  */
-export default class GoodDB {
+export default class GoodDB implements IGoodDB {
     private options?;
     private driver;
     readonly tableName: string;
@@ -35,8 +28,9 @@ export default class GoodDB {
     private cacheIsEnabled;
     readonly isAsync: boolean;
     cacheService: LRUCache | undefined;
-    constructor(driver?: JSONDriver | SQLiteDriver | YMLDriver | MemoryDriver | MongoDBDriver | PostgreSQLDriver | MySQLDriver, options?: goodDBOptions | undefined);
+    constructor(driver?: Drivers, options?: goodDBOptions | undefined);
     private get getNestedOptions();
+    private checkKey;
     /**
      * Set a value to a key
      * @param key - The key to set the value to
@@ -626,14 +620,8 @@ export default class GoodDB {
      * await db.all();
      * ```
      */
-    all(type?: 'object' | 'array' | undefined): Promise<any | {
-        id: string;
-        value: any;
-    }[]>;
-    all(type?: 'object' | 'array' | undefined): any | {
-        id: string;
-        value: any;
-    }[];
+    all(type?: 'object' | 'array' | undefined): Promise<AllDataReturns>;
+    all(type?: 'object' | 'array' | undefined): AllDataReturns;
     /**
      * Clear the database
      * @returns A promise if the driver is async, otherwise a boolean
@@ -674,9 +662,10 @@ export default class GoodDB {
      * const db = new GoodDB(new JSONDriver({
      *   path: './database.json'
      * }));
-     * db.table('tableName');
+     * await db.table('tableName');
      * ```
      */
+    table(name: string): Promise<GoodDB>;
     table(name: string): GoodDB;
     /**
      * Connect to the database

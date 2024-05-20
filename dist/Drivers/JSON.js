@@ -18,6 +18,7 @@ class JSONDriver {
         }
         return true;
     }
+    ;
     init(table) {
         if (!this.checkFile()) {
             node_fs_1.default.writeFileSync(this.path, JSON.stringify({}));
@@ -29,7 +30,35 @@ class JSONDriver {
         ;
     }
     ;
+    createTable(table) {
+        if (!this.checkFile()) {
+            node_fs_1.default.writeFileSync(this.path, JSON.stringify({}));
+        }
+        ;
+        if (!this.read()[table]) {
+            this.write(Object.assign(Object.assign({}, this.read()), { [table]: {} }));
+        }
+        ;
+        return true;
+    }
+    ;
+    tables() {
+        return Object.keys(this.read());
+    }
+    ;
     // Inserters/Updaters
+    insert(table, array) {
+        const data = this.read();
+        const tableData = data[table] || {};
+        for (const { key, value } of array) {
+            tableData[key] = value;
+        }
+        ;
+        data[table] = tableData;
+        this.write(data);
+        return true;
+    }
+    ;
     setRowByKey(table, key, value) {
         const data = this.read();
         const tableData = data[table] || {};
@@ -41,7 +70,7 @@ class JSONDriver {
     ;
     // Getters
     getAllRows(table) {
-        return this.read()[table];
+        return [this.read()[table] || {}, true];
     }
     ;
     getRowByKey(table, key) {
@@ -74,15 +103,14 @@ class JSONDriver {
     write(data) {
         if (this.format) {
             node_fs_1.default.writeFileSync(this.path, JSON.stringify(data, null, 2));
-            return true;
         }
-        node_fs_1.default.writeFileSync(this.path, JSON.stringify(data));
-        return true;
+        else {
+            node_fs_1.default.writeFileSync(this.path, JSON.stringify(data));
+        }
     }
     ;
     clear() {
         this.write({});
-        return true;
     }
     ;
 }

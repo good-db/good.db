@@ -15,7 +15,27 @@ class SQLiteDriver {
         this.db.exec(`CREATE TABLE IF NOT EXISTS ${table} (key TEXT PRIMARY KEY, value TEXT)`);
     }
     ;
+    createTable(table) {
+        this.db.exec(`CREATE TABLE IF NOT EXISTS ${table} (key TEXT PRIMARY KEY, value TEXT)`);
+        return true;
+    }
+    ;
+    tables() {
+        const tables = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+        return tables.map((table) => table.name);
+    }
+    ;
     // Inserters/Updaters
+    insert(table, array) {
+        this.db.exec(`CREATE TABLE IF NOT EXISTS ${table} (key TEXT PRIMARY KEY, value TEXT)`);
+        const insert = this.db.prepare(`INSERT OR REPLACE INTO ${table} (key, value) VALUES (?, ?)`);
+        for (const { key, value } of array) {
+            insert.run(key, JSON.stringify(value));
+        }
+        ;
+        return true;
+    }
+    ;
     setRowByKey(table, key, value) {
         const insert = this.db.prepare(`INSERT OR REPLACE INTO ${table} (key, value) VALUES (?, ?)`);
         insert.run(key, JSON.stringify(value));
@@ -25,17 +45,14 @@ class SQLiteDriver {
     // Getters
     getAllRows(table) {
         const rows = this.db.prepare(`SELECT * FROM ${table}`).all();
-        const data = {};
-        for (const row of rows) {
-            data[row.key] = JSON.parse(row.value);
-        }
-        return data;
+        console.log(rows);
+        return [rows, false];
     }
     ;
     getRowByKey(table, key) {
         const row = this.db.prepare(`SELECT * FROM ${table} WHERE key = ?`).get(key);
         if (!row)
-            return row;
+            return undefined;
         return JSON.parse(row.value);
     }
     ;

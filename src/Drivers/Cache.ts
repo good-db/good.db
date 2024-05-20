@@ -1,13 +1,24 @@
-export class MemoryDriver {
+import { DriversClassType } from "../Types";
+
+export class MemoryDriver implements DriversClassType {
     private cache: Map<string, any>;
 
     constructor() {
         this.cache = new Map<string, any>();
     }
 
-    public init(table: string): boolean {
+    public init(table: string): void {
         this.cache.set(table, new Map());
-        return true
+    };
+
+    public createTable(table: string): boolean {
+        if (this.cache.has(table)) return false;
+        this.cache.set(table, new Map());
+        return true;
+    };
+
+    public tables(): string[] {
+        return Array.from(this.cache.keys());
     };
 
     public getOrCreateTable(name: string): Map<string, any> {
@@ -20,6 +31,14 @@ export class MemoryDriver {
     };
 
     // Inserters/Updaters
+    public insert(table: string, array: any[]): boolean {
+        const tableData = this.getOrCreateTable(table);
+        for (const { key, value } of array) {
+            tableData.set(key, value);
+        };
+        return true;
+    };
+
     public setRowByKey(table: string, key: string, value: any): boolean {
         const tableData = this.getOrCreateTable(table);
         tableData.set(key, value);
@@ -32,7 +51,7 @@ export class MemoryDriver {
     };
 
     public getRowByKey(table: string, key: string): any {
-        return this.getOrCreateTable(table).get(key);
+        return this.getOrCreateTable(table).get(key) ?? undefined;
     };
 
     // Deleters
@@ -44,4 +63,6 @@ export class MemoryDriver {
         this.cache.delete(table);
         return true;
     };
+
+    
 };

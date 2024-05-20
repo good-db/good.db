@@ -1,9 +1,13 @@
 import { PoolConfig } from 'pg';
-export declare class PostgreSQLDriver {
+import { DriversClassType } from '../Types';
+export declare class PostgreSQLDriver implements DriversClassType {
     readonly options: PoolConfig;
     private pool;
     constructor(options: PoolConfig);
     init(table: string): Promise<boolean>;
+    createTable(table: string): Promise<boolean>;
+    tables(): Promise<string[]>;
+    insert(table: string, value: any[]): Promise<boolean>;
     setRowByKey(table: string, key: string, value: any): Promise<boolean>;
     getAllRows(table: string): Promise<any>;
     getRowByKey(table: string, key: string): Promise<any>;

@@ -1,6 +1,7 @@
 import mysql, { Pool, PoolOptions } from 'mysql2/promise';
+import { DatabaseDesignArray, DriversClassType } from '../Types';
 
-export class MySQLDriver {
+export class MySQLDriver implements DriversClassType {
     private pool: Pool;
 
     constructor(public readonly options: PoolOptions) {
@@ -17,9 +18,47 @@ export class MySQLDriver {
         } finally {
             connection.release();
         }
-    }
+    };
+    
+    public async createTable(table: string): Promise<boolean> {
+        const connection = await this.pool.getConnection();
+        try {
+            await connection.query(`CREATE TABLE IF NOT EXISTS \`${table}\` (\`key\` VARCHAR(255) PRIMARY KEY, \`value\` TEXT)`);
+            return true;
+        } catch (error) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    };
+
+    public async tables(): Promise<string[]> {
+        const connection = await this.pool.getConnection();
+        try {
+            const [rows] = await connection.query('SHOW TABLES') as any[];
+            return rows.map((row: any) => row[`Tables_in_${this.options.database}`]);
+        } catch (error) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    };
 
     // Inserters/Updaters
+    public async insert(table: string, value: DatabaseDesignArray): Promise<boolean> {
+        const connection = await this.pool.getConnection();
+        try {
+            const values = value.map(({ key, value }) => `('${key}', '${JSON.stringify(value)}')`).join(', ');
+            await connection.query(`INSERT INTO \`${table}\` (\`key\`, \`value\`) VALUES ${values} ON DUPLICATE KEY UPDATE \`value\` = VALUES(\`value\`)`);
+
+            return true;
+        } catch (error) {
+            throw error;
+        } finally {
+            connection.release();
+        }
+    };
+
     public async setRowByKey(table: string, key: string, value: any): Promise<boolean> {
         const connection = await this.pool.getConnection();
         try {
@@ -31,32 +70,28 @@ export class MySQLDriver {
         } finally {
             connection.release();
         }
-    }
+    };
 
 
     // Getters
-    public async getAllRows(table: string): Promise<any> {
+    public async getAllRows(table: string): Promise<[any, boolean]> {
         const connection = await this.pool.getConnection();
         try {
             const [rows] = await connection.query(`SELECT \`key\`, \`value\` FROM \`${table}\``) as any[];
-            const data: any = {};
-            rows.forEach((row: { key: string; value: any }) => {
-                data[row.key] = JSON.parse(row.value);
-            });
-            return data;
+            return [rows, false];
         } catch (error) {
             throw error;
         } finally {
             connection.release();
         }
-    }
+    };
 
     public async getRowByKey(table: string, key: string): Promise<any> {
         const connection = await this.pool.getConnection();
         try {
             const [rows] = await connection.query(`SELECT \`value\` FROM \`${table}\` WHERE \`key\` = ?`, [key]) as any[];
 
-            if (rows.length === 0) return null;
+            if (rows.length === 0) return undefined;
             return JSON.parse(rows[0].value);
         } catch (error) {
             throw error;

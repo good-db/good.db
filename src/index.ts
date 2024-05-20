@@ -1,4 +1,5 @@
 import GoodDBMain from "./good.db";
+import ConvertorClass from "./Convertor";
 import { JSONDriver as JSONDriverMain } from "./Drivers/JSON";
 import { SQLiteDriver as SQLiteDriverMain } from "./Drivers/SQLite";
 import { MemoryDriver as MemoryDriverMain } from "./Drivers/Cache";
@@ -125,3 +126,16 @@ export const PostgreSQLDriver = PostgreSQLDriverMain;
  * ```
  */
 export const MySQLDriver = MySQLDriverMain;
+
+/**
+ * The Convertor class for the GoodDB package
+ * @example
+ * ```javascript
+ * const convertor = new Convertor({
+ *     from: new JSONDriver(),
+ *     to: new MongoDBDriver(),
+ *     table: 'all_tables',
+ * });
+ * ```
+ */
+export const Convertor = ConvertorClass;

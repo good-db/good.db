@@ -1,7 +1,7 @@
 import { MongoClient, Db } from 'mongodb';
-import { MongoDBDriverOptions } from '../Types';
+import { DatabaseDesignArray, DriversClassType, MongoDBDriverOptions } from '../Types';
 
-export class MongoDBDriver {
+export class MongoDBDriver implements DriversClassType {
     private client: MongoClient;
     private db: Db | undefined;
 
@@ -10,14 +10,32 @@ export class MongoDBDriver {
     }
 
     public async init(table: string): Promise<boolean> {
-        if (this.db) return true;
+        if (this.db) return false;
         await this.client.connect();
-        this.db = this.client.db(this.options.database || 'gooddb');
+        this.db = this.client.db(this.options.database ?? 'gooddb');
         await this.db.createCollection(table);
         return true;
     };
 
+    public async createTable(table: string): Promise<boolean> {
+        if (!this.db) throw new Error('Database not initialized');
+        await this.db.createCollection(table);
+        return true;
+    };
+
+    public async tables(): Promise<string[]> {
+        if (!this.db) throw new Error('Database not initialized');
+        return (await this.db.listCollections().toArray()).map((collection: any) => collection.name);
+    };
+
     // Inserters/Updaters
+    public async insert(table: string, value: DatabaseDesignArray): Promise<boolean> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        await this.db.collection(table).insertMany(value);
+        return true;
+    };
+
     public async setRowByKey(table: string, key: string, value: any): Promise<boolean> {
         if (!this.db) throw new Error('Database not initialized');
         await this.db.collection(table).updateOne({ key }, { $set: { value: value } }, { upsert: true });
@@ -25,20 +43,16 @@ export class MongoDBDriver {
     };
 
     // Getters
-    public async getAllRows(table: string): Promise<any> {
+    public async getAllRows(table: string): Promise<[any, boolean]> {
         if (!this.db) throw new Error('Database not initialized');
-        const cursor = await this.db.collection(table).find();
-        const data: any = {};
-        await cursor.forEach((doc: any) => {
-            data[doc.key] = doc.value;
-        });
-        return data;
+        const cursor = await this.db.collection(table).find().toArray();
+        return [cursor, false];
     };
 
     public async getRowByKey(table: string, key: string): Promise<any> {
         if (!this.db) throw new Error('Database not initialized');
         const doc = await this.db.collection(table).findOne({ key });
-        if (!doc) return null;
+        if (!doc) return undefined;
         return doc.value;
     };
 

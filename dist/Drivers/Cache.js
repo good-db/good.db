@@ -7,7 +7,17 @@ class MemoryDriver {
     }
     init(table) {
         this.cache.set(table, new Map());
+    }
+    ;
+    createTable(table) {
+        if (this.cache.has(table))
+            return false;
+        this.cache.set(table, new Map());
         return true;
+    }
+    ;
+    tables() {
+        return Array.from(this.cache.keys());
     }
     ;
     getOrCreateTable(name) {
@@ -20,6 +30,15 @@ class MemoryDriver {
     }
     ;
     // Inserters/Updaters
+    insert(table, array) {
+        const tableData = this.getOrCreateTable(table);
+        for (const { key, value } of array) {
+            tableData.set(key, value);
+        }
+        ;
+        return true;
+    }
+    ;
     setRowByKey(table, key, value) {
         const tableData = this.getOrCreateTable(table);
         tableData.set(key, value);
@@ -32,7 +51,8 @@ class MemoryDriver {
     }
     ;
     getRowByKey(table, key) {
-        return this.getOrCreateTable(table).get(key);
+        var _a;
+        return (_a = this.getOrCreateTable(table).get(key)) !== null && _a !== void 0 ? _a : undefined;
     }
     ;
     // Deleters

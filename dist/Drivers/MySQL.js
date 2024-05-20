@@ -34,7 +34,57 @@ class MySQLDriver {
             }
         });
     }
+    ;
+    createTable(table) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield this.pool.getConnection();
+            try {
+                yield connection.query(`CREATE TABLE IF NOT EXISTS \`${table}\` (\`key\` VARCHAR(255) PRIMARY KEY, \`value\` TEXT)`);
+                return true;
+            }
+            catch (error) {
+                throw error;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    ;
+    tables() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield this.pool.getConnection();
+            try {
+                const [rows] = yield connection.query('SHOW TABLES');
+                return rows.map((row) => row[`Tables_in_${this.options.database}`]);
+            }
+            catch (error) {
+                throw error;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    ;
     // Inserters/Updaters
+    insert(table, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield this.pool.getConnection();
+            try {
+                const values = value.map(({ key, value }) => `('${key}', '${JSON.stringify(value)}')`).join(', ');
+                yield connection.query(`INSERT INTO \`${table}\` (\`key\`, \`value\`) VALUES ${values} ON DUPLICATE KEY UPDATE \`value\` = VALUES(\`value\`)`);
+                return true;
+            }
+            catch (error) {
+                throw error;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    ;
     setRowByKey(table, key, value) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield this.pool.getConnection();
@@ -51,17 +101,14 @@ class MySQLDriver {
             }
         });
     }
+    ;
     // Getters
     getAllRows(table) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield this.pool.getConnection();
             try {
                 const [rows] = yield connection.query(`SELECT \`key\`, \`value\` FROM \`${table}\``);
-                const data = {};
-                rows.forEach((row) => {
-                    data[row.key] = JSON.parse(row.value);
-                });
-                return data;
+                return [rows, false];
             }
             catch (error) {
                 throw error;
@@ -71,13 +118,14 @@ class MySQLDriver {
             }
         });
     }
+    ;
     getRowByKey(table, key) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield this.pool.getConnection();
             try {
                 const [rows] = yield connection.query(`SELECT \`value\` FROM \`${table}\` WHERE \`key\` = ?`, [key]);
                 if (rows.length === 0)
-                    return null;
+                    return undefined;
                 return JSON.parse(rows[0].value);
             }
             catch (error) {
