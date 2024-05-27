@@ -7,6 +7,11 @@ import { YMLDriver as YMLDriverMain } from './Drivers/YML';
 import { MongoDBDriver as MongoDBDriverMain } from './Drivers/Mongo';
 import { PostgreSQLDriver as PostgreSQLDriverMain } from "./Drivers/PostgreSQL";
 import { MySQLDriver as MySQLDriverMain } from "./Drivers/MySQL";
+import {
+    type ISyncGoodDB as ISyncGoodDBType,
+    type IAsyncGoodDB as IAsyncGoodDBType,
+    type IGoodDB as IGoodDBType
+} from "./Types";
 
 /**
  * The main class for the GoodDB package
@@ -139,3 +144,23 @@ export const MySQLDriver = MySQLDriverMain;
  * ```
  */
 export const Convertor = ConvertorClass;
+
+/**
+ * The type for the GoodDB package
+ * @example
+ * ```typescript
+ * const db: ISyncGoodDB = new GoodDB(new JSONDriver());
+ * ```
+ */
+export type ISyncGoodDB = ISyncGoodDBType;
+
+/**
+ * The type for the GoodDB package
+ * @example
+ * ```typescript
+ * const db: IAsyncGoodDB = new GoodDB(new MongoDBDriver());
+ * ```
+ */
+export type IAsyncGoodDB = IAsyncGoodDBType;
+
+export type IGoodDB = IGoodDBType;
