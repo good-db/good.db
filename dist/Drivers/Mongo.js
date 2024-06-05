@@ -17,8 +17,8 @@ class MongoDBDriver {
         this.client = new mongodb_1.MongoClient(options.uri);
     }
     init(table) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             if (this.db)
                 return false;
             yield this.client.connect();

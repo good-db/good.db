@@ -234,7 +234,7 @@ export default class GoodDB implements IGoodDB {
      * @param key - The key to find in the collection
      * @param callback - The callback find function to use
      * @param options - The options to use
-     * @returns A promise if the driver is async, otherwise a boolean
+     * @returns A promise if the driver is async, otherwise a value
      * @example Find a key in a collection
      * ## Using the JSONDriver (sync)
      * ```javascript
@@ -256,8 +256,8 @@ export default class GoodDB implements IGoodDB {
      * await db.find('key', (value) => value === 'value');
      * ```
      */
-    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<boolean>;
-    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): boolean;
+    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<any>;
+    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any;
     /**
      * Remove all values duplicated in a key (array)
      * @param key - The key to remove the duplicated values from
