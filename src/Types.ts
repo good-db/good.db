@@ -151,9 +151,9 @@ export interface IGoodDB {
      * @param key - The key of the array to find values in.
      * @param callback - The callback function to use for finding values.
      * @param options - The options to use.
-     * @returns A boolean indicating whether any value was found or a promise that resolves to a boolean.
+     * @returns The value or a promise that resolves to the value.
      */
-    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): boolean | Promise<boolean>;
+    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any | Promise<any>;
 
     /**
      * Get distinct values from an array stored in a key.
@@ -452,7 +452,7 @@ export interface IAsyncGoodDB {
      * @param key - The key of the array to find the value in.
      * @param callback - The callback function to use for finding the value.
      * @param options - The options to use.
-     * @returns A promise that resolves to a boolean indicating whether any value was found.
+     * @returns A promise that resolves to the value found.
      * @example
      * ```typescript
      * const db = new GoodDB(new MongoDBDriver({
@@ -462,7 +462,7 @@ export interface IAsyncGoodDB {
      * await db.find('key', (value) => value === 'value');
      * ```
      */
-    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<boolean>;
+    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<any>;
 
     /**
      * Remove all duplicate values from an array stored in a key.
@@ -904,7 +904,7 @@ export interface ISyncGoodDB {
      * @param key - The key of the array to find the value in
      * @param callback - The callback function to use for finding the value
      * @param options - The options to use
-     * @returns A boolean
+     * @returns A value
      * @example Find a value in an array stored in a key
      * ```javascript
      * const db = new GoodDB(new JSONDriver({
@@ -913,7 +913,7 @@ export interface ISyncGoodDB {
      * db.find('key', (value) => value === 'value');
      * ```
      */
-    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): boolean;
+    find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any;
 
     /**
      * Remove all duplicate values from an array stored in a key

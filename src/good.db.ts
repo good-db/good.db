@@ -747,7 +747,7 @@ export default class GoodDB implements IGoodDB {
      * @param key - The key to find in the collection
      * @param callback - The callback find function to use
      * @param options - The options to use
-     * @returns A promise if the driver is async, otherwise a boolean
+     * @returns A promise if the driver is async, otherwise a value
      * @example Find a key in a collection
      * ## Using the JSONDriver (sync)
      * ```javascript
@@ -769,9 +769,9 @@ export default class GoodDB implements IGoodDB {
      * await db.find('key', (value) => value === 'value');
      * ```
      */
-    public async find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<boolean>;
-    public find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): boolean;
-    public find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<boolean> | boolean {
+    public async find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<any>;
+    public find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any;
+    public find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<any> | any {
         options = options || this.getNestedOptions;
         if (typeof callback !== 'function') throw new DatabaseError(`GoodDB requires the callback to be a function. Provided: ${typeof callback}`);
         if (this.isAsync) {
