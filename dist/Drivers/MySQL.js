@@ -27,7 +27,7 @@ class MySQLDriver {
                 return true;
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -43,7 +43,7 @@ class MySQLDriver {
                 return true;
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -59,7 +59,7 @@ class MySQLDriver {
                 return rows.map((row) => row[`Tables_in_${this.options.database}`]);
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -77,7 +77,7 @@ class MySQLDriver {
                 return true;
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -94,7 +94,7 @@ class MySQLDriver {
                 return true;
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -111,7 +111,7 @@ class MySQLDriver {
                 return [rows, false];
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -129,7 +129,7 @@ class MySQLDriver {
                 return JSON.parse(rows[0].value);
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -145,7 +145,7 @@ class MySQLDriver {
                 return affectedRows;
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();
@@ -160,7 +160,7 @@ class MySQLDriver {
                 return true;
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
             finally {
                 connection.release();

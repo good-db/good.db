@@ -62,7 +62,7 @@ class GoodDB {
     ;
     checkKey(key) {
         if (!key || typeof key !== 'string' || !(key === null || key === void 0 ? void 0 : key.trim()))
-            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key || !(key === null || key === void 0 ? void 0 : key.trim()) ? 'Null' : typeof key}`);
+            throw new ErrorMessage_1.DatabaseError(`GoodDB requires keys to be a string. Provided: ${(key === null || key === void 0 ? void 0 : key.trim()) ? typeof key : 'Null'}`);
     }
     ;
     set(key, value, options) {
@@ -96,32 +96,30 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
+        else if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+            // Split all keys
+            const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
+            // First key
+            const firstKey = splitKeys[0];
+            // Other keys
+            const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
+            // Get the data
+            const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.get(firstKey);
+            const newData = (0, nested_1.setValueAtPath)(data || {}, otherKeys, value, {
+                separator: options === null || options === void 0 ? void 0 : options.nested,
+            });
+            this.driver.setRowByKey(this.tableName, firstKey, newData.object);
+            (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, newData.object);
+            return true;
+        }
         else {
-            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                // Split all keys
-                const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
-                // First key
-                const firstKey = splitKeys[0];
-                // Other keys
-                const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
-                // Get the data
-                const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.get(firstKey);
-                const newData = (0, nested_1.setValueAtPath)(data || {}, otherKeys, value, {
-                    separator: options === null || options === void 0 ? void 0 : options.nested,
-                });
-                this.driver.setRowByKey(this.tableName, firstKey, newData.object);
-                (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, newData.object);
-                return true;
-            }
-            else {
-                this.driver.setRowByKey(this.tableName, key, value);
-                (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.put(key, value);
-                return true;
-            }
+            this.driver.setRowByKey(this.tableName, key, value);
+            (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.put(key, value);
+            return true;
         }
     }
     ;
@@ -136,7 +134,6 @@ class GoodDB {
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                         // Split all keys
                         let [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
-                        ;
                         // Get the data
                         const data = (_h = (_g = this.cacheService) === null || _g === void 0 ? void 0 : _g.get(firstKey)) !== null && _h !== void 0 ? _h : yield this.driver.getRowByKey(this.tableName, firstKey);
                         if (typeof data !== 'object' || !data) {
@@ -157,36 +154,34 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
+        else if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+            // Split all keys
+            const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
+            // First key
+            const firstKey = splitKeys[0];
+            // Other keys
+            const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
+            // Get the data
+            const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.driver.getRowByKey(this.tableName, firstKey);
+            if (typeof data !== 'object' || !data) {
+                return undefined;
+            }
+            ;
+            // Get the value
+            const getData = (0, nested_1.getValueAtPath)(data || {}, otherKeys, {
+                separator: options === null || options === void 0 ? void 0 : options.nested,
+            });
+            (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, getData.object);
+            return getData.value;
+        }
         else {
-            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                // Split all keys
-                const splitKeys = key.split(options === null || options === void 0 ? void 0 : options.nested);
-                // First key
-                const firstKey = splitKeys[0];
-                // Other keys
-                const otherKeys = splitKeys.slice(1).join(options === null || options === void 0 ? void 0 : options.nested);
-                // Get the data
-                const data = (_b = (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.get(firstKey)) !== null && _b !== void 0 ? _b : this.driver.getRowByKey(this.tableName, firstKey);
-                if (typeof data !== 'object' || !data) {
-                    return undefined;
-                }
-                ;
-                // Get the value
-                const getData = (0, nested_1.getValueAtPath)(data || {}, otherKeys, {
-                    separator: options === null || options === void 0 ? void 0 : options.nested,
-                });
-                (_c = this.cacheService) === null || _c === void 0 ? void 0 : _c.put(firstKey, getData.object);
-                return getData.value;
-            }
-            else {
-                const data = (_e = (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.get(key)) !== null && _e !== void 0 ? _e : this.driver.getRowByKey(this.tableName, key);
-                (_f = this.cacheService) === null || _f === void 0 ? void 0 : _f.put(key, data);
-                return data;
-            }
+            const data = (_e = (_d = this.cacheService) === null || _d === void 0 ? void 0 : _d.get(key)) !== null && _e !== void 0 ? _e : this.driver.getRowByKey(this.tableName, key);
+            (_f = this.cacheService) === null || _f === void 0 ? void 0 : _f.put(key, data);
+            return data;
         }
     }
     ;
@@ -217,26 +212,24 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
+        else if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+            const [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
+            const data = this.get(firstKey);
+            const deleteDate = (0, nested_1.deleteValueAtPath)(data || {}, otherKeys.join(options.nested), {
+                separator: options === null || options === void 0 ? void 0 : options.nested,
+            });
+            this.driver.setRowByKey(this.tableName, firstKey, deleteDate.object);
+            (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.put(firstKey, deleteDate.object);
+            return true;
+        }
         else {
-            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const [firstKey, ...otherKeys] = key.split(options === null || options === void 0 ? void 0 : options.nested);
-                const data = this.get(firstKey);
-                const deleteDate = (0, nested_1.deleteValueAtPath)(data || {}, otherKeys.join(options.nested), {
-                    separator: options === null || options === void 0 ? void 0 : options.nested,
-                });
-                this.driver.setRowByKey(this.tableName, firstKey, deleteDate.object);
-                (_a = this.cacheService) === null || _a === void 0 ? void 0 : _a.put(firstKey, deleteDate.object);
-                return true;
-            }
-            else {
-                this.driver.deleteRowByKey(this.tableName, key);
-                (_b = this.cacheService) === null || _b === void 0 ? void 0 : _b.delete(key);
-                return true;
-            }
+            this.driver.deleteRowByKey(this.tableName, key);
+            (_b = this.cacheService) === null || _b === void 0 ? void 0 : _b.delete(key);
+            return true;
         }
     }
     ;
@@ -259,7 +252,7 @@ class GoodDB {
                     resolve(data.length);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -296,7 +289,7 @@ class GoodDB {
                     resolve(value);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -333,7 +326,7 @@ class GoodDB {
                     resolve(data.length);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -370,7 +363,7 @@ class GoodDB {
                     resolve(value);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -394,6 +387,44 @@ class GoodDB {
         if (!key) {
             throw new ErrorMessage_1.DatabaseError("The key is not defined!");
         }
+        const pullFromArray = (array, data) => {
+            const indexesToRemove = [];
+            let removed = false;
+            array.forEach((element, index) => {
+                if ((typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) || element === valueOrCallback) {
+                    indexesToRemove.push(index);
+                    if (!pullAll && !removed) {
+                        removed = true;
+                    }
+                }
+                ;
+            });
+            if (indexesToRemove.length > 0) {
+                for (let i = indexesToRemove.length - 1; i >= 0; i--) {
+                    array.splice(indexesToRemove[i], 1);
+                }
+                this.set(key, data, options);
+                return true;
+            }
+            return false;
+        };
+        const pullFromNestedObject = (currentObject, keyParts, depth, data) => {
+            const part = keyParts[depth];
+            console.log(currentObject, part);
+            if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
+                throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
+            }
+            if (depth === keyParts.slice(1).length) {
+                return pullFromArray(currentObject[part], data);
+            }
+            else {
+                const updated = pullFromNestedObject(currentObject[part], keyParts, depth + 1, data);
+                if (updated) {
+                    this.set(key, data, options);
+                }
+                return updated;
+            }
+        };
         if (this.isAsync) {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -401,71 +432,20 @@ class GoodDB {
                     if (!data) {
                         resolve(false);
                     }
-                    const pullFromArray = (array) => __awaiter(this, void 0, void 0, function* () {
-                        const indexesToRemove = [];
-                        let removed = false;
-                        array.forEach((element, index) => {
-                            if (!removed && !pullAll) {
-                                if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                                    indexesToRemove.push(index);
-                                    removed = true;
-                                }
-                                else if (element === valueOrCallback) {
-                                    indexesToRemove.push(index);
-                                    removed = true;
-                                }
-                            }
-                            else if (pullAll) {
-                                if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                                    indexesToRemove.push(index);
-                                }
-                                else if (element === valueOrCallback) {
-                                    indexesToRemove.push(index);
-                                }
-                            }
-                        });
-                        if (indexesToRemove.length > 0) {
-                            for (let i = indexesToRemove.length - 1; i >= 0; i--) {
-                                array.splice(indexesToRemove[i], 1);
-                            }
-                            yield this.set(key, data, options);
-                            return true;
-                        }
-                        else {
-                            return false;
-                        }
-                    });
-                    const pullFromNestedObject = (currentObject, keyParts, depth) => __awaiter(this, void 0, void 0, function* () {
-                        const part = keyParts[depth];
-                        if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
-                            throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
-                        }
-                        if (depth === keyParts.slice(1).length) {
-                            return yield pullFromArray(currentObject[part]);
-                        }
-                        else {
-                            const updated = yield pullFromNestedObject(currentObject[part], keyParts, depth + 1);
-                            if (updated) {
-                                yield this.set(key, data, options);
-                            }
-                            return updated;
-                        }
-                    });
+                    ;
                     if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                        const keyParts = key.split(options.nested);
-                        yield pullFromNestedObject(data, keyParts, 0);
-                        resolve(true);
+                        // const keyParts = key.split(options.nested as string);
+                        resolve(pullFromArray(data, data));
                     }
                     else {
                         if (!Array.isArray(data)) {
                             throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-array value at key '${key}'`);
                         }
-                        yield pullFromArray(data);
-                        resolve(true);
+                        resolve(pullFromArray(data, data));
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -474,65 +454,20 @@ class GoodDB {
             if (!data) {
                 return false;
             }
-            const pullFromArray = (array) => {
-                const indexesToRemove = [];
-                let removed = false;
-                array.forEach((element, index) => {
-                    if (!removed && !pullAll) {
-                        if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                            indexesToRemove.push(index);
-                            removed = true;
-                        }
-                        else if (element === valueOrCallback) {
-                            indexesToRemove.push(index);
-                            removed = true;
-                        }
-                    }
-                    else if (pullAll) {
-                        if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                            indexesToRemove.push(index);
-                        }
-                        else if (element === valueOrCallback) {
-                            indexesToRemove.push(index);
-                        }
-                    }
-                });
-                if (indexesToRemove.length > 0) {
-                    for (let i = indexesToRemove.length - 1; i >= 0; i--) {
-                        array.splice(indexesToRemove[i], 1);
-                    }
-                    this.set(key, data, options);
-                    return true;
-                }
-                return false;
-            };
-            const pullFromNestedObject = (currentObject, keyParts, depth) => {
-                const part = keyParts[depth];
-                if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
-                    throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
-                }
-                if (depth === keyParts.slice(1).length) {
-                    return pullFromArray(currentObject[part]);
-                }
-                else {
-                    const updated = pullFromNestedObject(currentObject[part], keyParts, depth + 1);
-                    if (updated) {
-                        this.set(key, data, options);
-                    }
-                    return updated;
-                }
-            };
+            ;
+            console.log(options === null || options === void 0 ? void 0 : options.nestedIsEnabled, key.includes(options === null || options === void 0 ? void 0 : options.nested), key, options.nested);
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const dataa = pullFromArray(data);
-                return dataa;
+                // const keyParts = key.split(options.nested as string);
+                return pullFromArray(data, data);
             }
             else {
                 if (!Array.isArray(data)) {
                     throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-array value at key '${key}'`);
                 }
-                return pullFromArray(data);
+                return pullFromArray(data, data);
             }
         }
+        ;
     }
     ;
     find(key, callback, options) {
@@ -549,7 +484,7 @@ class GoodDB {
                     resolve(data.find(callback));
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -591,7 +526,7 @@ class GoodDB {
                     resolve(true);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -635,7 +570,7 @@ class GoodDB {
                     resolve(newValue);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -665,7 +600,7 @@ class GoodDB {
                     resolve(newValue);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -695,7 +630,7 @@ class GoodDB {
                     resolve(newValue);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -725,7 +660,7 @@ class GoodDB {
                     resolve(newValue);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -772,10 +707,10 @@ class GoodDB {
                     }
                     this.set(key, data, options)
                         .then(() => resolve(data))
-                        .catch((error) => reject(error));
+                        .catch((error) => reject(new Error(error)));
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -809,7 +744,7 @@ class GoodDB {
                 return data;
             }
             catch (error) {
-                throw error;
+                throw new Error(error);
             }
         }
     }
@@ -844,7 +779,7 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -898,7 +833,7 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -931,7 +866,7 @@ class GoodDB {
                     resolve(value !== null && value !== undefined);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -977,39 +912,37 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
+        else if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+            const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+            const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
+            const data = this.get(k, options);
+            if (typeof data !== 'object') {
+                throw new ErrorMessage_1.DatabaseError('Value is not an object');
+            }
+            ;
+            const keys = Object.keys(data);
+            const result = {};
+            for (const k of keys) {
+                if (k.startsWith(lastKey)) {
+                    result[k] = data[k];
+                }
+            }
+            return result;
+        }
         else {
-            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
-                const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
-                const data = this.get(k, options);
-                if (typeof data !== 'object') {
-                    throw new ErrorMessage_1.DatabaseError('Value is not an object');
+            const data = this.all();
+            const keys = Object.keys(data);
+            const result = {};
+            for (const k of keys) {
+                if (k.startsWith(key)) {
+                    result[k] = data[k];
                 }
-                ;
-                const keys = Object.keys(data);
-                const result = {};
-                for (const k of keys) {
-                    if (k.startsWith(lastKey)) {
-                        result[k] = data[k];
-                    }
-                }
-                return result;
             }
-            else {
-                const data = this.all();
-                const keys = Object.keys(data);
-                const result = {};
-                for (const k of keys) {
-                    if (k.startsWith(key)) {
-                        result[k] = data[k];
-                    }
-                }
-                return result;
-            }
+            return result;
         }
     }
     ;
@@ -1049,39 +982,37 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
+        else if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+            const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+            const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
+            const data = this.get(k, options);
+            if (typeof data !== 'object') {
+                throw new ErrorMessage_1.DatabaseError('Value is not an object');
+            }
+            ;
+            const keys = Object.keys(data);
+            const result = {};
+            for (const k of keys) {
+                if (k.endsWith(lastKey)) {
+                    result[k] = data[k];
+                }
+            }
+            return result;
+        }
         else {
-            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
-                const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
-                const data = this.get(k, options);
-                if (typeof data !== 'object') {
-                    throw new ErrorMessage_1.DatabaseError('Value is not an object');
+            const data = this.all();
+            const keys = Object.keys(data);
+            const result = {};
+            for (const k of keys) {
+                if (k.endsWith(key)) {
+                    result[k] = data[k];
                 }
-                ;
-                const keys = Object.keys(data);
-                const result = {};
-                for (const k of keys) {
-                    if (k.endsWith(lastKey)) {
-                        result[k] = data[k];
-                    }
-                }
-                return result;
             }
-            else {
-                const data = this.all();
-                const keys = Object.keys(data);
-                const result = {};
-                for (const k of keys) {
-                    if (k.endsWith(key)) {
-                        result[k] = data[k];
-                    }
-                }
-                return result;
-            }
+            return result;
         }
     }
     ;
@@ -1121,42 +1052,39 @@ class GoodDB {
                     }
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
-        else {
-            if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
-                const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
-                const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
-                const data = this.get(k, options);
-                if (typeof data !== 'object') {
-                    throw new ErrorMessage_1.DatabaseError('Value is not an object');
-                }
-                ;
-                const keys = Object.keys(data);
-                const result = {};
-                for (const k of keys) {
-                    if (k.includes(lastKey)) {
-                        result[k] = data[k];
-                    }
-                }
-                ;
-                return result;
+        else if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
+            const k = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(0, -1).join(options === null || options === void 0 ? void 0 : options.nested);
+            const lastKey = key.split(options === null || options === void 0 ? void 0 : options.nested).slice(-1).join(options === null || options === void 0 ? void 0 : options.nested);
+            const data = this.get(k, options);
+            if (typeof data !== 'object') {
+                throw new ErrorMessage_1.DatabaseError('Value is not an object');
             }
-            else {
-                const data = this.all();
-                const keys = Object.keys(data);
-                const result = {};
-                for (const k of keys) {
-                    if (k.includes(key)) {
-                        result[k] = data[k];
-                    }
+            ;
+            const keys = Object.keys(data);
+            const result = {};
+            for (const k of keys) {
+                if (k.includes(lastKey)) {
+                    result[k] = data[k];
                 }
-                return result;
             }
+            ;
+            return result;
         }
-        ;
+        else {
+            const data = this.all();
+            const keys = Object.keys(data);
+            const result = {};
+            for (const k of keys) {
+                if (k.includes(key)) {
+                    result[k] = data[k];
+                }
+            }
+            return result;
+        }
     }
     ;
     keys() {
@@ -1167,7 +1095,7 @@ class GoodDB {
                     resolve(Object.keys(data));
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -1185,7 +1113,7 @@ class GoodDB {
                     resolve(Object.values(data));
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -1200,20 +1128,7 @@ class GoodDB {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     const [data, isObject] = yield this.driver.getAllRows(this.tableName);
-                    if (type === 'object') {
-                        if (isObject) {
-                            return resolve(data);
-                        }
-                        ;
-                        return resolve(Object.fromEntries(data
-                            .map(({ key, value }) => {
-                            if (!key)
-                                return;
-                            return [key, typeof value !== 'string' ? value : JSON.parse(value)];
-                        })
-                            .filter(Boolean)));
-                    }
-                    else if (type === 'array') {
+                    if (type === 'array') {
                         if (isObject) {
                             return resolve(Object.entries(data)
                                 .map(([key, value]) => {
@@ -1232,29 +1147,29 @@ class GoodDB {
                         })
                             .filter(Boolean));
                     }
+                    else {
+                        if (isObject) {
+                            return resolve(data);
+                        }
+                        ;
+                        return resolve(Object.fromEntries(data
+                            .map(({ key, value }) => {
+                            if (!key)
+                                return;
+                            return [key, typeof value !== 'string' ? value : JSON.parse(value)];
+                        })
+                            .filter(Boolean)));
+                    }
                     ;
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
         else {
             const [data, isObject] = this.driver.getAllRows(this.tableName);
-            if (type === 'object') {
-                if (isObject) {
-                    return data;
-                }
-                ;
-                return Object.fromEntries(data
-                    .map(({ key, value }) => {
-                    if (!key)
-                        return;
-                    return [key, typeof value !== 'string' ? value : JSON.parse(value)];
-                })
-                    .filter(Boolean));
-            }
-            else if (type === 'array') {
+            if (type === 'array') {
                 if (isObject) {
                     return Object.entries(data)
                         .map(([key, value]) => {
@@ -1273,6 +1188,19 @@ class GoodDB {
                 })
                     .filter(Boolean);
             }
+            else {
+                if (isObject) {
+                    return data;
+                }
+                ;
+                return Object.fromEntries(data
+                    .map(({ key, value }) => {
+                    if (!key)
+                        return;
+                    return [key, typeof value !== 'string' ? value : JSON.parse(value)];
+                })
+                    .filter(Boolean));
+            }
             ;
         }
     }
@@ -1285,7 +1213,7 @@ class GoodDB {
                     resolve(true);
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -1305,7 +1233,7 @@ class GoodDB {
                     resolve(new GoodDB(this.driver, Object.assign(Object.assign({}, this.options), { table: name })));
                 }
                 catch (error) {
-                    reject(error);
+                    reject(new Error(error));
                 }
             }));
         }
@@ -1356,7 +1284,7 @@ class GoodDB {
     disconnect() {
         return __awaiter(this, void 0, void 0, function* () {
             if ((0, Utils_1.checkDriverIsAsync)(this.driver)) {
-                return yield this.driver
+                return this.driver
                     .close();
             }
             else {

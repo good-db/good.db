@@ -2,8 +2,8 @@ import { MongoClient, Db } from 'mongodb';
 import { DatabaseDesignArray, DriversClassType, MongoDBDriverOptions } from '../Types';
 
 export class MongoDBDriver implements DriversClassType {
-    private client: MongoClient;
-    private db: Db | undefined;
+    public readonly client: MongoClient;
+    private db: Db | null | undefined;
 
     constructor(public readonly options: MongoDBDriverOptions) {
         this.client = new MongoClient(options.uri);
@@ -72,7 +72,7 @@ export class MongoDBDriver implements DriversClassType {
     public async close(): Promise<boolean> {
         if (!this.db) throw new Error('Database not initialized');
         await this.client.close();
-        this.db = undefined;
+        this.db = null;
         return true;
     };
 }

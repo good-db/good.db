@@ -21,6 +21,12 @@ export class JSONDriver implements DriversClassType {
 
     public init(table: string): void {
         if (!this.checkFile()) {
+            // Check if directory exists
+            for (const dir of this.path.split('/').slice(0, -1)) {
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir);
+                };
+            };
             fs.writeFileSync(this.path, JSON.stringify({}));
         };
 

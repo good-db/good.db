@@ -1,8 +1,9 @@
 import { DriversClassType, SQLiteDriverOptions } from '../Types';
+import { Database as DataBaseType } from 'better-sqlite3';
 export declare class SQLiteDriver implements DriversClassType {
     readonly options?: SQLiteDriverOptions | undefined;
     readonly path: string;
-    private db;
+    readonly db: DataBaseType;
     constructor(options?: SQLiteDriverOptions | undefined);
     init(table: string): void;
     createTable(table: string): boolean;

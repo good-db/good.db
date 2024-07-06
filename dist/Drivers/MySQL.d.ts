@@ -1,8 +1,8 @@
-import { PoolOptions } from 'mysql2/promise';
+import { Pool, PoolOptions } from 'mysql2/promise';
 import { DatabaseDesignArray, DriversClassType } from '../Types';
 export declare class MySQLDriver implements DriversClassType {
     readonly options: PoolOptions;
-    private pool;
+    readonly pool: Pool;
     constructor(options: PoolOptions);
     init(table: string): Promise<boolean>;
     createTable(table: string): Promise<boolean>;

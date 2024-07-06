@@ -21,6 +21,14 @@ class JSONDriver {
     ;
     init(table) {
         if (!this.checkFile()) {
+            // Check if directory exists
+            for (const dir of this.path.split('/').slice(0, -1)) {
+                if (!node_fs_1.default.existsSync(dir)) {
+                    node_fs_1.default.mkdirSync(dir);
+                }
+                ;
+            }
+            ;
             node_fs_1.default.writeFileSync(this.path, JSON.stringify({}));
         }
         ;

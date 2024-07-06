@@ -3,7 +3,7 @@ import Database, { Database as DataBaseType } from 'better-sqlite3';
 
 export class SQLiteDriver implements DriversClassType {
     public readonly path: string;
-    private db: DataBaseType;
+    public readonly db: DataBaseType;
 
     constructor(public readonly options?: SQLiteDriverOptions) {
         this.path = options?.path || './db.sqlite';

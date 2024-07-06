@@ -32,14 +32,6 @@ export type methodOptions = {
     nestedIsEnabled?: boolean;
 };
 
-// export type MySQLDriverOptions = {
-//     host: string; // MySQL server host
-//     user: string; // MySQL username
-//     password: string; // MySQL password
-//     database: string; // MySQL database name
-//     port?: number | string; // MySQL server port (optional, default is 3306)
-// };
-
 export interface MongoDBDriverOptions {
     uri: string; // MongoDB connection URI
     database?: string; // MongoDB database name
@@ -75,6 +67,8 @@ export type DriversClassType = {
     // Close is optional
     close?(): boolean | Promise<boolean>;
 };
+
+export type AllTypes = any | number | string | boolean | undefined | null;
 
 export interface IGoodDB {
     /**
@@ -144,7 +138,7 @@ export interface IGoodDB {
      * @param options - The options to use.
      * @returns A boolean indicating whether any value was pulled or a promise that resolves to a boolean.
      */
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean | Promise<boolean>;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): boolean | Promise<boolean>;
 
     /**
      * Find values in an array stored in a key that satisfy a callback function.
@@ -162,7 +156,7 @@ export interface IGoodDB {
      * @param options - The options to use.
      * @returns A boolean indicating whether any value was found or a promise that resolves to a boolean.
      */
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean | Promise<boolean>;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): boolean | Promise<boolean>;
 
     /**
      * Add a number to the value stored in a key.
@@ -445,7 +439,7 @@ export interface IAsyncGoodDB {
      * await db.pull('key', 'value');
      * ```
      */
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
 
     /**
      * Find a value in an array stored in a key.
@@ -479,7 +473,7 @@ export interface IAsyncGoodDB {
      * await db.distinct('key', 'value');
      * ```
      */
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean>;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): Promise<boolean>;
 
     /**
      * Add a value to a key.
@@ -897,7 +891,7 @@ export interface ISyncGoodDB {
      * db.pull('key', 'value');
      * ```
      */
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): boolean;
 
     /**
      * Find a value in an array stored in a key
@@ -929,7 +923,7 @@ export interface ISyncGoodDB {
      * db.distinct('key', 'value');
      * ```
      */
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): boolean;
 
     /**
      * Add a value to a key

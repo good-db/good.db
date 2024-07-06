@@ -50,6 +50,7 @@ export type DriversClassType = {
     deleteAllRows(table: string): boolean | Promise<boolean>;
     close?(): boolean | Promise<boolean>;
 };
+export type AllTypes = any | number | string | boolean | undefined | null;
 export interface IGoodDB {
     /**
      * Set a value to a key.
@@ -111,7 +112,7 @@ export interface IGoodDB {
      * @param options - The options to use.
      * @returns A boolean indicating whether any value was pulled or a promise that resolves to a boolean.
      */
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean | Promise<boolean>;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): boolean | Promise<boolean>;
     /**
      * Find values in an array stored in a key that satisfy a callback function.
      * @param key - The key of the array to find values in.
@@ -127,7 +128,7 @@ export interface IGoodDB {
      * @param options - The options to use.
      * @returns A boolean indicating whether any value was found or a promise that resolves to a boolean.
      */
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean | Promise<boolean>;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): boolean | Promise<boolean>;
     /**
      * Add a number to the value stored in a key.
      * @param key - The key of the value to add to.
@@ -384,7 +385,7 @@ export interface IAsyncGoodDB {
      * await db.pull('key', 'value');
      * ```
      */
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
     /**
      * Find a value in an array stored in a key.
      * @param key - The key of the array to find the value in.
@@ -416,7 +417,7 @@ export interface IAsyncGoodDB {
      * await db.distinct('key', 'value');
      * ```
      */
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean>;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): Promise<boolean>;
     /**
      * Add a value to a key.
      * @param key - The key to add the value to.
@@ -808,7 +809,7 @@ export interface ISyncGoodDB {
      * db.pull('key', 'value');
      * ```
      */
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): boolean;
     /**
      * Find a value in an array stored in a key
      * @param key - The key of the array to find the value in
@@ -838,7 +839,7 @@ export interface ISyncGoodDB {
      * db.distinct('key', 'value');
      * ```
      */
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): boolean;
     /**
      * Add a value to a key
      * @param key - The key to add the value to

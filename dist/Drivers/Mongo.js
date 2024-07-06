@@ -109,7 +109,7 @@ class MongoDBDriver {
             if (!this.db)
                 throw new Error('Database not initialized');
             yield this.client.close();
-            this.db = undefined;
+            this.db = null;
             return true;
         });
     }

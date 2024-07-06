@@ -1,6 +1,6 @@
 import { DriversClassType } from "../Types";
 export declare class MemoryDriver implements DriversClassType {
-    private cache;
+    readonly cache: Map<string, any>;
     constructor();
     init(table: string): void;
     createTable(table: string): boolean;

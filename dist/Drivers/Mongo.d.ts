@@ -1,7 +1,8 @@
+import { MongoClient } from 'mongodb';
 import { DatabaseDesignArray, DriversClassType, MongoDBDriverOptions } from '../Types';
 export declare class MongoDBDriver implements DriversClassType {
     readonly options: MongoDBDriverOptions;
-    private client;
+    readonly client: MongoClient;
     private db;
     constructor(options: MongoDBDriverOptions);
     init(table: string): Promise<boolean>;

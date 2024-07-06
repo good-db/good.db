@@ -2,7 +2,7 @@ import { MongoDBDriver } from "./Drivers/Mongo";
 import { MySQLDriver } from "./Drivers/MySQL";
 import { PostgreSQLDriver } from "./Drivers/PostgreSQL";
 import { SQLiteDriver } from "./Drivers/SQLite";
-import { AllDataReturns, Drivers, goodDBOptions, IGoodDB, MathSigns, methodOptions } from "./Types";
+import { AllDataReturns, AllTypes, Drivers, goodDBOptions, IGoodDB, MathSigns, methodOptions } from "./Types";
 import { DatabaseError } from "./utils/ErrorMessage";
 import { LRUCache } from "./utils/Caching";
 import { deleteValueAtPath, getValueAtPath, setValueAtPath } from "./utils/nested";
@@ -26,19 +26,19 @@ import { checkDriverIsAsync } from "./utils/Utils";
  * ```
  */
 export default class GoodDB implements IGoodDB {
-    private driver: Drivers;
+    public readonly driver: Drivers;
     public readonly tableName: string;
     public readonly nested: {
         nested: string;
         isEnabled: boolean;
     };
-    private cacheIsEnabled: boolean;
+    public readonly cacheIsEnabled: boolean;
     public readonly isAsync: boolean;
     public cacheService: LRUCache | undefined;
 
     constructor(
         driver?: Drivers,
-        private options?: goodDBOptions
+        public readonly options?: goodDBOptions
     ) {
         this.driver = driver || new SQLiteDriver({
             path: './database.sqlite'
@@ -70,7 +70,7 @@ export default class GoodDB implements IGoodDB {
     };
 
     private checkKey(key: string): void {
-        if (!key || typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${!key || !key?.trim() ? 'Null' : typeof key}`);
+        if (!key || typeof key !== 'string' || !key?.trim()) throw new DatabaseError(`GoodDB requires keys to be a string. Provided: ${key?.trim() ? typeof key : 'Null'}`);
     };
 
     // Date methods //
@@ -132,34 +132,32 @@ export default class GoodDB implements IGoodDB {
                         this.cacheService?.put(key, value);
                         resolve(true);
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
+        } else if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
+            // Split all keys
+            const splitKeys = key.split(options?.nested as string);
+            // First key
+            const firstKey = splitKeys[0];
+            // Other keys
+            const otherKeys = splitKeys.slice(1).join(options?.nested as string);
+            // Get the data
+            const data = this.cacheService?.get(firstKey) ?? this.get(firstKey);
+
+            const newData = setValueAtPath(data || {}, otherKeys, value, {
+                separator: options?.nested,
+            });
+
+            this.driver.setRowByKey(this.tableName, firstKey, newData.object);
+            this.cacheService?.put(firstKey, newData.object);
+
+            return true;
         } else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                // Split all keys
-                const splitKeys = key.split(options?.nested as string);
-                // First key
-                const firstKey = splitKeys[0];
-                // Other keys
-                const otherKeys = splitKeys.slice(1).join(options?.nested as string);
-                // Get the data
-                const data = this.cacheService?.get(firstKey) ?? this.get(firstKey);
-
-                const newData = setValueAtPath(data || {}, otherKeys, value, {
-                    separator: options?.nested,
-                });
-
-                this.driver.setRowByKey(this.tableName, firstKey, newData.object);
-                this.cacheService?.put(firstKey, newData.object);
-
-                return true;
-            } else {
-                this.driver.setRowByKey(this.tableName, key, value);
-                this.cacheService?.put(key, value);
-                return true;
-            }
+            this.driver.setRowByKey(this.tableName, key, value);
+            this.cacheService?.put(key, value);
+            return true;
         }
     };
 
@@ -193,10 +191,9 @@ export default class GoodDB implements IGoodDB {
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
-
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                         // Split all keys
-                        let [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];;
+                        let [firstKey, ...otherKeys] = key.split(options?.nested as string);
                         // Get the data
                         const data = this.cacheService?.get(firstKey) ?? await this.driver.getRowByKey(this.tableName, firstKey);
 
@@ -216,35 +213,33 @@ export default class GoodDB implements IGoodDB {
                         this.cacheService?.put(key, data);
                         return resolve(data);
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
-        } else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                // Split all keys
-                const splitKeys = key.split(options?.nested as string);
-                // First key
-                const firstKey = splitKeys[0];
-                // Other keys
-                const otherKeys = splitKeys.slice(1).join(options?.nested as string);
-                // Get the data
-                const data = this.cacheService?.get(firstKey) ?? this.driver.getRowByKey(this.tableName, firstKey);
-                if (typeof data !== 'object' || !data) {
-                    return undefined;
-                };
-                // Get the value
-                const getData = getValueAtPath(data || {}, otherKeys, {
-                    separator: options?.nested,
-                });
+        } else if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
+            // Split all keys
+            const splitKeys = key.split(options?.nested as string);
+            // First key
+            const firstKey = splitKeys[0];
+            // Other keys
+            const otherKeys = splitKeys.slice(1).join(options?.nested as string);
+            // Get the data
+            const data = this.cacheService?.get(firstKey) ?? this.driver.getRowByKey(this.tableName, firstKey);
+            if (typeof data !== 'object' || !data) {
+                return undefined;
+            };
+            // Get the value
+            const getData = getValueAtPath(data || {}, otherKeys, {
+                separator: options?.nested,
+            });
 
-                this.cacheService?.put(firstKey, getData.object);
-                return getData.value;
-            } else {
-                const data = this.cacheService?.get(key) ?? this.driver.getRowByKey(this.tableName, key);
-                this.cacheService?.put(key, data);
-                return data;
-            }
+            this.cacheService?.put(firstKey, getData.object);
+            return getData.value;
+        } else {
+            const data = this.cacheService?.get(key) ?? this.driver.getRowByKey(this.tableName, key);
+            this.cacheService?.put(key, data);
+            return data;
         }
     };
 
@@ -281,7 +276,7 @@ export default class GoodDB implements IGoodDB {
                 try {
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                         // Split all keys
-                        const [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];
+                        const [firstKey, ...otherKeys] = key.split(options?.nested as string);
                         // Get the data
                         const data = await this.get(firstKey);
 
@@ -298,26 +293,24 @@ export default class GoodDB implements IGoodDB {
                         this.cacheService?.delete(key);
                         resolve(true);
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
-        } else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const [firstKey, ...otherKeys] = key.split(options?.nested as string) as string[];
-                const data = this.get(firstKey);
-                const deleteDate = deleteValueAtPath(data || {}, otherKeys.join(options.nested), {
-                    separator: options?.nested,
-                });
+        } else if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
+            const [firstKey, ...otherKeys] = key.split(options?.nested as string);
+            const data = this.get(firstKey);
+            const deleteDate = deleteValueAtPath(data || {}, otherKeys.join(options.nested), {
+                separator: options?.nested,
+            });
 
-                this.driver.setRowByKey(this.tableName, firstKey, deleteDate.object);
-                this.cacheService?.put(firstKey, deleteDate.object);
-                return true;
-            } else {
-                this.driver.deleteRowByKey(this.tableName, key);
-                this.cacheService?.delete(key);
-                return true;
-            }
+            this.driver.setRowByKey(this.tableName, firstKey, deleteDate.object);
+            this.cacheService?.put(firstKey, deleteDate.object);
+            return true;
+        } else {
+            this.driver.deleteRowByKey(this.tableName, key);
+            this.cacheService?.delete(key);
+            return true;
         }
     };
 
@@ -368,8 +361,8 @@ export default class GoodDB implements IGoodDB {
                     data.push(value);
                     await this.set(key, data, options);
                     resolve(data.length);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -427,8 +420,8 @@ export default class GoodDB implements IGoodDB {
                     const value = data.shift();
                     await this.set(key, data, options);
                     resolve(value);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -487,8 +480,8 @@ export default class GoodDB implements IGoodDB {
                     data.unshift(value);
                     await this.set(key, data, options);
                     resolve(data.length);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -547,8 +540,8 @@ export default class GoodDB implements IGoodDB {
                     const value = data.pop();
                     await this.set(key, data, options);
                     resolve(value);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -589,157 +582,98 @@ export default class GoodDB implements IGoodDB {
      *  await db.pull('key', 'value');
      * ```
      */
-    public async pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
-    public pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean;
-    public pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean> | boolean {
+    public async pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
+    public pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): boolean;
+    public pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): Promise<boolean> | boolean {
         options = options || this.getNestedOptions;
         this.checkKey(key);
         if (!key) {
             throw new DatabaseError("The key is not defined!");
         }
+        const pullFromArray = (array: any[], data: any): boolean => {
+            const indexesToRemove: number[] = [];
+
+            let removed = false;
+            array.forEach((element: any, index: number) => {
+                if ((typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) || element === valueOrCallback) {
+                    indexesToRemove.push(index);
+                    if (!pullAll && !removed) {
+                        removed = true;
+                    }
+                };
+            });
+
+            if (indexesToRemove.length > 0) {
+                for (let i = indexesToRemove.length - 1; i >= 0; i--) {
+                    array.splice(indexesToRemove[i], 1);
+                }
+                this.set(key, data, options);
+                return true;
+            }
+            return false;
+        };
+
+        const pullFromNestedObject = (currentObject: any, keyParts: string[], depth: number, data: any): boolean => {
+            const part = keyParts[depth];
+
+            console.log(currentObject, part);
+            
+
+            if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
+                throw new DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
+            }
+
+
+            if (depth === keyParts.slice(1).length) {
+                return pullFromArray(currentObject[part], data);
+            } else {
+                const updated = pullFromNestedObject(currentObject[part], keyParts, depth + 1, data);
+                if (updated) {
+                    this.set(key, data, options);
+                }
+                return updated;
+            }
+        };
+
         if (this.isAsync) {
             return new Promise(async (resolve, reject) => {
                 try {
                     const data: any = await this.get(key, options);
                     if (!data) {
                         resolve(false);
-                    }
-
-
-                    const pullFromArray = async (array: any[]): Promise<boolean> => {
-                        const indexesToRemove: number[] = [];
-
-                        let removed = false;
-                        array.forEach((element: any, index: number) => {
-                            if (!removed && !pullAll) {
-                                if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                                    indexesToRemove.push(index);
-                                    removed = true;
-                                } else if (element === valueOrCallback) {
-                                    indexesToRemove.push(index);
-                                    removed = true;
-                                }
-                            } else if (pullAll) {
-                                if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                                    indexesToRemove.push(index);
-                                } else if (element === valueOrCallback) {
-                                    indexesToRemove.push(index);
-                                }
-                            }
-                        });
-
-                        if (indexesToRemove.length > 0) {
-                            for (let i = indexesToRemove.length - 1; i >= 0; i--) {
-                                array.splice(indexesToRemove[i], 1);
-                            }
-                            await this.set(key, data, options);
-                            return true;
-                        } else {
-                            return false;
-                        }
                     };
 
-                    const pullFromNestedObject = async (currentObject: any, keyParts: string[], depth: number): Promise<boolean> => {
-                        const part = keyParts[depth];
-
-                        if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
-                            throw new DatabaseError(`Cannot pull from a non-object or non-array value at key '${key}'`);
-                        }
-
-                        if (depth === keyParts.slice(1).length) {
-                            return await pullFromArray(currentObject[part]);
-                        } else {
-                            const updated = await pullFromNestedObject(currentObject[part], keyParts, depth + 1);
-                            if (updated) {
-                                await this.set(key, data, options);
-                            }
-                            return updated;
-                        }
-                    }
-
                     if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                        const keyParts = key.split(options.nested as string);
-                        await pullFromNestedObject(data, keyParts, 0);
-                        resolve(true);
+                        // const keyParts = key.split(options.nested as string);
+                        resolve(pullFromArray(data, data));
                     } else {
                         if (!Array.isArray(data)) {
                             throw new DatabaseError(`Cannot pull from a non-array value at key '${key}'`);
                         }
-                        await pullFromArray(data);
-                        resolve(true);
+                        resolve(pullFromArray(data, data));
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
             const data: any = this.get(key, options);
             if (!data) {
                 return false;
-            }
-
-            const pullFromArray = (array: any[]): boolean => {
-                const indexesToRemove: number[] = [];
-
-                let removed = false;
-                array.forEach((element: any, index: number) => {
-                    if (!removed && !pullAll) {
-                        if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                            indexesToRemove.push(index);
-                            removed = true;
-                        } else if (element === valueOrCallback) {
-                            indexesToRemove.push(index);
-                            removed = true;
-                        }
-                    } else if (pullAll) {
-                        if (typeof valueOrCallback === 'function' && valueOrCallback(element, index, array)) {
-                            indexesToRemove.push(index);
-                        } else if (element === valueOrCallback) {
-                            indexesToRemove.push(index);
-                        }
-                    }
-                });
-
-                if (indexesToRemove.length > 0) {
-                    for (let i = indexesToRemove.length - 1; i >= 0; i--) {
-                        array.splice(indexesToRemove[i], 1);
-                    }
-                    this.set(key, data, options);
-                    return true;
-                }
-                return false;
             };
 
-
-            const pullFromNestedObject = (currentObject: any, keyParts: string[], depth: number): boolean => {
-                const part = keyParts[depth];
-
-                if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
-                    throw new DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
-                }
-
-
-                if (depth === keyParts.slice(1).length) {
-                    return pullFromArray(currentObject[part]);
-                } else {
-                    const updated = pullFromNestedObject(currentObject[part], keyParts, depth + 1);
-                    if (updated) {
-                        this.set(key, data, options);
-                    }
-                    return updated;
-                }
-            };
-
+            console.log(options?.nestedIsEnabled, key.includes(options?.nested as string), key, options.nested);
+            
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const dataa = pullFromArray(data);
-                return dataa;
+                // const keyParts = key.split(options.nested as string);
+                return pullFromArray(data, data);
             } else {
                 if (!Array.isArray(data)) {
                     throw new DatabaseError(`Cannot pull from a non-array value at key '${key}'`);
                 }
-                return pullFromArray(data);
+                return pullFromArray(data, data);
             }
-        }
+        };
     };
 
     /**
@@ -782,8 +716,8 @@ export default class GoodDB implements IGoodDB {
                         throw new DatabaseError('Value is not an array');
                     }
                     resolve(data.find(callback));
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -822,9 +756,9 @@ export default class GoodDB implements IGoodDB {
      * await db.distinct('key', 'value');
      * ```
      */
-    public async distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean>;
-    public distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean;
-    public distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean> | boolean {
+    public async distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): Promise<boolean>;
+    public distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): boolean;
+    public distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): Promise<boolean> | boolean {
         options = options || this.getNestedOptions;
         this.checkKey(key);
         if (this.isAsync) {
@@ -847,8 +781,8 @@ export default class GoodDB implements IGoodDB {
                     };
                     await this.set(key, newData, options);
                     resolve(true);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -942,8 +876,8 @@ export default class GoodDB implements IGoodDB {
                     const newValue = (data || 0) + value;
                     await this.set(key, newValue, options);
                     resolve(newValue);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -995,8 +929,8 @@ export default class GoodDB implements IGoodDB {
                     const newValue = (data || 1) * value;
                     await this.set(key, newValue, options);
                     resolve(newValue);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1047,8 +981,8 @@ export default class GoodDB implements IGoodDB {
                     const newValue = (data || 1) * 2;
                     await this.set(key, newValue, options);
                     resolve(newValue);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1100,8 +1034,8 @@ export default class GoodDB implements IGoodDB {
                     const newValue = (data || 0) - value;
                     await this.set(key, newValue, options);
                     resolve(newValue);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1176,9 +1110,9 @@ export default class GoodDB implements IGoodDB {
 
                     this.set(key, data, options)
                         .then(() => resolve(data))
-                        .catch((error) => reject(error));
-                } catch (error) {
-                    reject(error);
+                        .catch((error: any) => reject(new Error(error)));
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1212,8 +1146,8 @@ export default class GoodDB implements IGoodDB {
 
                 this.set(key, data, options);
                 return data;
-            } catch (error) {
-                throw error;
+            } catch (error: any) {
+                throw new Error(error);
             }
         }
     };
@@ -1268,8 +1202,8 @@ export default class GoodDB implements IGoodDB {
                     } else {
                         resolve('unknown');
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1334,8 +1268,8 @@ export default class GoodDB implements IGoodDB {
                     } else {
                         resolve(0);
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1385,8 +1319,8 @@ export default class GoodDB implements IGoodDB {
                 try {
                     const value = await this.get(key, options);
                     resolve(value !== null && value !== undefined);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1457,39 +1391,37 @@ export default class GoodDB implements IGoodDB {
                         }
                         resolve(result);
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
-        } else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
-                const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
-                const data: any = this.get(k, options);
+        } else if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
+            const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+            const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
+            const data: any = this.get(k, options);
 
-                if (typeof data !== 'object') {
-                    throw new DatabaseError('Value is not an object');
-                };
-                const keys: string[] = Object.keys(data);
+            if (typeof data !== 'object') {
+                throw new DatabaseError('Value is not an object');
+            };
+            const keys: string[] = Object.keys(data);
 
-                const result: any = {};
-                for (const k of keys) {
-                    if (k.startsWith(lastKey)) {
-                        result[k] = data[k];
-                    }
+            const result: any = {};
+            for (const k of keys) {
+                if (k.startsWith(lastKey)) {
+                    result[k] = data[k];
                 }
-                return result;
-            } else {
-                const data = this.all() as any;
-                const keys = Object.keys(data);
-                const result: any = {};
-                for (const k of keys) {
-                    if (k.startsWith(key)) {
-                        result[k] = data[k];
-                    }
-                }
-                return result;
             }
+            return result;
+        } else {
+            const data = this.all() as any;
+            const keys = Object.keys(data);
+            const result: any = {};
+            for (const k of keys) {
+                if (k.startsWith(key)) {
+                    result[k] = data[k];
+                }
+            }
+            return result;
         }
     };
 
@@ -1550,38 +1482,36 @@ export default class GoodDB implements IGoodDB {
                         }
                         resolve(result);
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
-        } else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
-                const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
-                const data: any = this.get(k, options);
-                if (typeof data !== 'object') {
-                    throw new DatabaseError('Value is not an object');
-                };
-                const keys: string[] = Object.keys(data);
+        } else if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
+            const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+            const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
+            const data: any = this.get(k, options);
+            if (typeof data !== 'object') {
+                throw new DatabaseError('Value is not an object');
+            };
+            const keys: string[] = Object.keys(data);
 
-                const result: any = {};
-                for (const k of keys) {
-                    if (k.endsWith(lastKey)) {
-                        result[k] = data[k];
-                    }
+            const result: any = {};
+            for (const k of keys) {
+                if (k.endsWith(lastKey)) {
+                    result[k] = data[k];
                 }
-                return result;
-            } else {
-                const data = this.all() as any;
-                const keys = Object.keys(data);
-                const result: any = {};
-                for (const k of keys) {
-                    if (k.endsWith(key)) {
-                        result[k] = data[k];
-                    }
-                }
-                return result;
             }
+            return result;
+        } else {
+            const data = this.all() as any;
+            const keys = Object.keys(data);
+            const result: any = {};
+            for (const k of keys) {
+                if (k.endsWith(key)) {
+                    result[k] = data[k];
+                }
+            }
+            return result;
         }
     };
 
@@ -1642,40 +1572,38 @@ export default class GoodDB implements IGoodDB {
                         }
                         resolve(result);
                     }
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
-        } else {
-            if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
-                const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
-                const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
-                const data: any = this.get(k, options);
+        } else if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
+            const k = key.split(options?.nested as string).slice(0, -1).join(options?.nested as string);
+            const lastKey = key.split(options?.nested as string).slice(-1).join(options?.nested as string);
+            const data: any = this.get(k, options);
 
-                if (typeof data !== 'object') {
-                    throw new DatabaseError('Value is not an object');
-                };
-                const keys: string[] = Object.keys(data);
+            if (typeof data !== 'object') {
+                throw new DatabaseError('Value is not an object');
+            };
+            const keys: string[] = Object.keys(data);
 
-                const result: any = {};
-                for (const k of keys) {
-                    if (k.includes(lastKey)) {
-                        result[k] = data[k];
-                    }
-                };
-                return result;
-            } else {
-                const data = this.all() as any;
-                const keys = Object.keys(data);
-                const result: any = {};
-                for (const k of keys) {
-                    if (k.includes(key)) {
-                        result[k] = data[k];
-                    }
+            const result: any = {};
+            for (const k of keys) {
+                if (k.includes(lastKey)) {
+                    result[k] = data[k];
                 }
-                return result;
+            };
+            return result;
+        } else {
+            const data = this.all() as any;
+            const keys = Object.keys(data);
+            const result: any = {};
+            for (const k of keys) {
+                if (k.includes(key)) {
+                    result[k] = data[k];
+                }
             }
-        };
+            return result;
+        }
     };
 
     /**
@@ -1706,8 +1634,8 @@ export default class GoodDB implements IGoodDB {
                 try {
                     const data = await this.all();
                     resolve(Object.keys(data));
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1744,8 +1672,8 @@ export default class GoodDB implements IGoodDB {
                 try {
                     const data = await this.all();
                     resolve(Object.values(data));
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1781,21 +1709,7 @@ export default class GoodDB implements IGoodDB {
             return new Promise(async (resolve, reject) => {
                 try {
                     const [data, isObject] = await this.driver.getAllRows(this.tableName);
-                    if (type === 'object') {
-                        if (isObject) {
-                            return resolve(data);
-                        };
-                        return resolve(
-                            Object.fromEntries(
-                                data
-                                    .map(({ key, value }: { key: string, value: any }) => {
-                                        if (!key) return;
-                                        return [key, typeof value !== 'string' ? value : JSON.parse(value)];
-                                    })
-                                    .filter(Boolean)
-                            )
-                        );
-                    } else if (type === 'array') {
+                    if (type === 'array') {
                         if (isObject) {
                             return resolve(
                                 Object.entries(data)
@@ -1815,27 +1729,29 @@ export default class GoodDB implements IGoodDB {
                                 })
                                 .filter(Boolean)
                         );
+                    } else {
+                        if (isObject) {
+                            return resolve(data);
+                        };
+                        return resolve(
+                            Object.fromEntries(
+                                data
+                                    .map(({ key, value }: { key: string, value: any }) => {
+                                        if (!key) return;
+                                        return [key, typeof value !== 'string' ? value : JSON.parse(value)];
+                                    })
+                                    .filter(Boolean)
+                            )
+                        );
                     };
-                } catch (error) {
-                    reject(error as Error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
             const [data, isObject] = this.driver.getAllRows(this.tableName);
 
-            if (type === 'object') {
-                if (isObject) {
-                    return data;
-                };
-                return Object.fromEntries(
-                    data
-                        .map(({ key, value }: { key: string, value: any }) => {
-                            if (!key) return;
-                            return [key, typeof value !== 'string' ? value : JSON.parse(value)];
-                        })
-                        .filter(Boolean)
-                );
-            } else if (type === 'array') {
+            if (type === 'array') {
                 if (isObject) {
                     return Object.entries(data)
                         .map(([key, value]) => {
@@ -1850,6 +1766,18 @@ export default class GoodDB implements IGoodDB {
                         return { key: key, value: typeof value !== 'string' ? value : JSON.parse(value) };
                     })
                     .filter(Boolean);
+            } else {
+                if (isObject) {
+                    return data;
+                };
+                return Object.fromEntries(
+                    data
+                        .map(({ key, value }: { key: string, value: any }) => {
+                            if (!key) return;
+                            return [key, typeof value !== 'string' ? value : JSON.parse(value)];
+                        })
+                        .filter(Boolean)
+                );
             };
         }
     };
@@ -1882,8 +1810,8 @@ export default class GoodDB implements IGoodDB {
                 try {
                     await this.driver.deleteAllRows(this.tableName);
                     resolve(true);
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1925,8 +1853,8 @@ export default class GoodDB implements IGoodDB {
                         ...this.options,
                         table: name,
                     }));
-                } catch (error) {
-                    reject(error);
+                } catch (error: any) {
+                    reject(new Error(error));
                 }
             });
         } else {
@@ -1977,7 +1905,7 @@ export default class GoodDB implements IGoodDB {
      */
     public async disconnect(): Promise<boolean> {
         if (checkDriverIsAsync(this.driver)) {
-            return await (this.driver as MongoDBDriver | MySQLDriver | PostgreSQLDriver)
+            return (this.driver as MongoDBDriver | MySQLDriver | PostgreSQLDriver)
                 .close();
         } else {
             throw new DatabaseError('This driver does not support the disconnect method');

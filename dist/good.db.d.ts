@@ -1,4 +1,4 @@
-import { AllDataReturns, Drivers, goodDBOptions, IGoodDB, MathSigns, methodOptions } from "./Types";
+import { AllDataReturns, AllTypes, Drivers, goodDBOptions, IGoodDB, MathSigns, methodOptions } from "./Types";
 import { LRUCache } from "./utils/Caching";
 /**
  * The main class for the GoodDB package
@@ -18,14 +18,14 @@ import { LRUCache } from "./utils/Caching";
  * ```
  */
 export default class GoodDB implements IGoodDB {
-    private options?;
-    private driver;
+    readonly options?: goodDBOptions | undefined;
+    readonly driver: Drivers;
     readonly tableName: string;
     readonly nested: {
         nested: string;
         isEnabled: boolean;
     };
-    private cacheIsEnabled;
+    readonly cacheIsEnabled: boolean;
     readonly isAsync: boolean;
     cacheService: LRUCache | undefined;
     constructor(driver?: Drivers, options?: goodDBOptions | undefined);
@@ -227,8 +227,8 @@ export default class GoodDB implements IGoodDB {
      *  await db.pull('key', 'value');
      * ```
      */
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
-    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => any | number | string | boolean | number | undefined | null, pullAll?: boolean, options?: methodOptions): boolean;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): Promise<boolean>;
+    pull(key: string, valueOrCallback: (e: any, i: number, a: any) => AllTypes, pullAll?: boolean, options?: methodOptions): boolean;
     /**
      * Find a key in a collection
      * @param key - The key to find in the collection
@@ -285,8 +285,8 @@ export default class GoodDB implements IGoodDB {
      * await db.distinct('key', 'value');
      * ```
      */
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): Promise<boolean>;
-    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any | any, options?: methodOptions): boolean;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): Promise<boolean>;
+    distinct(key: string, value?: (value: any, index: number, obj: any[]) => any, options?: methodOptions): boolean;
     /**
      * Add a value to a key
      * @param key - The key to add the value to

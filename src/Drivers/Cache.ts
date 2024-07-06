@@ -1,7 +1,7 @@
 import { DriversClassType } from "../Types";
 
 export class MemoryDriver implements DriversClassType {
-    private cache: Map<string, any>;
+    public readonly cache: Map<string, any>;
 
     constructor() {
         this.cache = new Map<string, any>();
