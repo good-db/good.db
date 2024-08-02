@@ -43,7 +43,6 @@ export class SQLiteDriver implements DriversClassType {
     // Getters
     public getAllRows(table: string): [any, boolean] {
         const rows: any = this.db.prepare(`SELECT * FROM ${table}`).all();
-        console.log(rows);
 
         return [rows, false];
     };

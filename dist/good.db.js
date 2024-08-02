@@ -410,7 +410,6 @@ class GoodDB {
         };
         const pullFromNestedObject = (currentObject, keyParts, depth, data) => {
             const part = keyParts[depth];
-            console.log(currentObject, part);
             if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
                 throw new ErrorMessage_1.DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
             }
@@ -455,7 +454,6 @@ class GoodDB {
                 return false;
             }
             ;
-            console.log(options === null || options === void 0 ? void 0 : options.nestedIsEnabled, key.includes(options === null || options === void 0 ? void 0 : options.nested), key, options.nested);
             if ((options === null || options === void 0 ? void 0 : options.nestedIsEnabled) && key.includes(options === null || options === void 0 ? void 0 : options.nested)) {
                 // const keyParts = key.split(options.nested as string);
                 return pullFromArray(data, data);

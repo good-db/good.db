@@ -616,9 +616,6 @@ export default class GoodDB implements IGoodDB {
         const pullFromNestedObject = (currentObject: any, keyParts: string[], depth: number, data: any): boolean => {
             const part = keyParts[depth];
 
-            console.log(currentObject, part);
-            
-
             if (!currentObject.hasOwnProperty(part) || typeof currentObject[part] !== 'object') {
                 throw new DatabaseError(`Cannot pull from a non-object or non-array value at key '${part}'`);
             }
@@ -662,8 +659,6 @@ export default class GoodDB implements IGoodDB {
                 return false;
             };
 
-            console.log(options?.nestedIsEnabled, key.includes(options?.nested as string), key, options.nested);
-            
             if (options?.nestedIsEnabled && key.includes(options?.nested as string)) {
                 // const keyParts = key.split(options.nested as string);
                 return pullFromArray(data, data);

@@ -45,7 +45,6 @@ class SQLiteDriver {
     // Getters
     getAllRows(table) {
         const rows = this.db.prepare(`SELECT * FROM ${table}`).all();
-        console.log(rows);
         return [rows, false];
     }
     ;
