@@ -43,11 +43,11 @@
   "author": "Discord username: \"u.si\"",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^9.6.0",
+    "better-sqlite3": "^11.10.0",
     "js-yaml": "^4.1.0",
-    "mongodb": "^6.6.1",
-    "mysql2": "^3.9.7",
-    "pg": "^8.11.5"
+    "mongodb": "^6.17.0",
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
@@ -60,7 +60,7 @@
     "ts-jest": "^29.1.2"
   },
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=18.0.0",
     "npm": ">=8.0.0",
     "yarn": ">=3.0.0",
     "pnpm": ">=7.0.0",
