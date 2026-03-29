@@ -122,6 +122,53 @@ export interface IGoodDB {
      */
     find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any | Promise<any>;
     /**
+     * Filter values in an array stored in a key.
+     * @param key - The key of the array to filter.
+     * @param callback - The callback filter function to use.
+     * @param options - The options to use.
+     * @returns An array of filtered values or a promise that resolves to an array.
+     */
+    filter(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any[] | Promise<any[]>;
+    /**
+     * Find a value in an array and update it.
+     * @param key - The key of the array to search.
+     * @param findCallback - The callback function to find the element.
+     * @param updateCallback - The callback function to update the found element.
+     * @param options - The options to use.
+     * @returns The updated element or undefined if not found, or a promise that resolves to the result.
+     */
+    findAndUpdate(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions): any | Promise<any>;
+    /**
+     * Find multiple values in an array and update them.
+     * @param key - The key of the array to search.
+     * @param findCallback - The callback function to find the elements.
+     * @param updateCallback - The callback function to update the found elements.
+     * @param options - The options to use.
+     * @returns An array of updated elements or a promise that resolves to an array of updated elements.
+     */
+    findAndUpdateMany(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions): any[] | Promise<any[]>;
+    /**
+     * Set multiple key-value pairs at once.
+     * @param data - An object with key-value pairs to set.
+     * @param options - The options to use.
+     * @returns A boolean indicating the success of the operation or a promise that resolves to a boolean.
+     */
+    setMany(data: Record<string, any>, options?: methodOptions): boolean | Promise<boolean>;
+    /**
+     * Get multiple values by their keys at once.
+     * @param keys - An array of keys to get.
+     * @param options - The options to use.
+     * @returns An object with key-value pairs or a promise that resolves to an object with key-value pairs.
+     */
+    getMany(keys: string[], options?: methodOptions): Record<string, any> | Promise<Record<string, any>>;
+    /**
+     * Delete multiple keys at once.
+     * @param keys - An array of keys to delete.
+     * @param options - The options to use.
+     * @returns A boolean indicating the success of the operation or a promise that resolves to a boolean.
+     */
+    deleteMany(keys: string[], options?: methodOptions): boolean | Promise<boolean>;
+    /**
      * Get distinct values from an array stored in a key.
      * @param key - The key of the array to get distinct values from.
      * @param value - The value or callback function to use for getting distinct values.
@@ -402,6 +449,12 @@ export interface IAsyncGoodDB {
      * ```
      */
     find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<any>;
+    /**   * Filter values in an array stored in a key.   * @param key - The key of the array to filter.   * @param callback - The callback filter function to use.   * @param options - The options to use.   * @returns A promise that resolves to an array of filtered values.   */ filter(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): Promise<any[]>; /**   * Find a value in an array and update it.   * @param key - The key of the array to search.   * @param findCallback - The callback function to find the element.   * @param updateCallback - The callback function to update the found element.   * @param options - The options to use.   * @returns A promise that resolves to the updated element or undefined if not found.   */
+    findAndUpdate(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions): Promise<any>;
+    /** * Find multiple values in an array and update them. * @param key - The key of the array to search. * @param findCallback - The callback function to find the elements. * @param updateCallback - The callback function to update the found elements. * @param options - The options to use. * @returns A promise that resolves to an array of updated elements. */ findAndUpdateMany(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions): Promise<any[]>; /** * Set multiple key-value pairs at once. * @param data - An object with key-value pairs to set. * @param options - The options to use. * @returns A promise that resolves to a boolean indicating the success of the operation. */
+    setMany(data: Record<string, any>, options?: methodOptions): Promise<boolean>; /** * Get multiple values by their keys at once. * @param keys - An array of keys to get. * @param options - The options to use. * @returns A promise that resolves to an object with key-value pairs. */
+    getMany(keys: string[], options?: methodOptions): Promise<Record<string, any>>; /** * Delete multiple keys at once. * @param keys - An array of keys to delete. * @param options - The options to use. * @returns A promise that resolves to a boolean indicating the success of the operation. */
+    deleteMany(keys: string[], options?: methodOptions): Promise<boolean>;
     /**
      * Remove all duplicate values from an array stored in a key.
      * @param key - The key of the array to remove duplicate values from.
@@ -825,6 +878,12 @@ export interface ISyncGoodDB {
      * ```
      */
     find(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any;
+    /**   * Filter values in an array stored in a key.   * @param key - The key of the array to filter.   * @param callback - The callback filter function to use.   * @param options - The options to use.   * @returns An array of filtered values.   */ filter(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions): any[]; /**   * Find a value in an array and update it.   * @param key - The key of the array to search.   * @param findCallback - The callback function to find the element.   * @param updateCallback - The callback function to update the found element.   * @param options - The options to use.   * @returns The updated element or undefined if not found.   */
+    findAndUpdate(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions): any;
+    /** * Find multiple values in an array and update them. * @param key - The key of the array to search. * @param findCallback - The callback function to find the elements. * @param updateCallback - The callback function to update the found elements. * @param options - The options to use. * @returns An array of updated elements. */ findAndUpdateMany(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions): any[]; /** * Set multiple key-value pairs at once. * @param data - An object with key-value pairs to set. * @param options - The options to use. * @returns A boolean indicating the success of the operation. */
+    setMany(data: Record<string, any>, options?: methodOptions): boolean; /** * Get multiple values by their keys at once. * @param keys - An array of keys to get. * @param options - The options to use. * @returns An object with key-value pairs. */
+    getMany(keys: string[], options?: methodOptions): Record<string, any>; /** * Delete multiple keys at once. * @param keys - An array of keys to delete. * @param options - The options to use. * @returns A boolean indicating the success of the operation. */
+    deleteMany(keys: string[], options?: methodOptions): boolean;
     /**
      * Remove all duplicate values from an array stored in a key
      * @param key - The key of the array to remove duplicate values from

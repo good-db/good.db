@@ -81,7 +81,41 @@ describe('JSON Driver without nested', () => {
         });
     });
 
+    test('Filter method', () => {
+        // Add more users for filter test
+        db.push('users', { name: 'Bob', age: 30 });
+        db.push('users', { name: 'Charlie', age: 35 });
+        const adults = db.filter('users', (user: any) => user.age >= 30);
+        expect(adults).toEqual([
+            { name: 'Bob', age: 30 },
+            { name: 'Charlie', age: 35 }
+        ]);
+    });
+
+    test('FindAndUpdate method', () => {
+        const updated = db.findAndUpdate('users',
+            (user: any) => user.name === 'Charlie',
+            (user: any) => {
+                user.name = 'Charles';
+                user.age = 36;
+                return user;
+            }
+        );
+        expect(updated).toEqual({ name: 'Charles', age: 36 });
+        expect(db.find('users', (user: any) => user.name === 'Charles')).toEqual({ name: 'Charles', age: 36 });
+    });
+
+    test('FindAndUpdate with non-existent element', () => {
+        const result = db.findAndUpdate('users',
+            (user: any) => user.name === 'NonExistent',
+            (user: any) => user
+        );
+        expect(result).toBeUndefined();
+    });
+
     test('Distinct method', () => {
+        // Reset users first
+        db.pull('users', (user: any) => user.name === 'Charles' || user.name === 'Bob', true);
         db.push('users', { name: 'Charlie', age: 35 });
         db.push('users', { name: 'Charlie', age: 35 });
         db.distinct('users');
@@ -302,7 +336,41 @@ describe('JSON Driver with nested', () => {
         });
     });
 
+    test('Filter method', () => {
+        // Add more users
+        db.push('data..users', { name: 'Bob', age: 30 });
+        db.push('data..users', { name: 'Charlie', age: 35 });
+
+        const adults = db.filter('data..users', (user: any) => user.age >= 30);
+        expect(adults).toEqual([
+            { name: 'Bob', age: 30 },
+            { name: 'Charlie', age: 35 }
+        ]);
+    });
+
+    test('FindAndUpdate method', () => {
+        const updated = db.findAndUpdate('data..users',
+            (user: any) => user.name === 'Charlie',
+            (user: any) => {
+                user.name = 'Charles';
+                user.age = 36;
+                return user;
+            }
+        );
+        expect(updated).toEqual({ name: 'Charles', age: 36 });
+    });
+
+    test('FindAndUpdate with non-existent element', () => {
+        const result = db.findAndUpdate('data..users',
+            (user: any) => user.name === 'NonExistent',
+            (user: any) => user
+        );
+        expect(result).toBeUndefined();
+    });
+
     test('Distinct method', () => {
+        // Reset users first
+        db.pull('data..users', (user: any) => user.name === 'Charles' || user.name === 'Bob', true);
         db.push('data..users', { name: 'Charlie', age: 35 });
         db.push('data..users', { name: 'Charlie', age: 35 });
         db.distinct('data..users');
