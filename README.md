@@ -196,6 +196,37 @@ Delete a key from the database:
 db.delete('user'); // true
 ```
 
+#### `setMany(data: Record<string, any>, options?: methodOptions)`
+
+Set multiple key-value pairs at once:
+
+```typescript
+db.setMany({ key1: 'value1', key2: 'value2', key3: 'value3' }); // true
+db.get('key1'); // 'value1'
+db.get('key2'); // 'value2'
+```
+
+#### `getMany(keys: string[], options?: methodOptions)`
+
+Get multiple values by their keys at once:
+
+```typescript
+db.setMany({ key1: 'value1', key2: 'value2', key3: 'value3' });
+db.getMany(['key1', 'key2']); // { key1: 'value1', key2: 'value2' }
+```
+
+#### `deleteMany(keys: string[], options?: methodOptions)`
+
+Delete multiple keys at once:
+
+```typescript
+db.setMany({ key1: 'value1', key2: 'value2', key3: 'value3' });
+db.deleteMany(['key1', 'key2']); // true
+db.get('key1'); // undefined
+db.get('key2'); // undefined
+db.get('key3'); // 'value3'
+```
+
 #### `push(key: string, value: any, options?: methodOptions)`
 
 Push a value to an array in the database:
@@ -257,6 +288,46 @@ db.push('users', { name: 'Alice', age: 25 });
 db.push('users', { name: 'Bob', age: 30 });
 db.push('users', { name: 'Charlie', age: 35 });
 db.find('users', (object) => object.name == 'Bob') // { name: 'Bob', age: 30 }
+```
+
+#### `filter(key: string, callback: (value: any, index: number, obj: any[]) => unknown, options?: methodOptions)`
+
+Filter values in an array in the database:
+
+```typescript
+db.push('users', { name: 'Alice', age: 25 });
+db.push('users', { name: 'Bob', age: 30 });
+db.push('users', { name: 'Charlie', age: 35 });
+db.filter('users', (user) => user.age > 25); // [{ name: 'Bob', age: 30 }, { name: 'Charlie', age: 35 }]
+```
+
+#### `findAndUpdate(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions)`
+
+Find a value in an array and update it:
+
+```typescript
+db.push('users', { id: 1, name: 'Alice', age: 25 });
+db.push('users', { id: 2, name: 'Bob', age: 30 });
+db.findAndUpdate('users',
+  (user) => user.id === 1,
+  (user) => { user.name = 'Updated Name'; return user; }
+); // { id: 1, name: 'Updated Name', age: 25 }
+db.get('users'); // [{ id: 1, name: 'Updated Name', age: 25 }, { id: 2, name: 'Bob', age: 30 }]
+```
+
+#### `findAndUpdateMany(key: string, findCallback: (value: any, index: number, obj: any[]) => unknown, updateCallback: (value: any, index: number, obj: any[]) => any, options?: methodOptions)`
+
+Find multiple values in an array and update them:
+
+```typescript
+db.push('users', { id: 1, name: 'Alice', active: true });
+db.push('users', { id: 2, name: 'Bob', active: true });
+db.push('users', { id: 3, name: 'Charlie', active: false });
+db.findAndUpdateMany('users',
+  (user) => user.active === true,
+  (user) => { user.status = 'verified'; return user; }
+); // [{ id: 1, name: 'Alice', active: true, status: 'verified' }, { id: 2, name: 'Bob', active: true, status: 'verified' }]
+db.get('users'); // [{ id: 1, name: 'Alice', active: true, status: 'verified' }, { id: 2, name: 'Bob', active: true, status: 'verified' }, { id: 3, name: 'Charlie', active: false }]
 ```
 
 #### `distinct(key: string, value: string, options?: methodOptions)`
