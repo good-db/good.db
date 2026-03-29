@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/good-db/good.db.git"
+    "url": "git+https://github.com/good-db/good.db.git"
   },
   "bugs": {
     "url": "https://github.com/good-db/good.db/issues"
